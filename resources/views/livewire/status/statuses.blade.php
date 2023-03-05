@@ -2,42 +2,54 @@
     <div class="col-sm-12">
         <div class="widget widget-chart-one">
             <div class="widget-heading">
-                <h4 class="card-title">
-                    <b>{{$pageTitle}} | {{$componentName}}</b>  <!--nombre y titulo dinamico de componente--> 
+                <h4 class="card-title text-uppercase">
+                    <b>{{$pageTitle}} | {{$componentName}}</b>
                 </h4>
                 <ul class="tabs tab-pills">
                     <li>
-                        <a href="javascript:void(0)" class="tabmenu bg-dark" data-toggle="modal" data-target="#theModal">Agregar</a>
+                        <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal"
+                            data-target="#theModal">Agregar</a>
                     </li>
                 </ul>
             </div>
 
-            @include('common.searchbox')    <!--barra de busqueda-->
+            @include('common.searchbox')
 
-            <div class="widget-content">    <!--card-->
-                <div class="table-responsive">  <!--tabla-->
-                    <table class="table table-bordered mt-1">
-                        <thead class="text-white" style="background: #3B3F5C">  <!--encabezado de tabla-->
+            <div class="widget-content">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered mt-1">
+                        <thead class="text-white" style="background: #3B3F5C">
                             <tr>
-                                <th class="table-th text-white text-center">NOMBRE</th>
-                                <th class="table-th text-white text-center">TIPO</th>
-                                <th class="table-th text-white text-center">ACCIONES</th>
+                                <th class="table-th text-white text-center">estado</th>
+                                <th class="table-th text-white text-center">tipo de estado</th>
+                                <th class="table-th text-white text-center">opciones</th>
                             </tr>
                         </thead>
-                        <tbody> <!--cuerpo de tabla-->
+                        <tbody>
 
-                            @foreach ($statuses as $status)   <!--iteracion de los datos almacenados en variable pasada desde controlador-->
+                            @foreach ($statuses as $status)
 
                             <tr>
-                                <td><h6 class="text-center text-uppercase">{{ $status->name }}</h6></td>
-                                <td><h6 class="text-center text-uppercase">{{ $status->type }}</h6></td>
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{ $status->name }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{ $status->type }}</h6>
+                                </td>
                                 <td class="text-center">
-                                    <!--directiva click de livewire que hace llamado al metodo edit del componente pasandole el id-->
-                                    <a href="javascript:void(0)" wire:click="Edit({{$status->id}})" class="btn btn-dark mtmobile" title="Editar">
+                                    <a href="javascript:void(0)" wire:click="Edit({{$status->id}})"
+                                        class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$status->id}}')" class="btn btn-dark" title="Eliminar">
+                                    <a href="javascript:void(0)"
+                                        onclick="Confirm(
+                                            '{{$status->id}}',
+                                            '{{$status->products_count}}',
+                                            '{{$status->users_count}}',
+                                            '{{$status->containers_count}}',
+                                            '{{$status->values_count}}'
+                                            )"
+                                        class="btn btn-dark" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
 
@@ -48,48 +60,58 @@
 
                         </tbody>
                     </table>
-                    
-                    {{$statuses->links()}}  <!--paginacion de laravel-->
+
+                    {{$statuses->links()}}
 
                 </div>
             </div>
         </div>
     </div>
 
-    @include('livewire.status.form') <!--formulario modal-->
+    @include('livewire.status.form')
 
 </div>
 
-<!--script de eventos provenientes del backend a ser escuchados-->
+
 <script>
     document.addEventListener('DOMContentLoaded', function(){
         
-        window.livewire.on('item-added', msg=>{ //evento para agregar registro
+        window.livewire.on('item-added', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-updated', msg=>{   //evento para actualizar registro
+        window.livewire.on('item-updated', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{   //evento para eliminar registro
+        window.livewire.on('item-deleted', msg=>{
             noty(msg)
         });
-        window.livewire.on('show-modal', msg=>{ //evento para mostral modal
+        window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('modal-hide', msg=>{ //evento para cerrar modal
+        window.livewire.on('modal-hide', msg=>{
             $('#theModal').modal('hide')
         });
-        $('#theModal').on('shown.bs.modal', function(e){    //metodo para autofocus al campo nombre
+        $('#theModal').on('shown.bs.modal', function(e){
             $('.component-name').focus()
+        });
+        window.livewire.on('item-error', msg=>{
+            noty(msg,2)
         });
         
     });
 
-    function Confirm(id){   //metodo para alerta de confirmacion que recibe el id
+    function Confirm(id,products_count,users_count,containers_count,values_count){
 
-        swal({  //alerta sweetalert
+        if(products_count > 0 || users_count > 0 || containers_count > 0 || values_count > 0){
+
+            swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
+            return;
+        }
+
+        swal({
+
             title: 'CONFIRMAR',
             text: '¿CONFIRMA ELIMINAR EL REGISTRO?',
             type: 'warning',
@@ -98,10 +120,13 @@
             cancelButtonColor: '#fff',
             confirmButtonColor: '#3B3F5C',
             confirmButtonText: 'ACEPTAR'
+
         }).then(function(result){
-            if(result.value){   //validar si se presiono el boton de confirmacion
-                window.livewire.emit('destroy', id)   //emision de evento para hacer llamado al metodo Destroy del controlador
-                swal.close()    //cerrar alerta
+
+            if(result.value){
+
+                window.livewire.emit('destroy',id,products_count,users_count,containers_count,values_count)
+                swal.close()
             }
         })
     }

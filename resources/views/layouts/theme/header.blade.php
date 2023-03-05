@@ -3,8 +3,8 @@
         <ul class="navbar-item flex-row">
             <li class="nav-item theme-logo">
                 <a href="{{ url('home') }}">
-                    <img src="assets/img/llantas.jpg" class="navbar-logo" alt="logo">
-                    <b style="font-size: 19px; color:#3B3F5C">CAPRILES</b>
+                    <img src="assets/img/Macbook.png" class="navbar-logo" alt="logo">
+                    <b style="font-size: 19px; color:#3B3F5C">TU EMPRESA</b>
                 </a>
             </li>
         </ul>

@@ -18,6 +18,7 @@ class CreateValuesTable extends Migration
             $table->decimal('cost',60,30);
             $table->decimal('price',60,30)->nullable();
             $table->foreignId('product_id')->constrained();
+            $table->foreignId('status_id')->constrained();
             $table->timestamps();
         });
     }

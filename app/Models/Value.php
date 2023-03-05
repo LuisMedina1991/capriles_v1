@@ -9,12 +9,28 @@ class Value extends Model
 {
     use HasFactory;
 
-    //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
-    protected $fillable = ['cost','price','product_id'];
+    
+    protected $fillable = ['cost','price','product_id','status_id'];
 
-    //relacion muchos a uno con products
+    
     public function product(){
 
         return $this->belongsTo(Product::class);
     }
+
+    
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
+    
+    public function offices()
+    {
+        return $this->belongsToMany(Office::class)
+        ->withPivot(['id', 'stock', 'alerts'])
+        ->withTimestamps()
+        ->using(OfficeValue::class);
+    }
+
 }

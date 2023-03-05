@@ -2,96 +2,106 @@
     <div class="col-sm-12">
         <div class="widget widget-chart-one">
             <div class="widget-heading">
-                <h4 class="card-title">
-                    <b>{{$pageTitle}} | {{$componentName}}</b>  <!--nombre y titulo dinamico de componente--> 
+                <h4 class="card-title text-uppercase">
+                    <b>{{$pageTitle}} | {{$componentName}}</b>
                 </h4>
                 <ul class="tabs tab-pills">
                     <li>
-                        <a href="javascript:void(0)" class="tabmenu bg-dark" data-toggle="modal" data-target="#theModal">Agregar</a>
+                        <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal"
+                            data-target="#theModal">Agregar</a>
                     </li>
                 </ul>
             </div>
 
-            @include('common.searchbox')    <!--barra de busqueda-->
+            @include('common.searchbox')
 
-            <div class="widget-content">    <!--card-->
-                <div class="table-responsive">  <!--tabla-->
+            <div class="widget-content">
+                <div class="table-responsive">
                     <table class="table table-striped table-bordered mt-1">
-                        <thead class="text-white" style="background: #3B3F5C">  <!--encabezado de tabla-->
+                        <thead class="text-white" style="background: #3B3F5C">
                             <tr>
-                                <th class="table-th text-white text-center">DESCRIPCION</th>
-                                <th class="table-th text-center text-white">DIRECCION</th>
-                                <th class="table-th text-center text-white">TELEFONO</th>
-                                <th class="table-th text-center text-white">ACCIONES</th>
+                                <th class="table-th text-white text-center">nombre</th>
+                                <th class="table-th text-center text-white">direccion</th>
+                                <th class="table-th text-center text-white">telefono</th>
+                                <th class="table-th text-center text-white">opciones</th>
                             </tr>
                         </thead>
-                        <tbody>     <!--cuerpo de tabla-->
-
-                            @foreach ($offices as $office) <!--iteracion de los datos almacenados en variable pasada desde controlador-->
-
+                        <tbody>
+                            @foreach ($offices as $office)
                             <tr>
-                                <td><h6 class="text-center text-uppercase">{{ $office->name }}</h6></td>
-                                <td><h6 class="text-center text-uppercase">{{ $office->address }}</h6></td>
-                                <td><h6 class="text-center">{{ $office->phone }}</h6></td>
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{ $office->name }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{ $office->address }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-center">{{ $office->phone }}</h6>
+                                </td>
                                 <td class="text-center">
-                                    <!--directiva click de livewire que hace llamado al metodo edit del componente pasandole el id-->
-                                    <a href="javascript:void(0)" wire:click="Edit({{$office->id}})" class="btn btn-dark mtmobile" title="Editar">
+                                    <a href="javascript:void(0)" wire:click="Edit({{$office->id}})"
+                                        class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$office->id}}')" class="btn btn-dark" title="Eliminar">
+                                    <a href="javascript:void(0)"
+                                        onclick="Confirm('{{$office->id}}','{{$office->values_count}}','{{$office->active_values_count}}')"
+                                        class="btn btn-dark" title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
                                 </td>
                             </tr>
-
                             @endforeach
-
                         </tbody>
                     </table>
-                    
-                    {{$offices->links()}}    <!--paginacion de laravel-->
+
+                    {{$offices->links()}}
 
                 </div>
             </div>
         </div>
     </div>
 
-    @include('livewire.office.form')      <!--formulario modal-->
+    @include('livewire.office.form')
 
 </div>
 
-<!--script de eventos provenientes del backend a ser escuchados-->
-<script> 
+
+<script>
     document.addEventListener('DOMContentLoaded', function(){
 
-        window.livewire.on('show-modal', msg=>{     //evento para mostral modal
+        window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('item-added', msg=>{     //evento para agregar registro
+        window.livewire.on('item-added', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{   //evento para eliminar registro
+        window.livewire.on('item-deleted', msg=>{
             noty(msg)
         });
-        window.livewire.on('item-updated', msg=>{   //evento para actualizar registro
+        window.livewire.on('item-updated', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        /*
-        $('#theModal').on('hidden.bs.modal', function(e){  //evento para limpiar validaciones
-            $('.er').css('display', 'none')
-        });
-        */
-        $('#theModal').on('shown.bs.modal', function(e){    //metodo para autofocus al campo nombre
+        $('#theModal').on('shown.bs.modal', function(e){
             $('.component-name').focus()
+        });
+        window.livewire.on('item-error', msg=>{
+            noty(msg,2)
         });
     });
 
-    function Confirm(id){   //metodo para alerta de confirmacion que recibe el id
+    function Confirm(id,values_count,active_values_count){
 
-        swal({  //alerta sweetalert
+        if(active_values_count > 0){
+
+            swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
+            return;
+
+        }
+
+        swal({
+
             title: 'CONFIRMAR',
             text: '¿CONFIRMA ELIMINAR EL REGISTRO?',
             type: 'warning',
@@ -100,10 +110,13 @@
             cancelButtonColor: '#fff',
             confirmButtonColor: '#3B3F5C',
             confirmButtonText: 'ACEPTAR'
+
         }).then(function(result){
-            if(result.value){ //validar si se presiono el boton de confirmacion
-                window.livewire.emit('destroy', id)   //emision de evento para hacer llamado al metodo Destroy del controlador
-                swal.close()    //cerrar alerta
+
+            if(result.value){
+
+                window.livewire.emit('destroy', id,values_count,active_values_count)
+                swal.close()
             }
         })
     }

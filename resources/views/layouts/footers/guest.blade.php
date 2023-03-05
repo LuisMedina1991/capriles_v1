@@ -4,7 +4,7 @@
         &copy;
         <script>
             document.write(new Date().getFullYear())
-        </script> Ecommerce by Luis Medina
+        </script> Sistema de ventas por Luis Medina
         </div>
     </div>
 </footer>

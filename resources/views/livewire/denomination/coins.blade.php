@@ -2,55 +2,59 @@
     <div class="col-sm-12">
         <div class="widget widget-chart-one">
             <div class="widget-heading">
-                <h4 class="card-title">
-                    <b>{{$pageTitle}} | {{$componentName}}</b>  <!--nombre y titulo dinamico de componente--> 
+                <h4 class="card-title text-uppercase">
+                    <b>{{$pageTitle}} | {{$componentName}}</b>
                 </h4>
                 <ul class="tabs tab-pills">
                     <li>
-                        <a href="javascript:void(0)" class="tabmenu bg-dark" data-toggle="modal" data-target="#theModal">Agregar</a>
+                        <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal"
+                            data-target="#theModal">Agregar</a>
                     </li>
                 </ul>
             </div>
 
-            @include('common.searchbox')    <!--barra de busqueda-->
+            @include('common.searchbox')
 
-            <div class="widget-content">    <!--card-->
-                <div class="table-responsive">  <!--tabla-->
-                    <table class="table table-bordered mt-1">
-                        <thead class="text-white" style="background: #3B3F5C">  <!--encabezado de tabla-->
+            <div class="widget-content">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered mt-1">
+                        <thead class="text-white" style="background: #3B3F5C">
                             <tr>
-                                <th class="table-th text-white">TIPO</th>
-                                <th class="table-th text-white text-center">VALOR</th>
-                                <th class="table-th text-white text-center">IMAGEN</th>
-                                <th class="table-th text-white text-center">ACTIONS</th>
+                                <th class="table-th text-white text-center">tipo de denominacion</th>
+                                <th class="table-th text-white text-center">valor</th>
+                                <th class="table-th text-white text-center">imagen</th>
+                                <th class="table-th text-white text-center">opciones</th>
                             </tr>
                         </thead>
-                        <tbody> <!--cuerpo de tabla-->
+                        <tbody>
 
-                            @foreach ($coins as $coin)   <!--iteracion de los datos almacenados en variable pasada desde controlador-->
+                            @foreach ($coins as $coin)
 
                             <tr>
-                                <td><h6 class="text-uppercase">{{ $coin->type }}</h6></td>
-                                <!--funcion number_format de php para dar formato decimal recibe 2 parametros (numero,cantidad de decimales)-->
-                                <td><h6 class="text-center">${{ number_format($coin->value,2) }}</h6></td>
+                                <td>
+                                    <h6 class="text-uppercase text-center">{{ $coin->type }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-center">${{ number_format($coin->value,2) }}</h6>
+                                </td>
                                 <td class="text-center">
                                     <span>
-                                        <!--desplegar imagenes en el almacenamiento local de nuestro sistema con enlace simbolico-->
-                                        <!--se obtiene el valor de la columna a traves del accesor imagen creado en el modelo-->
                                         @if($coin->image != null)
-                                        <img src="{{ asset('storage/denominations/' . $coin->image->url) }}" alt="imagen de ejemplo" height="70" width="80" class="rounded">
+                                        <img src="{{ asset('storage/denominations/' . $coin->image->url) }}"
+                                            alt="imagen de ejemplo" height="70" width="80" class="rounded">
                                         @else
-                                        <img src="{{ asset('storage/noimg.jpg') }}" alt="imagen de ejemplo" height="70" width="80" class="rounded">
+                                        <img src="{{ asset('storage/noimg.jpg') }}" alt="imagen de ejemplo" height="70"
+                                            width="80" class="rounded">
                                         @endif
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <!--directiva click de livewire que hace llamado al metodo edit del componente pasandole el id-->
-                                    <a href="javascript:void(0)" wire:click="Edit({{$coin->id}})" class="btn btn-dark mtmobile" title="Editar">
+                                    <a href="javascript:void(0)" wire:click="Edit({{$coin->id}})"
+                                        class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$coin->id}}')" class="btn btn-dark" title="Eliminar">
+                                    <a href="javascript:void(0)" onclick="Confirm('{{$coin->id}}')" class="btn btn-dark"
+                                        title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
 
@@ -61,45 +65,46 @@
 
                         </tbody>
                     </table>
-                    
-                    {{$coins->links()}}  <!--paginacion de laravel-->
+
+                    {{$coins->links()}}
 
                 </div>
             </div>
         </div>
     </div>
 
-    @include('livewire.denomination.form') <!--formulario modal-->
+    @include('livewire.denomination.form')
 
 </div>
 
-<!--script de eventos provenientes del backend a ser escuchados-->
+
 <script>
     document.addEventListener('DOMContentLoaded', function(){
         
-        window.livewire.on('item-added', msg=>{ //evento para agregar registro
+        window.livewire.on('item-added', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-updated', msg=>{   //evento para actualizar registro
+        window.livewire.on('item-updated', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{   //evento para eliminar registro
+        window.livewire.on('item-deleted', msg=>{
             noty(msg)
         });
-        window.livewire.on('show-modal', msg=>{ //evento para mostral modal
+        window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('modal-hide', msg=>{ //evento para cerrar modal
+        window.livewire.on('modal-hide', msg=>{
             $('#theModal').modal('hide')
         });
         
     });
 
-    function Confirm(id){   //metodo para alerta de confirmacion que recibe el id
+    function Confirm(id){
 
-        swal({  //alerta sweetalert
+        swal({
+
             title: 'CONFIRMAR',
             text: '¿CONFIRMA ELIMINAR EL REGISTRO?',
             type: 'warning',
@@ -108,10 +113,13 @@
             cancelButtonColor: '#fff',
             confirmButtonColor: '#3B3F5C',
             confirmButtonText: 'ACEPTAR'
+
         }).then(function(result){
-            if(result.value){   //validar si se presiono el boton de confirmacion
-                window.livewire.emit('destroy', id)   //emision de evento para hacer llamado al metodo Destroy del controlador
-                swal.close()    //cerrar alerta
+
+            if(result.value){
+
+                window.livewire.emit('destroy', id)
+                swal.close()
             }
         })
     }

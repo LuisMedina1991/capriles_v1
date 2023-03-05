@@ -4,57 +4,63 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use App\Models\Status;
-use Livewire\WithPagination;    //trait para la paginacion
+use Livewire\WithPagination;
 
 class Statuses extends Component
 {
-    use WithPagination;     //llamado a los trait
+    use WithPagination;
 
-    public $name,$type,$search,$selected_id,$pageTitle,$componentName;    //propiedades publicas dentro del backend para accesar desde el frontend
-    private $pagination = 20;    //paginacion
+    public $name,$type,$search,$selected_id,$pageTitle,$componentName;
+    private $pagination = 20;
 
-    public function mount(){    //metodo que se ejecuta en cuanto se monta este componente
-        $this->pageTitle = 'LISTADO';   //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
-        $this->componentName = 'ESTADOS';    //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
-        $this->type = 'Elegir'; //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
+    public function mount(){
+
+        $this->pageTitle = 'listado';
+        $this->componentName = 'estados';
+        $this->type = 'Elegir';
+        $this->name = '';
+        $this->search = '';
+        $this->selected_id = 0;
+        $this->resetValidation();
+        $this->resetPage();
     }
 
-    public function paginationView(){   //metodo para la paginacion personalizada
-        return 'vendor.livewire.bootstrap'; //archivo de la paginacion
+    public function paginationView(){
+
+        return 'vendor.livewire.bootstrap';
     }
 
     public function render()
     {
-        if(strlen($this->search) > 0)   //validar si la caja de busqueda tiene algo escrito con metodo php strlen
-            $data = Status::where('name', 'like', '%' . $this->search . '%')   //busqueda por nombre
+        if(strlen($this->search) > 0)
+
+            $data = Status::withCount('users','products','containers','values')
+            ->where('name', 'like', '%' . $this->search . '%')
             ->orWhere('type', 'like', '%' . $this->search . '%')
-            ->paginate($this->pagination);    //busqueda por tipo
-        else    //caso contrario devuelve el listado ordenado por id
-            $data = Status::orderBy('name', 'asc')->paginate($this->pagination);
+            ->paginate($this->pagination);
 
-        return view('livewire.status.statuses', ['statuses' => $data])    //retorna la vista con la informacion almacenada en variable
-        ->extends('layouts.theme.app')  //indicamos que la vista que estamos retornando extiende de esta plantilla
-        ->section('content');   //contenido del componente que se renderiza en esta seccion
+        else
+
+            $data = Status::withCount('users','products','containers','values')
+            ->orderBy('id', 'asc')
+            ->paginate($this->pagination);
+
+        return view('livewire.status.statuses', ['statuses' => $data])
+        ->extends('layouts.theme.app')
+        ->section('content');
     }
 
-    public function Edit($id){  //metodo para abrir modal edit pasandole el id del elemento seleccionado
 
-        //$record = Category::find($id); devuelve todas las columnas 
-        $record = Status::find($id, ['id', 'name','type']); //obtener la informacion especifica del elemento seleccionado y almacenarlo en variable
-        $this->name = $record->name;    //llenado del campo con los datos almacenados en variable
-        $this->selected_id = $record->id;   //llenado del campo con los datos almacenados en variable
-        $this->type = $record->type;   //llenado del campo con los datos almacenados en variable
-        $this->emit('show-modal', 'Mostrando modal'); //evento a ser escuchado desde el frontend
-    }
+    public function Store(){
 
-    public function Store(){    //metodo para almacenar nuevos registros
+        $rules = [
 
-        $rules = [  //reglas de validacion para cada campo en especifico
             'name' => 'required|unique:statuses|min:3|max:100',
             'type' => 'not_in:Elegir',
         ];
 
-        $messages = [   //mensajes para cada error de validacion para ser recibidos desde el frontend
+        $messages = [
+
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
@@ -62,26 +68,36 @@ class Statuses extends Component
             'type.not_in' => 'Seleccione una opcion',
         ];
 
-        $this->validate($rules, $messages); //ejecutar las validaciones con metodo validate que nos solicita 2 parametros (reglas,mensajes)
+        $this->validate($rules, $messages);
 
-        Status::create([  //guardar en variable el registro de este elemento
+        Status::create([
+
             'name' => $this->name,
             'type' => $this->type   
         ]);
 
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-added', 'Registrado correctamente');  //evento a ser escuchado desde el frontend
+        $this->mount();
+        $this->emit('item-added', 'Registrado correctamente');
     }
 
-    public function Update(){   //metodo para actualizar registro
+    public function Edit(Status $status){
 
-        $rules = [  //reglas de validacion para cada campo en especifico
-            //aqui se valida que no exista otro registro con el mismo nombre excluyendo el id seleccionado actualmente
+        $this->name = $status->name;
+        $this->selected_id = $status->id;
+        $this->type = $status->type;
+        $this->emit('show-modal', 'Mostrando modal');
+    }
+
+    public function Update(){
+
+        $rules = [
+           
           'name' => "required|min:3|max:100|unique:statuses,name,{$this->selected_id}",
           'type' => 'not_in:Elegir',
         ];
 
-        $messages = [   //mensajes para cada error de validacion para ser recibidos desde el frontend
+        $messages = [
+
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
@@ -89,36 +105,43 @@ class Statuses extends Component
             'type.not_in' => 'Seleccione una opcion',
         ];
 
-        $this->validate($rules, $messages); //ejecutar las validaciones con metodo validate que nos solicita 2 parametros (reglas,mensajes)
+        $this->validate($rules, $messages);
 
-        $category = Status::find($this->selected_id); //seleccionar el registro del id seleccionado actualmente y guardar en variable
-        $category->update([     //actualizar el registro con metodo update de eloquent
+        $category = Status::find($this->selected_id);
+
+        $category->update([
+
             'name' => $this->name,
             'type' => $this->type
         ]);
 
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-updated', 'Actualizado correctamente');   //evento a ser escuchado desde el frontend
+        $this->mount();
+        $this->emit('item-updated', 'Actualizado correctamente');
     }
 
-    protected $listeners = [    //eventos provenientes del frontend a ser escuchados
-        'destroy' => 'Destroy'  //al escuchar el evento destroy se hace llamado al metodo Destroy
+    protected $listeners = [
+
+        'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Status $status){    //metodo para eliminar registros con una instancia del modelo que contiene el id
-        //dd($category);    metodo para ver la informacion que se esta obteniendo
-        $status->delete();    //eliminar registro con metodo delete de eloquent
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-deleted', 'Eliminado correctamente'); //evento a ser escuchado desde el frontend
+    public function Destroy(Status $status,$products_count,$users_count,$containers_count,$values_count){
+        
+        if ($products_count > 0 || $users_count > 0 || $containers_count > 0 || $values_count > 0) {
+
+            $this->emit('item-error', 'No se puede eliminar debido a relacion');
+            return;
+
+        }else{
+
+            $status->delete();
+            $this->mount();
+            $this->emit('item-deleted', 'Eliminado correctamente');
+        }
+        
     }
 
-    public function resetUI(){  //metodo para limpiar la informacion de las propiedades publicas
+    public function resetUI(){
 
-        $this->name = '';
-        $this->search = '';
-        $this->selected_id = 0;
-        $this->type = 'Elegir';
-        $this->resetValidation();   //metodo para limpiar las validaciones del formulario
-        $this->resetPage(); //metodo de livewire para volver al listado principal
+        $this->mount();
     }
 }

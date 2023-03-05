@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePrefixesTable extends Migration
+class CreatePresentationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,9 @@ class CreatePrefixesTable extends Migration
      */
     public function up()
     {
-        Schema::create('prefixes', function (Blueprint $table) {
+        Schema::create('presentations', function (Blueprint $table) {
             $table->id();
-            $table->string('name',45);
+            $table->string('name',100)->unique();
             $table->timestamps();
         });
     }
@@ -27,6 +27,6 @@ class CreatePrefixesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('prefixes');
+        Schema::dropIfExists('presentations');
     }
 }

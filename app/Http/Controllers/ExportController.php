@@ -10,10 +10,33 @@ use App\Models\Sale;
 use App\Models\Income;
 use App\Models\Transfer;
 use App\Models\User;
+use App\Models\Office;
+use App\Models\Value;
+use App\Models\Product;
 use Maatwebsite\Excel\Facades\Excel;    //paquete facade para reporte excel
 
 class ExportController extends Controller
 {
+
+    public function reportStock($my_total){
+
+        $stocks = Product::where('status_id', 1)
+        ->with([
+            'activeStocks.value',
+            'activeStocks.office',
+            'brand',
+            'container.subcategory.category',
+            'container.presentation'
+            ])
+        ->orderBy('code','asc')
+        ->get();
+
+        $pdf = PDF::loadView('pdf.reporte_stock', compact('my_total','stocks'));
+
+        return $pdf->stream('reporte.pdf');
+    }
+    
+
     public function reportPDF($userId,$reportRange,$reportType,$dateFrom = null,$dateTo = null){  //metodo para reporte pdf
 
         $data = [];

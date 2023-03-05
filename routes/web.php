@@ -18,6 +18,9 @@ use App\Http\Livewire\Stocks;
 use App\Http\Livewire\Subcategories;
 use App\Http\Livewire\Users;
 use App\Http\Controllers\ExportController;
+use App\Http\Livewire\Brands;
+use App\Http\Livewire\Containers;
+use App\Http\Livewire\Presentations;
 use App\Http\Livewire\Statuses;
 
 /*
@@ -37,7 +40,7 @@ Route::get('/', function () {
 
 Auth::routes([
     //'register' => false,
-    'reset' => false,
+    //'reset' => false,
 ]);
 
 Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con el sistema de autenticacion
@@ -50,6 +53,9 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('coins', Coins::class);
     Route::get('statuses', Statuses::class);
     Route::get('products', Products::class);
+    Route::get('brands',Brands::class);
+    Route::get('presentations',Presentations::class);
+    Route::get('containers',Containers::class);
     /*Route::get('products', Products::class)->middleware('permission:Product_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('stocks', Stocks::class)->middleware('permission:Stock_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('pos', Pos::class)->middleware('permission:Ventas_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
@@ -74,6 +80,7 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     //REPORTES PDF
     Route::get('report/pdf/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reportPDF']);
     Route::get('report/pdf/{user}/{range}/{type}', [ExportController::class, 'reportPDF']);
+    Route::get('report_stock/pdf/{total}', [ExportController::class, 'reportStock']);
     //REPORTES EXCEL
     Route::get('report/excel/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reporteExcel']);
     Route::get('report/excel/{user}/{range}/{type}', [ExportController::class, 'reporteExcel']);

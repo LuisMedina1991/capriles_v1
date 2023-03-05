@@ -12,9 +12,9 @@ class Category extends Model
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
     protected $fillable = ['name'];
 
-    //relacion uno a muchos con products
-    public function products(){
-        return $this->hasMany(Product::class);
+    //relacion uno a muchos con subcategories
+    public function subcategories(){
+        return $this->hasMany(Subcategory::class);
     }
     
 }

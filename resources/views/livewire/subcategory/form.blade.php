@@ -1,21 +1,41 @@
-@include('common.modalHead')    <!--inclucion del header del modal-->
-
+@include('common.modalHead')
 <div class="row">
     <div class="col-sm-12">
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text">
-                    <span class="fas fa-edit"></span>
-                </span>
+        <div class="form-group">
+            <label><b>Subcategoria</b></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">
+                        <span class="fas fa-edit"></span>
+                    </span>
+                </div>
+                <input type="text" wire:model.lazy="name" class="form-control component-name"
+                    placeholder="Nombre para la subcategoria...">
             </div>
-            <!--directiva de livewire para relacionar el input con una propiedad publica para enviar la informacion al backend solo cuando se pierde el foco de este campo-->
-            <!--component-name es un metodo js creado en la vista para que al abrir el modal se seleccione automaticamente el campo name-->
-            <input type="text" wire:model.lazy="name" class="form-control component-name" placeholder="Nombre de la subcategoria...">
         </div>
-        @error('name')  <!--directiva de blade para capturar el error al validar la propiedad publica-->
-            <span class="text-danger er">{{ $message }}</span>  <!--mensaje recibido desde el controlador-->
+        @error('name')
+        <span class="text-danger er">{{ $message }}</span>
         @enderror
     </div>
 </div>
-
-@include('common.modalFooter')  <!--inclucion del footer del modal-->
+<div>
+    <label><b>Categoria</b></label>
+    <div class="d-flex">
+        <div class="w-75">
+            <select wire:model="category_id" class="form-control text-uppercase">
+                <option value="Elegir">Elegir</option>
+                @foreach ($categories as $category)
+                <option value="{{$category->id}}">{{$category->name}}</option>
+                @endforeach
+            </select>
+            @error('category_id')
+            <span class="text-danger er">{{ $message }}</span>
+            @enderror
+        </div>
+        <div class="ml-auto">
+            <button type="button" wire:click.prevent="ShowCategoryModal()" class="btn btn-success">Añadir
+                Categoria</button>
+        </div>
+    </div>
+</div>
+@include('common.modalFooter')

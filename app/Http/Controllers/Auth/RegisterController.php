@@ -71,7 +71,7 @@ class RegisterController extends Controller
             'phone' => $data['phone'],
             'password' => Hash::make($data['password']),
             'profile' => 'admin',
-            'status_id' => 6,
+            'status_id' => 1,
         ]);
     }
 }

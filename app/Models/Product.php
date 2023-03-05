@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
-    protected $fillable = ['number','code','brand','ring','threshing','tarp','comment','category_id','subcategory_id','status_id','prefix_id'];
+    protected $fillable = ['number', 'code', 'comment', 'status_id', 'brand_id', 'presentation_subcategory_id'];
     //protected $guarded = [];
 
     /*protected $attributes = [
@@ -21,57 +21,71 @@ class Product extends Model
         'comment' => 'no'
     ];*/
 
-    //relacion muchos a uno con categories
-    public function category(){
-
-        //return $this->belongsToMany('App\Models\Category');
-        return $this->belongsTo(Category::class);
-    }
-
-    //relacion muchos a uno con subcategories
-    public function subcategory(){
-
-        return $this->belongsTo(Subcategory::class);
-    }
-
     //relacion muchos a uno con statuses
-    public function status(){
-
+    public function status()
+    {
         return $this->belongsTo(Status::class);
     }
 
-    //relacion muchos a uno con prefixes
-    public function prefix(){
+    //relacion muchos a uno con brands
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
 
-        return $this->belongsTo(Prefix::class);
+    //relacion muchos a uno con presentation_subcategory
+    public function container()
+    {
+        return $this->belongsTo(PresentationSubcategory::class,'presentation_subcategory_id');
+    }
+
+    //relacion muchos a uno con presentation_subcategory con filtro
+    public function activeContainer()
+    {
+        return $this->belongsTo(PresentationSubcategory::class,'presentation_subcategory_id')->where('status_id',1);
     }
 
     //relacion uno a muchos con values
-    public function values(){
-
+    public function values()
+    {
         return $this->hasMany(Value::class);
     }
 
-    //relacion muchos a muchos con offices
-    public function offices(){
-        return $this->belongsToMany(Office::class)->withPivot(['id','stock','alerts'])->withTimestamps();
+    //relacion uno a muchos con values con filtro
+    public function activeValues()
+    {
+        return $this->hasMany(Value::class)->where('status_id',1);
+    }
+
+    //relacion uno a muchos con office_value a traves de values
+    public function stocks(){
+
+        return $this->hasManyThrough(OfficeValue::class,Value::class);
+    }
+
+    //relacion uno a muchos con office_value a traves de values con filtro
+    public function activeStocks(){
+
+        return $this->hasManyThrough(OfficeValue::class,Value::class)->where('status_id',1);
     }
 
     //relacion uno a uno polimorfica
-    public function image(){
+    public function image()
+    {
 
         //return $this->morphOne('App\Models\Image','imageable');
-        return $this->morphOne(Image::class,'imageable');
+        return $this->morphOne(Image::class, 'imageable');
     }
 
-    public static function boot(){
+    public static function boot()
+    {
 
         parent::boot();
 
-        static::creating(function($model){
+        static::creating(function ($model) {
 
-            $model->number = Product::where('prefix_id',$model->prefix_id)->max('number') + 1;
-            $model->code = $model->prefix->name . '-' . str_pad($model->number,3,0,STR_PAD_LEFT);
+            $model->number = Product::where('presentation_subcategory_id', $model->presentation_subcategory_id)->max('number') + 1;
+            $model->code = $model->container->prefix . '-' . str_pad($model->number, 4, 0, STR_PAD_LEFT);
         });
     }
 
@@ -86,5 +100,4 @@ class Product extends Model
         else
             return '../noimg.jpg'; //caso contrario retornar imagen por defecto
     }*/
-    
 }

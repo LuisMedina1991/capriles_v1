@@ -9,12 +9,24 @@ class Office extends Model
 {
     use HasFactory;
 
-    //VARIABLE PARA INDICAR QUE COLUMNAS SE VAN A LLENAR Y QUE COLUMNAS SE PUEDEN OMITIR AL LLENAR DE FORMA MASIVA
+
     protected $fillable = ['name','address','phone'];
 
-    //relacion muchos a muchos con products
-    public function products(){
-        return $this->belongsToMany(Product::class)->withPivot(['id','stock','alerts'])->withTimestamps();
+    
+    public function values(){
+        
+        return $this->belongsToMany(Value::class)
+        ->withPivot(['id','stock','alerts'])
+        ->withTimestamps()
+        ->using(OfficeValue::class);
+    }
+
+    public function activeValues(){
+        
+        return $this->belongsToMany(Value::class)
+        ->where('status_id',1)
+        ->withPivot(['id','stock','alerts'])
+        ->using(OfficeValue::class);
     }
     
 }

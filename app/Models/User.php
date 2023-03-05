@@ -14,7 +14,7 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable;
     use HasRoles;
 
-    //variable para indicar que columnas se van a llenar y que columas se pueden omitir al llenar de forma masiva
+    
     protected $fillable = ['name','phone','email','profile','status_id','password'];
 
     protected $hidden = [
@@ -31,13 +31,27 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
-    //relacion muchos a uno con statuses
+
     public function statuses(){
 
         return $this->belongsTo(Status::class);
     }
 
-    //relacion uno a uno polimorfica
+    public function incomes(){
+
+        return $this->hasMany(Income::class);
+    }
+
+    public function transfers(){
+
+        return $this->hasMany(Transfer::class);
+    }
+
+    public function sales(){
+
+        return $this->hasMany(Sale::class);
+    }
+
     public function image(){
 
         return $this->morphOne('App\Models\Image','imageable');

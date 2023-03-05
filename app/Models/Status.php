@@ -18,9 +18,36 @@ class Status extends Model
         return $this->hasMany(User::class);
     }
 
+    public function incomes(){
+
+        return $this->hasMany(Income::class);
+    }
+
+    public function transfers(){
+
+        return $this->hasMany(Transfer::class);
+    }
+
+    public function sales(){
+
+        return $this->hasMany(Sale::class);
+    }
+
     //relacion uno a muchos con products
     public function products(){
 
         return $this->hasMany(Product::class);
+    }
+
+    //relacion uno a muchos con presentation_subcategory
+    public function containers(){
+
+        return $this->hasMany(PresentationSubcategory::class);
+    }
+
+    //relacion uno a muchos con values
+    public function values(){
+
+        return $this->hasMany(Value::class);
     }
 }

@@ -15,8 +15,8 @@ class CreateStatusesTable extends Migration
     {
         Schema::create('statuses', function (Blueprint $table) {
             $table->id();
-            $table->string('name',100);
-            $table->enum('type',['producto','registro','ventas']);
+            $table->string('name',100)->unique();
+            $table->enum('type',['registro','transaccion']);
             $table->timestamps();
         });
     }

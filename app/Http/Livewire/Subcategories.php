@@ -2,112 +2,223 @@
 
 namespace App\Http\Livewire;
 
+use App\Models\Category;
 use Livewire\Component;
 use App\Models\Subcategory;
-use Livewire\WithPagination;    //trait para la paginacion
+use Livewire\WithPagination;
+use Illuminate\Support\Facades\DB;
+//use Illuminate\Database\Eloquent\Builder;
 
 class Subcategories extends Component
 {
-    use WithPagination;     //llamado a los trait
+    use WithPagination;
 
-    public $name,$search,$selected_id,$pageTitle,$componentName;    //propiedades publicas dentro del backend para accesar desde el frontend
-    private $pagination = 20;    //paginacion
+    public $search,$selected_id,$pageTitle,$componentName,$name,$categories,$category_id,$category_name;
+    private $pagination = 20;
 
-    public function mount(){    //metodo que se ejecuta en cuanto se monta este componente
-        $this->pageTitle = 'LISTADO';   //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
-        $this->componentName = 'SUBCATEGORIAS';    //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
+    public function mount(){
+
+        $this->pageTitle = 'listado';
+        $this->componentName = 'subcategorias';
+        $this->search = '';
+        $this->selected_id = 0;
+        $this->name = '';
+        $this->categories = Category::select('id','name')->get();
+        $this->category_id = 'Elegir';
+        $this->category_name = '';
+        $this->resetValidation();
+        $this->resetPage();
     }
 
-    public function paginationView(){   //metodo para la paginacion personalizada
-        return 'vendor.livewire.bootstrap'; //archivo de la paginacion
+    public function paginationView(){
+
+        return 'vendor.livewire.bootstrap';
     }
 
     public function render()
     {
-        if(strlen($this->search) > 0)   //validar si la caja de busqueda tiene algo escrito con metodo php strlen
-            $data = Subcategory::where('name', 'like', '%' . $this->search . '%')->paginate($this->pagination);    //busqueda por nombre
-        else    //caso contrario devuelve el listado ordenado por id
-            $data = Subcategory::orderBy('name', 'asc')->paginate($this->pagination);
+        if(strlen($this->search) > 0)
 
-        return view('livewire.subcategory.subcategories', ['subcategories' => $data])    //retorna la vista con la informacion almacenada en variable
-        ->extends('layouts.theme.app')  //indicamos que la vista que estamos retornando extiende de esta plantilla
-        ->section('content');   //contenido del componente que se renderiza en esta seccion
+            $data = Subcategory::with('category')
+            ->withCount('presentations')
+            ->where('name', 'like', '%' . $this->search . '%')
+            ->orWhereHas('category', function ($query) {
+                $query->where('name', 'like', '%' . $this->search . '%');
+            })
+            ->paginate($this->pagination);
+
+        else
+
+            $data = Subcategory::with('category')
+            ->withCount('presentations')
+            ->orderBy(Category::select('name')->whereColumn('categories.id','subcategories.category_id'))
+            ->paginate($this->pagination);
+            
+
+        return view('livewire.subcategory.subcategories', ['subcategories' => $data])
+        ->extends('layouts.theme.app')
+        ->section('content');
     }
 
-    public function Edit($id){  //metodo para abrir modal edit pasandole el id del elemento seleccionado
 
-        //$record = Category::find($id); devuelve todas las columnas 
-        $record = Subcategory::find($id, ['id', 'name']); //obtener la informacion especifica del elemento seleccionado y almacenarlo en variable
-        $this->name = $record->name;    //llenado del campo con los datos almacenados en variable
-        $this->selected_id = $record->id;   //llenado del campo con los datos almacenados en variable
-        $this->emit('show-modal', 'Mostrando modal'); //evento a ser escuchado desde el frontend
-    }
+    public function Store(){
 
-    public function Store(){    //metodo para almacenar nuevos registros
+        $rules = [
 
-        $rules = [  //reglas de validacion para cada campo en especifico
-            'name' => 'required|unique:subcategories|min:3|max:100'
+            'name' => 'required|unique:subcategories|min:3|max:100',
+            'category_id' => 'not_in:Elegir'
         ];
 
-        $messages = [   //mensajes para cada error de validacion para ser recibidos desde el frontend
+        $messages = [
+
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
+            'category_id.not_in' => 'Seleccione una opcion'
         ];
 
-        $this->validate($rules, $messages); //ejecutar las validaciones con metodo validate que nos solicita 2 parametros (reglas,mensajes)
+        $this->validate($rules, $messages);
 
-        Subcategory::create([  //guardar en variable el registro de este elemento
-            'name' => $this->name   
+        Subcategory::create([
+
+            'name' => $this->name,
+            'category_id' => $this->category_id
         ]);
 
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-added', 'Registrado correctamente');  //evento a ser escuchado desde el frontend
+        $this->mount();
+        $this->emit('item-added', 'Registrado correctamente');
     }
 
-    public function Update(){   //metodo para actualizar registro
+    public function ShowCategoryModal(){
 
-        $rules = [  //reglas de validacion para cada campo en especifico
-            //aqui se valida que no exista otro registro con el mismo nombre excluyendo el id seleccionado actualmente
-          'name' => "required|min:3|max:100|unique:subcategories,name,{$this->selected_id}"
+        $this->emit('show-modal-2', 'Mostrando modal');
+    }
+
+    public function CloseCategoryModal(){
+
+        $this->category_name = '';
+        $this->resetValidation($this->category_name = null);
+        $this->emit('show-modal', 'Mostrando modal');
+    }
+
+    public function StoreCategory(){
+
+        $rules = [
+
+            'category_name' => 'required|unique:categories,name|min:3|max:100'
         ];
 
-        $messages = [   //mensajes para cada error de validacion para ser recibidos desde el frontend
+        $messages = [
+
+            'category_name.required' => 'Campo requerido',
+            'category_name.unique' => 'Ya existe',
+            'category_name.min' => 'Minimo 3 caracteres',
+            'category_name.max' => 'Maximo 100 caracteres',
+        ];
+
+        $this->validate($rules, $messages);
+
+        Category::create([
+
+            'name' => $this->category_name
+        ]);
+
+        $this->category_name = '';
+        $this->resetValidation($this->category_name = null);
+        $this->category_id = 'Elegir';
+        $this->categories = Category::select('id','name')->get();
+        $this->emit('item-added-2', 'Registrado correctamente');
+        $this->emit('show-modal', 'Mostrando modal');
+    }
+
+    public function Edit(Subcategory $subcategory){
+
+        
+        $this->name = $subcategory->name;
+        $this->selected_id = $subcategory->id;
+        $this->category_id = $subcategory->category->id;
+        $this->emit('show-modal', 'Mostrando modal');
+    }
+
+    public function Update(){
+
+        $rules = [
+
+            'name' => "required|min:3|max:100|unique:subcategories,name,{$this->selected_id}",
+            'category_id' => 'not_in:Elegir'
+        ];
+
+        $messages = [
+
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
+            'category_id.not_in' => 'Seleccione una opcion'
         ];
 
-        $this->validate($rules, $messages); //ejecutar las validaciones con metodo validate que nos solicita 2 parametros (reglas,mensajes)
+        $this->validate($rules, $messages);
 
-        $subcategory = Subcategory::find($this->selected_id); //seleccionar el registro del id seleccionado actualmente y guardar en variable
-        $subcategory->update([     //actualizar el registro con metodo update de eloquent
-            'name' => $this->name
+        $subcategory = Subcategory::find($this->selected_id);
+
+        $subcategory->update([
+
+            'name' => $this->name,
+            'category_id' => $this->category_id
         ]);
 
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-updated', 'Actualizado correctamente');   //evento a ser escuchado desde el frontend
+        $this->mount();
+        $this->emit('item-updated', 'Actualizado correctamente');
     }
 
-    protected $listeners = [    //eventos provenientes del frontend a ser escuchados
-        'destroy' => 'Destroy'  //al escuchar el evento destroy se hace llamado al metodo Destroy
+    protected $listeners = [
+
+        'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Subcategory $subcategory){    //metodo para eliminar registros con una instancia del modelo que contiene el id
-        //dd($category);    metodo para ver la informacion que se esta obteniendo
-        $subcategory->delete();    //eliminar registro con metodo delete de eloquent
-        $this->resetUI();   //limpiar la informacion de los campos del formulario
-        $this->emit('item-deleted', 'Eliminado correctamente'); //evento a ser escuchado desde el frontend
+    public function Destroy(Subcategory $subcategory,$presentations_count)
+    {
+        
+        if ($presentations_count > 0) {
+
+            $this->emit('item-error', 'No se puede eliminar debido a relacion');
+            return;
+
+        } else {
+
+            $subcategory->delete();
+            $this->emit('item-deleted', 'Eliminado correctamente');
+            $this->mount();
+
+            /*DB::beginTransaction();
+
+            try {
+
+                if($presentations_count > 0){
+
+                    $subcategory->presentations()->detach();
+                    $subcategory->delete();
+
+                }else{
+
+                    $subcategory->delete();
+                }
+
+                DB::commit();
+                $this->emit('item-deleted', 'Eliminado correctamente');
+                $this->mount();
+
+            } catch (\Throwable $th) {
+
+                DB::rollback();
+                throw $th;
+            }*/
+        }
     }
 
-    public function resetUI(){  //metodo para limpiar la informacion de las propiedades publicas
+    public function resetUI(){
 
-        $this->name = '';
-        $this->search = '';
-        $this->selected_id = 0;
-        $this->resetValidation();   //metodo para limpiar las validaciones del formulario
-        $this->resetPage(); //metodo de livewire para volver al listado principal
+        $this->mount();
     }
 }
