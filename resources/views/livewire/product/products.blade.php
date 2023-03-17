@@ -20,7 +20,8 @@
                             ${{number_format($my_total,2)}}</h5>
                     </div>
                     <div class="col-sm-4">
-                        <a href="{{ url('report_stock/pdf' . '/' . $my_total) }}" class="btn btn-dark btn-md"
+                        <a href="{{ url('stock_report/pdf' . '/' . $my_total . '/' . $search_2 . '/' . $search) }}" 
+                        class="btn btn-dark btn-md {{count($products) < 1 ? 'disabled' : ''}}"
                             target="_blank" title="Inventario">Generar PDF</a>
                     </div>
                     <div class="col-sm-4">
@@ -65,9 +66,9 @@
                         <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
                     </div>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-3">
                     <select id="search_2" wire:model="search_2"
-                        class="form-control text-uppercase {{$search_2 == 0 ? 'badge-success' : 'badge-danger'}}">
+                        class="form-control text-uppercase">
                         <option value="0">productos activos</option>
                         <option value="1">productos bloqueados</option>
                     </select>
@@ -266,6 +267,8 @@
     @include('livewire.product.income_form')
     @include('livewire.product.transfer_form')
     @include('livewire.product.sale_form')
+    @include('livewire.product.supplier_form')
+    @include('livewire.product.customer_form')
 
 </div>
 
@@ -273,6 +276,30 @@
 <script>
     document.addEventListener('DOMContentLoaded', function(){
 
+        window.livewire.on('show-supplier-modal', msg=>{
+            $('#income_modal').modal('hide')
+            $('#supplier_modal').modal('show')
+        });
+        $('#supplier_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('supplier-added', msg=>{
+            $('#supplier_modal').modal('hide')
+            $('#income_modal').modal('show')
+            noty(msg)
+        });
+        window.livewire.on('show-customer-modal', msg=>{
+            $('#sale_modal').modal('hide')
+            $('#customer_modal').modal('show')
+        });
+        $('#customer_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('customer-added', msg=>{
+            $('#customer_modal').modal('hide')
+            $('#sale_modal').modal('show')
+            noty(msg)
+        });
         window.livewire.on('show-income-modal', msg=>{
             $('#stock-details').modal('hide')
             $('#income_modal').modal('show')

@@ -12,9 +12,13 @@ use App\Models\Office;
 use App\Models\OfficeValue;
 use App\Models\Income;
 use App\Models\Transfer;
-use App\Models\Provider;
-use App\Models\Costumer;
+use App\Models\Supplier;
+use App\Models\DebtsWithSupplier;
+use App\Models\Customer;
+use App\Models\CustomerDebt;
 use App\Models\Sale;
+use App\Models\Tax;
+use Carbon\Carbon;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +29,12 @@ class Products extends Component
     use WithFileUploads;
 
     public $search, $search_2, $selected_id, $pageTitle, $componentName, $comment, $value, $image;
-    public $brandId,$statusId, $containerId,$brand_name,$status_name,$providerId,$costumerId;
+    public $brandId,$statusId, $containerId,$brand_name,$status_name;
     public $allBrands,$allStatuses, $allContainers, $allValues,$allOffices,$allProducts;
-    public $allContainers_2,$allProviders,$allStatuses_2,$allCostumers;
-    public $my_total,$stock_details,$aux_1, $aux_2;
+    public $allContainers_2,$allSuppliers,$allStatuses_2,$allCustomers;
+    public $my_total,$stock_details,$payment_type,$tax,$aux_1, $aux_2;
     public $product_id,$office_id_1,$office_id_2,$value_id,$cant_1,$cant_2;
+    public $supplierId,$customerId,$name,$phone,$fax,$email,$nit,$city,$country;
     private $pagination = 30;
     public $productValues = [];
 
@@ -55,10 +60,19 @@ class Products extends Component
         $this->statusId = 'Elegir';
         $this->brandId = 'Elegir';
         $this->containerId = 'Elegir';
-        $this->providerId = 'Elegir';
-        $this->costumerId = 'Elegir';
+        $this->supplierId = 'Elegir';
+        $this->customerId = 'Elegir';
+        $this->payment_type = 'Elegir';
+        $this->tax = 'Elegir';
         $this->status_name = '';
         $this->brand_name = '';
+        $this->name = '';
+        $this->email = '';
+        $this->phone = '';
+        $this->fax = '';
+        $this->nit = '';
+        $this->city = '';
+        $this->country = '';
         $this->aux_1 = '';
         $this->aux_2 = '';
         $this->my_total = 0;
@@ -71,8 +85,8 @@ class Products extends Component
         $this->allContainers = PresentationSubcategory::where('status_id',1)->with('presentation','subcategory.category')->get();
         $this->allContainers_2 = PresentationSubcategory::with('presentation','subcategory.category')->get();
         $this->allProducts = Product::all();
-        $this->allProviders = Provider::select('id', 'name')->get();
-        $this->allCostumers = Costumer::select('id', 'name')->get();
+        $this->allSuppliers = Supplier::select('id', 'name')->get();
+        $this->allCustomers = Customer::select('id', 'name')->get();
         $this->productValues = [
             ['id' => '', 'cost' => '', 'price' => '', 'is_saved' => false]
         ];
@@ -87,18 +101,30 @@ class Products extends Component
 
                 if (strlen($this->search) > 0){
 
-                    $data = Product::where('status_id', 1)
-                    ->with([
+                    $data = Product::with([
                         'activeValues.offices', 
                         'activeStocks',
                         'brand',
                         'container.subcategory.category',
                         'container.presentation'
                         ])
-                    ->where('code', 'like', '%' . $this->search . '%')
-                    /*->orWhereHas('brand', function ($query) {
+                    ->where('status_id', 1)
+                    ->whereHas('container', function ($query) {
+                        $query->whereHas('subcategory', function($query){
+                            $query->whereHas('category', function($query){
+                                $query->where('name', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                        $query->orWhereHas('subcategory', function($query){
                             $query->where('name', 'like', '%' . $this->search . '%');
-                        })*/
+                        });
+                        $query->orWhereHas('presentation', function($query){
+                            $query->where('name', 'like', '%' . $this->search . '%');
+                        });
+                        $query->orWhereHas('products', function($query){
+                            $query->where('code', 'like', '%' . $this->search . '%');
+                        });
+                    })
                     ->orderBy('code', 'asc')
                     ->paginate($this->pagination);
         
@@ -115,19 +141,6 @@ class Products extends Component
                     ->orderBy('code', 'asc')
                     ->paginate($this->pagination);
         
-                    /*$data = Product::where('status_id',1)
-                    ->with(['values' => function($query){
-                        $query->where('status_id',1);
-                    }])
-                    ->orderBy('id','asc')
-                    ->paginate($this->pagination);*/
-        
-                    /*$data = Product::where('status_id',1)
-                    ->with(['values' => function($query){
-                        $query->has('offices');
-                    }])
-                    ->orderBy('id','asc')
-                    ->paginate($this->pagination);*/        
                 }
 
             break;
@@ -136,15 +149,30 @@ class Products extends Component
 
                 if (strlen($this->search) > 2){
 
-                    $data = Product::where('status_id', 2)
-                    ->with([
+                    $data = Product::with([
                         'activeValues.offices', 
                         'activeStocks',
                         'brand',
                         'container.subcategory.category',
                         'container.presentation'
                         ])
-                    ->where('code', 'like', '%' . $this->search . '%')
+                    ->where('status_id', 2)
+                    ->whereHas('container', function ($query) {
+                        $query->whereHas('subcategory', function($query){
+                            $query->whereHas('category', function($query){
+                                $query->where('name', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                        $query->orWhereHas('subcategory', function($query){
+                            $query->where('name', 'like', '%' . $this->search . '%');
+                        });
+                        $query->orWhereHas('presentation', function($query){
+                            $query->where('name', 'like', '%' . $this->search . '%');
+                        });
+                        $query->orWhereHas('products', function($query){
+                            $query->where('code', 'like', '%' . $this->search . '%');
+                        });
+                    })
                     ->orderBy('code', 'asc')
                     ->paginate($this->pagination);
         
@@ -203,10 +231,10 @@ class Products extends Component
                 return;
             }
 
-            if($key == 3){
+            if($key == 2){
                 
-                $this->addError('productValues.' . $key . '.cost', 'Maximo 4 costos');
-                $this->addError('productValues.' . $key . '.price', 'Maximo 4 precios');
+                $this->addError('productValues.' . $key . '.cost', 'Maximo 3 costos');
+                $this->addError('productValues.' . $key . '.price', 'Maximo 3 precios');
                 return;
             }
 
@@ -270,7 +298,9 @@ class Products extends Component
         $this->office_id_1 = $stock->office_id;
         $this->value_id = $stock->value_id;
         $this->statusId = 'Elegir';
-        $this->costumerId = 'Elegir';
+        $this->customerId = 'Elegir';
+        $this->payment_type = 'Elegir';
+        $this->tax = 'Elegir';
         $this->cant_1 = $stock->stock;
         $this->cant_2 = '';
         $this->aux_1 = number_format($stock->value->cost,2);
@@ -288,16 +318,20 @@ class Products extends Component
 
         $rules = [
 
-            'costumerId' => 'not_in:Elegir',
+            'customerId' => 'not_in:Elegir',
+            'payment_type' => 'not_in:Elegir',
             'statusId' => 'not_in:Elegir',
+            'tax' => 'not_in:Elegir',
             'cant_2' => "required|lte:$this->cant_1|integer|gt:0",
             'aux_2' => 'required|numeric',
         ];
 
         $messages = [
 
-            'costumerId.not_in' => 'Seleccione una opcion',
+            'customerId.not_in' => 'Seleccione una opcion',
+            'payment_type.not_in' => 'Seleccione una opcion',
             'statusId.not_in' => 'Seleccione una opcion',
+            'tax.not_in' => 'Seleccione una opcion',
             'cant_2.required' => 'Campo requerido',
             'cant_2.lte' => 'La cantidad es mayor al stock',
             'cant_2.integer' => 'Solo numeros enteros',
@@ -313,21 +347,69 @@ class Products extends Component
         try {
 
             $value = Value::find($this->value_id);
+            $now = Carbon::parse(Carbon::now())->format('d-m-Y');
 
             $sale = Sale::create([
 
                 'quantity' => $this->cant_2,
                 'sale_price' => $this->aux_2,
-                'total' => $this->aux_2 * $this->cant_2,
+                'total_cost' => $value->cost * $this->cant_2,
+                'total_price' => $this->aux_2 * $this->cant_2,
                 'utility' => ($this->aux_2 * $this->cant_2) - ($value->cost * $this->cant_2),
+                'payment_type' => $this->payment_type,
                 'status_id' => $this->statusId,
                 'user_id' => Auth()->user()->id,
-                'costumer_id' => $this->costumerId,
+                'customer_id' => $this->customerId,
                 'office_value_id' => $this->selected_id
 
             ]);
 
+
             if($sale){
+
+                if($this->tax == 1){
+
+                    $sale->tax()->create([
+                        'description' => 
+                        $sale->quantity . ' ' . 
+                        'unidades' . ' ' . 
+                        'de' . ' ' . 
+                        $value->product->code . ' ' . 
+                        'a' . ' ' . 
+                        '$' . 
+                        number_format($sale->sale_price,2) . ' ' . 
+                        'por unidad' . ' ' . 
+                        'en fecha' . ' ' . 
+                        $now,
+                        'amount' => ($value->cost * $sale->quantity) * 0.13,
+                        'status_id' => 1
+                    ]);
+
+                }
+
+                if($sale->status_id == 4){
+
+                    CustomerDebt::create([
+    
+                        'description' => 
+                        $sale->quantity . ' ' . 
+                        'unidades' . ' ' . 
+                        'de' . ' ' . 
+                        $value->product->code . ' ' . 
+                        'a' . ' ' . 
+                        '$' . 
+                        number_format($sale->sale_price,2) . ' ' . 
+                        'por unidad' . ' ' . 
+                        'en fecha' . ' ' . 
+                        $now,
+                        'amount' => $sale->total_price,
+                        'status_id' => 1,
+                        'sale_id' => $sale->id,
+                        'customer_id' => $sale->customer_id
+    
+                    ]);
+    
+                }
 
                 $value->offices()->updateExistingPivot($this->office_id_1,[
 
@@ -355,8 +437,11 @@ class Products extends Component
         $this->office_id_1 = $stock->office_id;
         $this->value_id = $stock->value_id;
         $this->statusId = 'Elegir';
+        $this->supplierId = 'Elegir';
+        $this->payment_type = 'Elegir';
+        $this->tax = 'Elegir';
         $this->cant_1 = $stock->stock;
-        $this->cant_2 = 0;
+        $this->cant_2 = '';
         $this->emit('show-income-modal', 'Abrir Modal');
     }
 
@@ -370,41 +455,94 @@ class Products extends Component
 
         $rules = [
 
-            'providerId' => 'not_in:Elegir',
+            'supplierId' => 'not_in:Elegir',
+            'payment_type' => 'not_in:Elegir',
             'statusId' => 'not_in:Elegir',
+            'tax' => 'not_in:Elegir',
             'cant_2' => "required|integer|gt:0",
         ];
 
         $messages = [
 
-            'providerId.not_in' => 'Seleccione una opcion',
+            'supplierId.not_in' => 'Seleccione una opcion',
+            'payment_type.not_in' => 'Seleccione una opcion',
             'statusId.not_in' => 'Seleccione una opcion',
+            'tax.not_in' => 'Seleccione una opcion',
             'cant_2.required' => 'Campo requerido',
             'cant_2.integer' => 'Solo numeros enteros',
             'cant_2.gt' => 'Solo numeros mayores a 0',
         ];
 
         $this->validate($rules, $messages);
-
+        
         DB::beginTransaction();
 
         try {
 
             $value = Value::find($this->value_id);
+            $now = Carbon::parse(Carbon::now())->format('d-m-Y');
+            
 
             $income = Income::create([
 
-                'type' => 'compra',
+                'income_type' => 'compra',
+                'payment_type' => $this->payment_type,
+                'previus_stock' => $this->cant_1,
                 'quantity' => $this->cant_2,
                 'total' => $value->cost * $this->cant_2,
                 'status_id' => $this->statusId,
                 'user_id' => Auth()->user()->id,
-                'provider_id' => $this->providerId,
+                'supplier_id' => $this->supplierId,
                 'office_value_id' => $this->selected_id
 
             ]);
 
+
             if($income){
+
+                if($this->tax == 1){
+
+                    $income->tax()->create([
+                        'description' => 
+                        $income->quantity . ' ' . 
+                        'unidades' . ' ' . 
+                        'de' . ' ' . 
+                        $value->product->code . ' ' . 
+                        'a' . ' ' . 
+                        '$' . 
+                        number_format($value->cost,2) . ' ' . 
+                        'por unidad' . ' ' . 
+                        'en fecha' . ' ' . 
+                        $now,
+                        'amount' => ($value->cost * $income->quantity) * 0.13,
+                        'status_id' => 1
+                        ]);
+
+                }
+
+                if($income->status_id == 4){
+
+                    DebtsWithSupplier::create([
+    
+                        'description' => 
+                        $income->quantity . ' ' . 
+                        'unidades' . ' ' . 
+                        'de' . ' ' . 
+                        $value->product->code . ' ' . 
+                        'a' . ' ' . 
+                        '$' . 
+                        number_format($value->cost,2) . ' ' . 
+                        'por unidad' . ' ' . 
+                        'en fecha' . ' ' . 
+                        $now,
+                        'amount' => $income->total,
+                        'status_id' => 1,
+                        'income_id' => $income->id,
+                        'supplier_id' => $income->supplier_id
+    
+                    ]);
+    
+                }
 
                 $value->offices()->updateExistingPivot($this->office_id_1,[
 
@@ -475,6 +613,7 @@ class Products extends Component
 
             $transfer = Transfer::create([
 
+                'previus_stock' => $pivot->pivot->stock,
                 'quantity' => $this->cant_2,
                 'from_office' => $from_office->name,
                 'to_office' => $to_office->name,
@@ -594,6 +733,174 @@ class Products extends Component
 
             DB::rollback();
             throw $th;
+        }
+    }
+
+    public function ShowCustomerModal()
+    {
+        $this->emit('show-customer-modal', 'Mostrando Modal');
+    }
+
+    public function CloseCustomerModal()
+    {
+        $this->name = '';
+        $this->resetValidation($this->name = null);
+        $this->email = '';
+        $this->resetValidation($this->email = null);
+        $this->phone = '';
+        $this->resetValidation($this->phone = null);
+        $this->fax = '';
+        $this->resetValidation($this->fax = null);
+        $this->nit = '';
+        $this->resetValidation($this->nit = null);
+        $this->city = '';
+        $this->resetValidation($this->city = null);
+        $this->country = '';
+        $this->resetValidation($this->country = null);
+        $this->emit('show-sale-modal', 'Mostrando Modal');
+    }
+
+    public function StoreCustomer()
+    {
+        $rules = [
+
+            'name' => 'required|min:3|max:100',
+            'email' => 'max:100',
+            'phone' => 'max:12',
+            'fax' => 'max:12',
+            'nit' => 'max:12',
+            'city' => 'max:45',
+            'country' => 'max:45',
+        ];
+
+        $messages = [
+
+            'name.required' => 'Campo requerido',
+            'name.min' => 'Minimo 3 caracteres',
+            'name.max' => 'Maximo 100 caracteres',
+            'email.max' => 'Maximo 100 caracteres',
+            'phone.max' => 'Maximo 12 caracteres',
+            'fax.max' => 'Maximo 12 caracteres',
+            'nit.max' => 'Maximo 12 caracteres',
+            //'nit.unique' => 'Otro cliente ocupa este NIT',
+            'city.max' => 'Maximo 45 caracteres',
+            'country.max' => 'Maximo 45 caracteres',
+        ];
+
+        $this->validate($rules, $messages);
+
+        $customer = Customer::create([
+
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'fax' => $this->fax,
+            'nit' => $this->nit,
+            'city' => $this->city,
+            'country' => $this->country
+        ]);
+
+        if ($customer) {
+
+            $this->name = '';
+            $this->email = '';
+            $this->phone = '';
+            $this->fax = '';
+            $this->nit = '';
+            $this->city = '';
+            $this->country = '';
+            $this->allCustomers = Customer::select('id', 'name')->get();
+            $this->customerId = $customer->id;
+            $this->emit('customer-added', 'Registrado correctamente');
+
+        } else {
+
+            $this->emit('record-error', 'Error al Registrar');
+            return;
+        }
+    }
+
+    public function ShowSupplierModal()
+    {
+        $this->emit('show-supplier-modal', 'Mostrando Modal');
+    }
+
+    public function CloseSupplierModal()
+    {
+        $this->name = '';
+        $this->resetValidation($this->name = null);
+        $this->email = '';
+        $this->resetValidation($this->email = null);
+        $this->phone = '';
+        $this->resetValidation($this->phone = null);
+        $this->fax = '';
+        $this->resetValidation($this->fax = null);
+        $this->nit = '';
+        $this->resetValidation($this->nit = null);
+        $this->city = '';
+        $this->resetValidation($this->city = null);
+        $this->country = '';
+        $this->resetValidation($this->country = null);
+        $this->emit('show-income-modal', 'Mostrando Modal');
+    }
+
+    public function StoreSupplier()
+    {
+        $rules = [
+
+            'name' => 'required|min:3|max:100',
+            'email' => 'max:100',
+            'phone' => 'max:12',
+            'fax' => 'max:12',
+            'nit' => 'max:12',
+            'city' => 'max:45',
+            'country' => 'max:45',
+        ];
+
+        $messages = [
+
+            'name.required' => 'Campo requerido',
+            'name.min' => 'Minimo 3 caracteres',
+            'name.max' => 'Maximo 100 caracteres',
+            'email.max' => 'Maximo 100 caracteres',
+            'phone.max' => 'Maximo 12 caracteres',
+            'fax.max' => 'Maximo 12 caracteres',
+            'nit.max' => 'Maximo 12 caracteres',
+            //'nit.unique' => 'Otro proveedor ocupa este NIT',
+            'city.max' => 'Maximo 45 caracteres',
+            'country.max' => 'Maximo 45 caracteres',
+        ];
+
+        $this->validate($rules, $messages);
+
+        $supplier = Supplier::create([
+
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
+            'fax' => $this->fax,
+            'nit' => $this->nit,
+            'city' => $this->city,
+            'country' => $this->country
+        ]);
+
+        if ($supplier) {
+
+            $this->name = '';
+            $this->email = '';
+            $this->phone = '';
+            $this->fax = '';
+            $this->nit = '';
+            $this->city = '';
+            $this->country = '';
+            $this->allSuppliers = Supplier::select('id', 'name')->get();
+            $this->supplierId = $supplier->id;
+            $this->emit('supplier-added', 'Registrado correctamente');
+
+        } else {
+
+            $this->emit('record-error', 'Error al Registrar');
+            return;
         }
     }
 

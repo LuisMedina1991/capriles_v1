@@ -16,14 +16,16 @@ class CreateIncomesTable extends Migration
         Schema::create('incomes', function (Blueprint $table) {
             $table->id();
             $table->integer('number');
-            $table->enum('type',['compra','devolucion']);
-            $table->decimal('total',60,30);
-            $table->integer('quantity');
             $table->string('file_number',45);
+            $table->enum('income_type',['compra','devolucion']);
+            $table->enum('payment_type',['efectivo','deposito','cheque','transferencia']);
+            $table->integer('previus_stock');
+            $table->integer('quantity');
+            $table->decimal('total',60,30);
             $table->foreignId('status_id')->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('provider_id')->constrained();
-            $table->foreignId('costumer_id')->nullable()->constrained();
+            $table->foreignId('supplier_id')->nullable()->constrained();
+            $table->foreignId('customer_id')->nullable()->constrained();
             $table->unsignedBigInteger('office_value_id');
             $table->foreign('office_value_id')->references('id')->on('office_value');
             $table->timestamps();

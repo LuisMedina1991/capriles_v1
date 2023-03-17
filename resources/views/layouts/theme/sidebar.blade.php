@@ -18,6 +18,84 @@
                 </a>
             </li>
             {{--@endcan--}}
+            <li class="">
+                <a href="{{ url('suppliers') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
+                        </div>
+                        <span>PROVEEDORES</span>
+                    </div>
+                </a>
+            </li>
+            <li class="">
+                <a href="{{ url('debts_with_suppliers') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-codesandbox"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="7.5 4.21 12 6.81 16.5 4.21"></polyline><polyline points="7.5 19.79 7.5 14.6 3 12"></polyline><polyline points="21 12 16.5 14.6 16.5 19.79"></polyline><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                        </div>
+                        <span>DEUDAS CON<br>PROVEEDORES</span>
+                    </div>
+                </a>
+            </li>
+            <li class="">
+                <a href="{{ url('customers') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                        </div>
+                        <span>CLIENTES</span>
+                    </div>
+                </a>
+            </li>
+            <li class="">
+                <a href="{{ url('customers_debts') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                        </div>
+                        <span>DEUDAS<br>DE CLIENTES</span>
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{{ url('taxes') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </div>
+                        <span>IMPUESTOS</span>
+                    </div>
+                </a>
+            </li>
+            {{--@can('Product_Index')--}} <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
+            <li class="">
+                <a href="{{ url('products') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag">
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                            </svg>
+                        </div>
+                        <span>PRODUCTOS</span>
+                    </div>
+                </a>
+            </li>
+            {{--@endcan--}}
+            <li class="">
+                <a href="{{ url('reports') }}" class="menu-toggle" data-active="false">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" heigth="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart">
+                            <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                            </svg>
+                        </div>
+                        <span>REPORTES<br>ALMACEN</span>
+                    </div>
+                </a>
+            </li>
             {{--@role('admin')--}} <!--restringir acceso a nivel frontend al componente con middleware de roles-->
             <li class="">
                 <a href="{{ url('subcategories') }}" class="menu-toggle" data-active="false">
@@ -89,38 +167,7 @@
                 </a>
             </li>
             {{--@endcan--}}
-            {{--@can('Product_Index')--}} <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('products') }}" class="menu-toggle" data-active="false">
-                    <div class="base-menu">
-                        <div class="base-icons">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-tag">
-                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                                <line x1="7" y1="7" x2="7.01" y2="7"></line>
-                            </svg>
-                        </div>
-                        <span>PRODUCTOS</span>
-                    </div>
-                </a>
-            </li>
-            {{--@endcan--}}
-            {{--@can('Stock_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('stocks') }}" class="menu-toggle" data-active="false">
-            <div class="base-menu">
-                <div class="base-icons">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trello">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                        <rect x="7" y="7" width="3" height="9"></rect>
-                        <rect x="14" y="7" width="3" height="5"></rect>
-                    </svg>
-                </div>
-                <span>STOCK</span>
-            </div>
-            </a>
-            </li>
-            @endcan
-            @can('Ventas_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
+            {{--@can('Ventas_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
             <li class="">
                 <a href="{{ url('pos') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">
@@ -225,70 +272,6 @@
                     </div>
                 </a>
             </li>
-            {{--@endcan--}}
-            {{--@can('Ingresos_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('incomes') }}" class="menu-toggle" data-active="false">
-            <div class="base-menu">
-                <div class="base-icons">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-in">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                        <polyline points="10 17 15 12 10 7"></polyline>
-                        <line x1="15" y1="12" x2="3" y2="12"></line>
-                    </svg>
-                </div>
-                <span>INGRESOS</span>
-            </div>
-            </a>
-            </li>
-            @endcan
-            @can('Egresos_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('cashout') }}" class="menu-toggle" data-active="false">
-                    <div class="base-menu">
-                        <div class="base-icons">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" heigth="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-dollar-sign">
-                                <line x1="12" y1="1" x2="12" y2="23"></line>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                            </svg>
-                        </div>
-                        <span>EGRESOS</span>
-                    </div>
-                </a>
-            </li>
-            @endcan
-            @can('Traspasos_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('transfers') }}" class="menu-toggle" data-active="false">
-                    <div class="base-menu">
-                        <div class="base-icons">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-truck">
-                                <rect x="1" y="3" width="15" height="13"></rect>
-                                <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                                <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                            </svg>
-                        </div>
-                        <span>TRASPASOS</span>
-                    </div>
-                </a>
-            </li>
-            @endcan
-            @can('Reportes_Index') <!--restringir acceso a nivel frontend al componente a traves de los permisos-->
-            <li class="">
-                <a href="{{ url('reports') }}" class="menu-toggle" data-active="false">
-                    <div class="base-menu">
-                        <div class="base-icons">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" heigth="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart">
-                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
-                                <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
-                            </svg>
-                        </div>
-                        <span>REPORTES</span>
-                    </div>
-                </a>
-            </li>
-            @endcan--}}
         </ul>
     </nav>
 </div>

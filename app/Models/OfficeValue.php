@@ -26,11 +26,11 @@ class OfficeValue extends Pivot
 
     public function transfers(){
 
-        return $this->hasMany(Transfer::class);
+        return $this->hasMany(Transfer::class,'office_value_id','id');
     }
 
     public function sales(){
 
-        return $this->hasMany(Sale::class);
+        return $this->hasMany(Sale::class,'office_value_id','id');
     }
 }

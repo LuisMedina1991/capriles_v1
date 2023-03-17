@@ -10,7 +10,7 @@ class Transfer extends Model
     use HasFactory;
 
     
-    protected $fillable = ['number','file_number','quantity','from_office','to_office','status_id','user_id','office_value_id'];
+    protected $fillable = ['number','file_number','previus_stock','quantity','from_office','to_office','status_id','user_id','office_value_id'];
 
 
     public function status()

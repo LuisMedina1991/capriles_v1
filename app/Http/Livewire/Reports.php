@@ -2,24 +2,31 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Income;
-use App\Models\IncomeDetail;
 use Livewire\Component;
+use App\Models\Income;
 use App\Models\User;
 use App\Models\Sale;
-use App\Models\SaleDetail;
 use App\Models\Transfer;
-use App\Models\TransferDetail;
-use Carbon\Carbon;  //paquete para calendario personalizado
+use App\Models\Product;
+use App\Models\Office;
+use App\Models\OfficeValue;
+use App\Models\Status;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+/*use App\Models\Cover;
+use App\Models\ProviderPayable;
+use App\Models\Paydesk;*/
 
 class Reports extends Component
-{   
-    //propiedades publicas dentro del backend para accesar desde el frontend
-    public $componentName,$data,$details,$sumDetails,$countDetails,$reportRange,$userId,$dateFrom,$dateTo,$saleId,$reportType;
+{
 
-    public function mount(){    //metodo que se ejecuta en cuanto se monta este componente
+    public $componentName, $data, $details, $sumDetails, $countDetails, $reportRange, $userId, $search;
+    public $dateFrom, $dateTo, $saleId, $reportType, $incomes, $sales, $transfers, $status_ok, $status_no,$stocks,$offices,$reportStatus;
+    public $desde, $hasta;
 
-        //inicializar propiedades o informacion que se va renderizar en la vista principal del componente
+    public function mount()
+    {
+
         $this->componentName = 'REPORTES DE INGRESOS | EGRESOS | TRASPASOS';
         $this->data = [];
         $this->details = [];
@@ -27,244 +34,680 @@ class Reports extends Component
         $this->countDetails = 0;
         $this->reportRange = 0;
         $this->reportType = 0;
+        $this->reportStatus = 0;
         $this->userId = 0;
         $this->saleId = 0;
+        $this->incomes = [];
+        $this->transfers = [];
+        $this->sales = [];
+        $this->stocks = OfficeValue::all();
+        $this->offices = Office::all();
+        $this->status_ok = Status::firstWhere('name', 'realizado');
+        $this->status_no = Status::firstWhere('name', 'anulado');
+        $this->desde = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 00:00:00';
+        $this->hasta = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 23:59:59';
     }
 
     public function render()
     {
-        $this->ReportsByDate();   //llamado a metodo
+        $this->ReportsByDate();
 
-        //retorna la vista con la informacion almacenada en variable
-        //listado de usuarios
         return view('livewire.report.reports', [
             'users' => User::orderBy('name', 'asc')->get()
         ])
-        ->extends('layouts.theme.app')  //indicamos que la vista que estamos retornando extiende de esta plantilla
-        ->section('content');   //contenido del componente que se renderiza en esta seccion
+            ->extends('layouts.theme.app')
+            ->section('content');
     }
 
-    public function ReportsByDate(){  //metodo para retornar reporte ventas por fecha
+    public function ReportsByDate()
+    {
 
-        if($this->reportRange == 0){     //validar si el usuario esta seleccionando/deja por defecto el tipo de reporte (ventas del dia)
+        if ($this->reportRange == 0) {
 
-            $from = Carbon::parse(Carbon::now())->format('Y-m-d') . ' 00:00:00';    //dar formato personalizado a fecha de inicio y guardar en variable
-            $to = Carbon::parse(Carbon::now())->format('Y-m-d') . ' 23:59:59';  //dar formato personalizado a fecha de fin y guardar en variable
+            $from = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 23:59:59';
+        } else {
+
+            $from = Carbon::parse($this->dateFrom)->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse($this->dateTo)->format('Y-m-d') . ' 23:59:59';
+        }
+
+        if ($this->reportRange == 1 && ($this->dateFrom == '' || $this->dateTo == '')) {
+
+            $this->emit('report-error', 'Seleccione fecha de inicio y fecha de fin');
+            return;
+        }
+
+        
+        if($this->reportStatus == 0){
+
+            if (strlen($this->search) > 0){
+
+                if($this->userId == 0){
+
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }else{
+
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
+                }
+
+            }else{
+
+                if($this->userId == 0){
+
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }else{
+
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id','!=',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }
+        
+            }
 
         }else{
 
-            $from = Carbon::parse($this->dateFrom)->format('Y-m-d') . ' 00:00:00';  //dar formato personalizado a fecha de inicio y guardar en variable
-            $to = Carbon::parse($this->dateTo)->format('Y-m-d') . ' 23:59:59';  //dar formato personalizado a fecha de fin y guardar en variable
+            if (strlen($this->search) > 0){
 
-        }
+                if($this->userId == 0){
 
-        if($this->reportRange == 1 && ($this->dateFrom == '' || $this->dateTo == '')){   //validar si se selecciona ventas por fecha sin seleccionar alguna de las fechas
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->emit('report-error', 'Seleccione fecha de inicio y fecha de fin');   //evento a ser escuchado desde el frontend
-            return; //detener el flujo del proceso
-        }
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-        if($this->userId == 0 && $this->reportType == 0){     //validar si no se esta seleccionando un usuario (opcion todos)
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->data = Sale::join('users as u', 'u.id', 'sales.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('sale_details as s_d','s_d.sale_id','sales.id')
-            ->join('products as p','p.id','s_d.product_id')
-            ->select('sales.*','p.code as product','u.name as user','s_d.utility as utility')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('sales.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('sales.status','pagado')
-            ->get();    //obtener registros
-        }
+                }else{
 
-        if($this->userId != 0 && $this->reportType == 0){
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->data = Sale::join('users as u', 'u.id', 'sales.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('sale_details as s_d','s_d.sale_id','sales.id')
-            ->join('products as p','p.id','s_d.product_id')
-            ->select('sales.*','p.code as product','u.name as user','s_d.utility as utility')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('sales.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('sales.status','pagado')
-            ->where('user_id', $this->userId)   //filtrado de las ventas del usuario seleccionado
-            ->get();    //obtener registros
-        }
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-        if($this->userId == 0 && $this->reportType == 1){
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->whereHas('stock', function($query){
+                        $query->whereHas('value', function($query){
+                            $query->whereHas('product', function($query){
+                                $query->where('code', 'like', '%' . $this->search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->data = Income::join('users as u', 'u.id', 'incomes.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('income_details as i_d','i_d.income_id','incomes.id')
-            ->join('products as p','p.id','i_d.product_id')
-            ->select('incomes.*','p.code as product','u.name as user')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('incomes.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('incomes.status','recibido')
-            ->get();    //obtener registros
-        }
+                }
 
-        if($this->userId != 0 && $this->reportType == 1){
+            }else{
 
-            $this->data = Income::join('users as u', 'u.id', 'incomes.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('income_details as i_d','i_d.income_id','incomes.id')
-            ->join('products as p','p.id','i_d.product_id')
-            ->select('incomes.*','p.code as product','u.name as user')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('incomes.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('incomes.status','recibido')
-            ->where('user_id', $this->userId)   //filtrado de las ventas del usuario seleccionado
-            ->get();    //obtener registros
-        }
+                if($this->userId == 0){
 
-        if($this->userId == 0 && $this->reportType == 2){
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->data = Transfer::join('users as u', 'u.id', 'transfers.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('transfer_details as t_d','t_d.transfer_id','transfers.id')
-            ->join('products as p','p.id','t_d.product_id')
-            ->select('transfers.*','p.code as product','u.name as user')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('transfers.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('transfers.status','recibido')
-            ->get();    //obtener registros
-        }
+                }else{
 
-        if($this->userId != 0 && $this->reportType == 2){
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('incomes.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('transfers.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+    
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                    ->where('status_id',$this->status_no->id)
+                    ->where('user_id',$this->userId)
+                    ->whereBetween('sales.created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
 
-            $this->data = Transfer::join('users as u', 'u.id', 'transfers.user_id')  //union de tabla ventas con tabla usuarios
-            ->join('transfer_details as t_d','t_d.transfer_id','transfers.id')
-            ->join('products as p','p.id','t_d.product_id')
-            ->select('transfers.*','p.code as product','u.name as user')   //obtener todas las columnas de la tabla ventas y la columna name de la tabla users
-            ->whereBetween('transfers.created_at', [$from, $to])    //filtrado de las ventas entre fechas
-            ->where('transfers.status','recibido')
-            ->where('user_id', $this->userId)   //filtrado de las ventas del usuario seleccionado
-            ->get();    //obtener registros
+                }
+
+            }
+
         }
 
     }
 
-    public function getDetails($saleId){    //metodo para obtener los detalles de venta que recibe el id de la venta como parametro
+    protected $listeners = [
+        'remove_income' => 'Remove_Income',
+        'remove_transfer' => 'Remove_Transfer',
+        'remove_sale' => 'Remove_Sale',
+    ];
 
-        if($this->userId == 0 && $this->reportType == 0){
+    public function Remove_Income(Income $income)
+    {
 
-            $this->details= SaleDetail::join('products as p', 'p.id', 'sale_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('sales as s','s.id','sale_details.sale_id')
-            ->join('users as u','u.id','s.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','sale_details.price as price','sale_details.quantity') //seleccion de columnas
-            ->where('sale_details.sale_id', $saleId)    //filtrado por venta seleccionada
-            ->get();    //obtener registros
+        $pivot = $this->stocks->find($income->office_value_id);
 
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
+        if($income->previus_stock != ($pivot->stock - $income->quantity)){
 
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
+            $this->emit('report-error','Se han realizado movimientos con el stock ingresado. Anule esos movimientos primero');
+            return;
 
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
+        }else{
+
+            $value = $pivot->value;
+            $office = $pivot->office;
+
+            DB::beginTransaction();
+
+            try {
+
+                if($income->tax){
+
+                    $tax = $income->tax;
+
+                    $tax->update([
+
+                        'status_id' => 2
+
+                    ]);
+                }
+
+                if($income->debt){
+
+                    $debt = $income->debt;
+                    
+                    $debt->update([
+
+                        'status_id' => 2
+
+                    ]);
+
+                }
+
+                $value->offices()->updateExistingPivot($office->id, [
+
+                    'stock' => $pivot->stock - $income->quantity
+                ]);
         
+                $income->Update([
+                    'status_id' => $this->status_no->id
+                ]);
+
+                DB::commit();
+                $this->emit('movement-deleted', 'Ingreso Anulado');
+                $this->render();
+
+            } catch (\Throwable $th) {
+
+                DB::rollback();
+                throw $th;
+            }
+
         }
 
-        if($this->userId != 0 && $this->reportType == 0){
+    }
 
-            $this->details= SaleDetail::join('products as p', 'p.id', 'sale_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('sales as s','s.id','sale_details.sale_id')
-            ->join('users as u','u.id','s.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','sale_details.price as price','sale_details.quantity') //seleccion de columnas
-            ->where('sale_details.sale_id', $saleId)    //filtrado por venta seleccionada
-            ->where('s.user_id',$this->userId)
-            ->get();    //obtener registros
+    public function Remove_Transfer(Transfer $transfer)
+    {   
+        $from_pivot = $this->stocks->find($transfer->office_value_id);
+        $value = $from_pivot->value;
+        $from_office_id = $this->offices->firstWhere('name',$transfer->from_office)->id;
+        $to_office_id = $this->offices->firstWhere('name',$transfer->to_office)->id;
+        $from_stock = $from_pivot->stock;
+        $to_stock = $value->offices()->firstWhere('office_id',$to_office_id)->pivot->stock;
 
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
+        if($transfer->previus_stock != ($to_stock - $transfer->quantity)){
 
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
+            $this->emit('report-error','Se han realizado movimientos con el stock transferido. Anule esos movimientos primero');
+            return;
 
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
+        }else{
+
+            DB::beginTransaction();
+
+            try {
+
+                $value->offices()->updateExistingPivot($from_office_id, [
+
+                    'stock' => $from_stock + $transfer->quantity
+                ]);
+
+                $value->offices()->updateExistingPivot($to_office_id, [
+
+                    'stock' => $to_stock - $transfer->quantity
+                ]);
+        
+                $transfer->Update([
+
+                    'status_id' => $this->status_no->id
+                ]);
+
+                DB::commit();
+                $this->emit('movement-deleted', 'Traspaso Anulado');
+                $this->render();
+
+            } catch (\Throwable $th) {
+
+                DB::rollback();
+                throw $th;
+            }
+
+        }
+    }
+
+    public function Remove_Sale(Sale $sale)
+    {
+
+        $pivot = $this->stocks->find($sale->office_value_id);
+        $value = $pivot->value;
+        $office = $pivot->office;
+
+        DB::beginTransaction();
+
+        try {
+
+            if($sale->tax){
+
+                $tax = $sale->tax;
+
+                $tax->update([
+
+                    'status_id' => 2
+
+                ]);
+            }
+
+            if($sale->debt){
+
+                $debt = $sale->debt;
+                
+                $debt->update([
+
+                    'status_id' => 2
+
+                ]);
+
+            }
+
+            $value->offices()->updateExistingPivot($office->id, [
+
+                'stock' => $pivot->stock + $sale->quantity
+            ]);
+
+            Income::create([
+
+                'income_type' => 'devolucion',
+                'payment_type' => 'efectivo',
+                'previus_stock' => $pivot->stock,
+                'quantity' => $sale->quantity,
+                'total' => $value->cost * $sale->quantity,
+                'status_id' => $this->status_ok->id,
+                'user_id' => Auth()->user()->id,
+                'customer_id' => $sale->customer_id,
+                'office_value_id' => $pivot->id
+
+            ]);
+    
+            $sale->Update([
+
+                'status_id' => $this->status_no->id
+            ]);
+
+            DB::commit();
+            $this->emit('movement-deleted', 'Venta Anulada');
+            $this->render();
+
+        } catch (\Throwable $th) {
+
+            DB::rollback();
+            throw $th;
         }
 
-        if($this->userId == 0 && $this->reportType == 1){
-
-            $this->details= IncomeDetail::join('products as p', 'p.id', 'income_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('incomes as i','i.id','income_details.income_id')
-            ->join('users as u','u.id','i.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','income_details.cost as price','income_details.quantity') //seleccion de columnas
-            ->where('income_details.income_id', $saleId)    //filtrado por venta seleccionada
-            ->get();    //obtener registros
-
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
-
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
-
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
-        }
-
-        if($this->userId != 0 && $this->reportType == 1){
-
-            $this->details= IncomeDetail::join('products as p', 'p.id', 'income_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('incomes as i','i.id','income_details.income_id')
-            ->join('users as u','u.id','i.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','income_details.cost as price','income_details.quantity') //seleccion de columnas
-            ->where('income_details.income_id', $saleId)    //filtrado por venta seleccionada
-            ->where('i.user_id',$this->userId)
-            ->get();    //obtener registros
-
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
-
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
-
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
-        }
-
-        if($this->userId == 0 && $this->reportType == 2){
-
-            $this->details= TransferDetail::join('products as p', 'p.id', 'transfer_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('transfers as t','t.id','transfer_details.transfer_id')
-            ->join('users as u','u.id','t.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','transfer_details.cost as price','transfer_details.quantity') //seleccion de columnas
-            ->where('transfer_details.transfer_id', $saleId)    //filtrado por venta seleccionada
-            ->get();    //obtener registros
-
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
-
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
-
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
-        }
-
-        if($this->userId != 0 && $this->reportType == 2){
-
-            $this->details= TransferDetail::join('products as p', 'p.id', 'transfer_details.product_id')   //union de tabla sale_details con tabla products
-            ->join('transfers as t','t.id','transfer_details.transfer_id')
-            ->join('users as u','u.id','t.user_id')
-            ->select('p.brand as brand','p.measurement as measurement','transfer_details.cost as price','transfer_details.quantity') //seleccion de columnas
-            ->where('transfer_details.transfer_id', $saleId)    //filtrado por venta seleccionada
-            ->where('t.user_id',$this->userId)
-            ->get();    //obtener registros
-
-            //funcion anonima o closure que obtendra la sumatoria del precio * cantidad de cada fila recorrida
-            $suma = $this->details->sum(function($item){    //variable $item hara la iteracion en cada una de las filas de details
-                return $item->price * $item->quantity;  //operacion precio * cantidad
-            });
-
-            $this->sumDetails = $suma;  //asignar a variable publica la sumatoria de los importes obtenidos anteriormente
-            $this->countDetails = $this->details->sum('quantity');  //asignar a variable publica la sumatoria de la cantidad de items de la venta
-            $this->saleId = $saleId;    //asignar a variable publica el id de la venta
-
-            $this->emit('show-modal', 'Mostrar Modal'); //evento a ser escuchado desde el frontend
-        }
     }
 }

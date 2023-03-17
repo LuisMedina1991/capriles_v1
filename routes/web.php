@@ -20,8 +20,13 @@ use App\Http\Livewire\Users;
 use App\Http\Controllers\ExportController;
 use App\Http\Livewire\Brands;
 use App\Http\Livewire\Containers;
+use App\Http\Livewire\CustomerDebts;
+use App\Http\Livewire\Customers;
+use App\Http\Livewire\DebtsWithSuppliers;
 use App\Http\Livewire\Presentations;
 use App\Http\Livewire\Statuses;
+use App\Http\Livewire\Suppliers;
+use App\Http\Livewire\Taxes;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +61,12 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('brands',Brands::class);
     Route::get('presentations',Presentations::class);
     Route::get('containers',Containers::class);
+    Route::get('reports', Reports::class);
+    Route::get('suppliers', Suppliers::class);
+    Route::get('debts_with_suppliers', DebtsWithSuppliers::class);
+    Route::get('customers', Customers::class);
+    Route::get('customers_debts', CustomerDebts::class);
+    Route::get('taxes', Taxes::class);
     /*Route::get('products', Products::class)->middleware('permission:Product_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('stocks', Stocks::class)->middleware('permission:Stock_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('pos', Pos::class)->middleware('permission:Ventas_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
@@ -78,9 +89,18 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     });*/
     
     //REPORTES PDF
-    Route::get('report/pdf/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reportPDF']);
-    Route::get('report/pdf/{user}/{range}/{type}', [ExportController::class, 'reportPDF']);
-    Route::get('report_stock/pdf/{total}', [ExportController::class, 'reportStock']);
+    Route::get('warehouse_reports/pdf/{user}/{range}/{type}/{status}/{f1}/{f2}/{search}', [ExportController::class, 'WarehouseReports']);
+    Route::get('warehouse_reports/pdf/{user}/{range}/{type}/{status}/{f1}/{f2}', [ExportController::class, 'WarehouseReports']);
+    //Route::get('warehouse_reports/pdf/{user}/{range}/{type}/{status}/{search}', [ExportController::class, 'WarehouseReports']);
+    //Route::get('warehouse_reports/pdf/{user}/{range}/{type}/{status}', [ExportController::class, 'WarehouseReports']);
+    Route::get('stock_report/pdf/{total}/{seach_2}', [ExportController::class, 'StockReport']);
+    Route::get('stock_report/pdf/{total}/{seach_2}/{search}', [ExportController::class, 'StockReport']);
+    Route::get('suppliers_report/pdf/{total}/{search_2}', [ExportController::class, 'SuppliersReport']);
+    Route::get('suppliers_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'SuppliersReport']);
+    Route::get('customers_report/pdf/{total}/{search_2}', [ExportController::class, 'CustomersReport']);
+    Route::get('customers_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'CustomersReport']);
+    Route::get('taxes_report/pdf/{total}/{search_2}', [ExportController::class, 'TaxesReport']);
+    Route::get('taxes_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'TaxesReport']);
     //REPORTES EXCEL
     Route::get('report/excel/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reporteExcel']);
     Route::get('report/excel/{user}/{range}/{type}', [ExportController::class, 'reporteExcel']);

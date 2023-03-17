@@ -10,8 +10,31 @@ class Income extends Model
     use HasFactory;
 
     
-    protected $fillable = ['number','type','total','quantity','file_number','status_id','user_id','provider_id','costumer_id','office_value_id'];
+    protected $fillable = [
+        'number',
+        'file_number',
+        'income_type',
+        'payment_type',
+        'previus_stock',
+        'quantity',
+        'total',
+        'status_id',
+        'user_id',
+        'supplier_id',
+        'customer_id',
+        'office_value_id'
+    ];
 
+
+    public function tax()
+    {
+        return $this->morphOne(Tax::class, 'taxable');
+    }
+
+    public function debt()
+    {
+        return $this->hasOne(DebtsWithSupplier::class);
+    }
 
     public function status()
     {
@@ -23,14 +46,14 @@ class Income extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function provider()
+    public function supplier()
     {
-        return $this->belongsTo(Provider::class);
+        return $this->belongsTo(Supplier::class);
     }
 
-    public function costumer()
+    public function customer()
     {
-        return $this->belongsTo(Costumer::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function stock()

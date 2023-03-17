@@ -9,7 +9,7 @@
             </div>
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-sm-6">
+                    <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Codigo de Producto</b></label>
                             <select wire:model="product_id" class="form-control text-uppercase" disabled>
@@ -23,7 +23,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Sucursal</b></label>
                             <select wire:model="office_id_1" class="form-control text-uppercase" disabled>
@@ -37,7 +37,7 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Stock Actual</b></label>
                             <input type="text" wire:model.lazy="cant_1" class="form-control" placeholder="0" disabled>
@@ -46,35 +46,68 @@
                         <span class="text-danger er">{{ $message }}</span>
                         @enderror
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-5">
                         <div class="form-group">
-                            <label><b>Proveedor</b></label>
-                            <select wire:model="providerId" class="form-control text-uppercase">
+                            <label><b>Tipo de Pago</b></label>
+                            <select wire:model="payment_type" class="form-control text-uppercase">
                                 <option value="Elegir">Elegir</option>
-                                @foreach ($allProviders as $provider)
-                                <option value="{{$provider->id}}">{{$provider->name}}</option>
-                                @endforeach
+                                <option value="efectivo">efectivo</option>
+                                <option value="deposito">deposito</option>
+                                <option value="cheque">cheque</option>
+                                <option value="transferencia">transferencia</option>
                             </select>
-                            @error('providerId')
+                            @error('payment_type')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-5">
                         <div class="form-group">
-                            <label><b>Pago</b></label>
+                            <label><b>Proveedor</b></label>
+                            <select wire:model="supplierId" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                @foreach ($allSuppliers as $supplier)
+                                <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                @endforeach
+                            </select>
+                            @error('supplierId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-2 mt-4">
+                        <div class="form-group">
+                            <button type="button" wire:click.prevent="ShowSupplierModal()" class="btn btn-success"
+                                title="Nuevo Proveedor">Añadir Nuevo</button>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Estado del Pago</b></label>
                             <select wire:model="statusId" class="form-control text-uppercase">
                                 <option value="Elegir">Elegir</option>
-                                @foreach ($allStatuses_2 as $status)
-                                <option value="{{$status->id}}">{{$status->name}}</option>
-                                @endforeach
+                                <option value="3">realizado</option>
+                                <option value="4">pendiente</option>
                             </select>
                             @error('statusId')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-6">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Pago con Impuesto</b></label>
+                            <select wire:model="tax" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                <option value="0">no</option>
+                                <option value="1">si</option>
+                            </select>
+                            @error('tax')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Cantidad a Ingresar</b></label>
                             <input type="number" wire:model.lazy="cant_2" class="form-control" placeholder="0">

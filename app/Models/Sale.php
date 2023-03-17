@@ -10,8 +10,31 @@ class Sale extends Model
     use HasFactory;
 
     
-    protected $fillable = ['number','file_number','quantity','sale_price','total','utility','status_id','user_id','costumer_id','office_value_id'];
+    protected $fillable = [
+        'number',
+        'file_number',
+        'quantity',
+        'sale_price',
+        'total_cost',
+        'total_price',
+        'utility',
+        'payment_type',
+        'status_id',
+        'user_id',
+        'customer_id',
+        'office_value_id'
+    ];
 
+
+    public function tax()
+    {
+        return $this->morphOne(Tax::class, 'taxable');
+    }
+
+    public function debt()
+    {
+        return $this->hasOne(CustomerDebt::class);
+    }
 
     public function status()
     {
@@ -23,9 +46,9 @@ class Sale extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function costumer()
+    public function customer()
     {
-        return $this->belongsTo(Costumer::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function stock()

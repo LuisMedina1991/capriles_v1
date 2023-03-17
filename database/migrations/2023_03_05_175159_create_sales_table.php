@@ -19,11 +19,13 @@ class CreateSalesTable extends Migration
             $table->string('file_number',45);
             $table->integer('quantity');
             $table->decimal('sale_price',60,30);
-            $table->decimal('total',60,30);
+            $table->decimal('total_cost',60,30);
+            $table->decimal('total_price',60,30);
             $table->decimal('utility',60,30);
+            $table->enum('payment_type',['efectivo','deposito','cheque','transferencia']);
             $table->foreignId('status_id')->constrained();
             $table->foreignId('user_id')->constrained();
-            $table->foreignId('costumer_id')->constrained();
+            $table->foreignId('customer_id')->constrained();
             $table->unsignedBigInteger('office_value_id');
             $table->foreign('office_value_id')->references('id')->on('office_value');
             $table->timestamps();

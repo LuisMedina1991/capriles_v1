@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Provider extends Model
+class Supplier extends Model
 {
     use HasFactory;
 
@@ -15,5 +15,10 @@ class Provider extends Model
     public function incomes(){
 
         return $this->hasMany(Income::class);
+    }
+
+    public function debts(){
+
+        return $this->hasMany(DebtsWithSupplier::class);
     }
 }

@@ -17,6 +17,7 @@ class CreateTransfersTable extends Migration
             $table->id();
             $table->integer('number');
             $table->string('file_number',45);
+            $table->integer('previus_stock');
             $table->integer('quantity');
             $table->string('from_office',45);
             $table->string('to_office',45);
