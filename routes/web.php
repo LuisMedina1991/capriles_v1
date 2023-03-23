@@ -18,11 +18,15 @@ use App\Http\Livewire\Stocks;
 use App\Http\Livewire\Subcategories;
 use App\Http\Livewire\Users;
 use App\Http\Controllers\ExportController;
+use App\Http\Livewire\BankAccounts;
+use App\Http\Livewire\Banks;
 use App\Http\Livewire\Brands;
+use App\Http\Livewire\Companies;
 use App\Http\Livewire\Containers;
 use App\Http\Livewire\CustomerDebts;
 use App\Http\Livewire\Customers;
 use App\Http\Livewire\DebtsWithSuppliers;
+use App\Http\Livewire\Paychecks;
 use App\Http\Livewire\Presentations;
 use App\Http\Livewire\Statuses;
 use App\Http\Livewire\Suppliers;
@@ -67,6 +71,10 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('customers', Customers::class);
     Route::get('customers_debts', CustomerDebts::class);
     Route::get('taxes', Taxes::class);
+    Route::get('banks', Banks::class);
+    Route::get('companies', Companies::class);
+    Route::get('bank_accounts', BankAccounts::class);
+    Route::get('paychecks', Paychecks::class);
     /*Route::get('products', Products::class)->middleware('permission:Product_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('stocks', Stocks::class)->middleware('permission:Stock_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('pos', Pos::class)->middleware('permission:Ventas_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
@@ -101,6 +109,8 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('customers_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'CustomersReport']);
     Route::get('taxes_report/pdf/{total}/{search_2}', [ExportController::class, 'TaxesReport']);
     Route::get('taxes_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'TaxesReport']);
+    Route::get('paychecks_report/pdf/{total}/{search_2}', [ExportController::class, 'PaychecksReport']);
+    Route::get('paychecks_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'PaychecksReport']);
     //REPORTES EXCEL
     Route::get('report/excel/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reporteExcel']);
     Route::get('report/excel/{user}/{range}/{type}', [ExportController::class, 'reporteExcel']);

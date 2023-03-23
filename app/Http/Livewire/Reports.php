@@ -21,7 +21,7 @@ class Reports extends Component
 {
 
     public $componentName, $data, $details, $sumDetails, $countDetails, $reportRange, $userId, $search;
-    public $dateFrom, $dateTo, $saleId, $reportType, $incomes, $sales, $transfers, $status_ok, $status_no,$stocks,$offices,$reportStatus;
+    public $dateFrom, $dateTo, $saleId, $reportType, $incomes, $sales, $transfers, $status_ok, $status_no, $stocks, $offices, $reportStatus;
     public $desde, $hasta;
 
     public function mount()
@@ -78,73 +78,12 @@ class Reports extends Component
             return;
         }
 
-        
-        if($this->reportStatus == 0){
 
-            if (strlen($this->search) > 0){
+        if ($this->reportStatus == 0) {
 
-                if($this->userId == 0){
+            if (strlen($this->search) > 0) {
 
-                    $this->incomes = Income::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'supplier',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                    $this->transfers = Transfer::with([
-                        'status',
-                        'user',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                    $this->sales = Sale::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                }else{
+                if ($this->userId == 0) {
 
                     $this->incomes = Income::with([
                         'status',
@@ -155,18 +94,17 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
 
                     $this->transfers = Transfer::with([
                         'status',
@@ -174,18 +112,17 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
 
                     $this->sales = Sale::with([
                         'status',
@@ -195,63 +132,84 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+                } else {
+
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
                 }
+            } else {
 
-            }else{
-
-                if($this->userId == 0){
-
-                    $this->incomes = Income::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'supplier',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
-                    $this->transfers = Transfer::with([
-                        'status',
-                        'user',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
-                    $this->sales = Sale::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                }else{
+                if ($this->userId == 0) {
 
                     $this->incomes = Income::with([
                         'status',
@@ -262,24 +220,22 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
                     $this->transfers = Transfer::with([
                         'status',
                         'user',
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
                     $this->sales = Sale::with([
                         'status',
                         'tax',
@@ -288,82 +244,59 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id','!=',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+                } else {
 
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', '!=', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
                 }
-        
             }
+        } else {
 
-        }else{
+            if (strlen($this->search) > 0) {
 
-            if (strlen($this->search) > 0){
-
-                if($this->userId == 0){
-
-                    $this->incomes = Income::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'supplier',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                    $this->transfers = Transfer::with([
-                        'status',
-                        'user',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                    $this->sales = Sale::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
-                            });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                }else{
+                if ($this->userId == 0) {
 
                     $this->incomes = Income::with([
                         'status',
@@ -374,18 +307,17 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
 
                     $this->transfers = Transfer::with([
                         'status',
@@ -393,18 +325,17 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
 
                     $this->sales = Sale::with([
                         'status',
@@ -414,64 +345,84 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->whereHas('stock', function($query){
-                        $query->whereHas('value', function($query){
-                            $query->whereHas('product', function($query){
-                                $query->where('code', 'like', '%' . $this->search . '%');
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
                             });
-                        });
-                    })
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+                } else {
 
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->whereHas('stock', function ($query) {
+                            $query->whereHas('value', function ($query) {
+                                $query->whereHas('product', function ($query) {
+                                    $query->where('code', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('file_number', 'asc')
+                        ->get();
                 }
+            } else {
 
-            }else{
-
-                if($this->userId == 0){
-
-                    $this->incomes = Income::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'supplier',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
-                    $this->transfers = Transfer::with([
-                        'status',
-                        'user',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
-                    $this->sales = Sale::with([
-                        'status',
-                        'tax',
-                        'user',
-                        'customer',
-                        'stock.value.product.brand',
-                        'stock.office',
-                    ])
-                    ->where('status_id',$this->status_no->id)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-
-                }else{
+                if ($this->userId == 0) {
 
                     $this->incomes = Income::with([
                         'status',
@@ -482,24 +433,22 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('incomes.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
                     $this->transfers = Transfer::with([
                         'status',
                         'user',
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('transfers.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
-    
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
                     $this->sales = Sale::with([
                         'status',
                         'tax',
@@ -508,18 +457,55 @@ class Reports extends Component
                         'stock.value.product.brand',
                         'stock.office',
                     ])
-                    ->where('status_id',$this->status_no->id)
-                    ->where('user_id',$this->userId)
-                    ->whereBetween('sales.created_at', [$from, $to])
-                    ->orderBy('file_number','asc')
-                    ->get();
+                        ->where('status_id', $this->status_no->id)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+                } else {
 
+                    $this->incomes = Income::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'supplier',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('incomes.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->transfers = Transfer::with([
+                        'status',
+                        'user',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('transfers.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
+
+                    $this->sales = Sale::with([
+                        'status',
+                        'tax',
+                        'user',
+                        'customer',
+                        'stock.value.product.brand',
+                        'stock.office',
+                    ])
+                        ->where('status_id', $this->status_no->id)
+                        ->where('user_id', $this->userId)
+                        ->whereBetween('sales.created_at', [$from, $to])
+                        ->orderBy('file_number', 'asc')
+                        ->get();
                 }
-
             }
-
         }
-
     }
 
     protected $listeners = [
@@ -533,12 +519,11 @@ class Reports extends Component
 
         $pivot = $this->stocks->find($income->office_value_id);
 
-        if($income->previus_stock != ($pivot->stock - $income->quantity)){
+        if ($income->previus_stock != ($pivot->stock - $income->quantity)) {
 
-            $this->emit('report-error','Se han realizado movimientos con el stock ingresado. Anule esos movimientos primero');
+            $this->emit('report-error', 'Se han realizado movimientos con el stock ingresado. Anule esos movimientos primero');
             return;
-
-        }else{
+        } else {
 
             $value = $pivot->value;
             $office = $pivot->office;
@@ -547,7 +532,7 @@ class Reports extends Component
 
             try {
 
-                if($income->tax){
+                if ($income->tax) {
 
                     $tax = $income->tax;
 
@@ -558,23 +543,22 @@ class Reports extends Component
                     ]);
                 }
 
-                if($income->debt){
+                if ($income->debt) {
 
                     $debt = $income->debt;
-                    
+
                     $debt->update([
 
                         'status_id' => 2
 
                     ]);
-
                 }
 
                 $value->offices()->updateExistingPivot($office->id, [
 
                     'stock' => $pivot->stock - $income->quantity
                 ]);
-        
+
                 $income->Update([
                     'status_id' => $this->status_no->id
                 ]);
@@ -582,32 +566,28 @@ class Reports extends Component
                 DB::commit();
                 $this->emit('movement-deleted', 'Ingreso Anulado');
                 $this->render();
-
             } catch (\Throwable $th) {
 
                 DB::rollback();
                 throw $th;
             }
-
         }
-
     }
 
     public function Remove_Transfer(Transfer $transfer)
-    {   
+    {
         $from_pivot = $this->stocks->find($transfer->office_value_id);
         $value = $from_pivot->value;
-        $from_office_id = $this->offices->firstWhere('name',$transfer->from_office)->id;
-        $to_office_id = $this->offices->firstWhere('name',$transfer->to_office)->id;
+        $from_office_id = $this->offices->firstWhere('name', $transfer->from_office)->id;
+        $to_office_id = $this->offices->firstWhere('name', $transfer->to_office)->id;
         $from_stock = $from_pivot->stock;
-        $to_stock = $value->offices()->firstWhere('office_id',$to_office_id)->pivot->stock;
+        $to_stock = $value->offices()->firstWhere('office_id', $to_office_id)->pivot->stock;
 
-        if($transfer->previus_stock != ($to_stock - $transfer->quantity)){
+        if ($transfer->previus_stock != ($to_stock - $transfer->quantity)) {
 
-            $this->emit('report-error','Se han realizado movimientos con el stock transferido. Anule esos movimientos primero');
+            $this->emit('report-error', 'Se han realizado movimientos con el stock transferido. Anule esos movimientos primero');
             return;
-
-        }else{
+        } else {
 
             DB::beginTransaction();
 
@@ -622,7 +602,7 @@ class Reports extends Component
 
                     'stock' => $to_stock - $transfer->quantity
                 ]);
-        
+
                 $transfer->Update([
 
                     'status_id' => $this->status_no->id
@@ -631,13 +611,11 @@ class Reports extends Component
                 DB::commit();
                 $this->emit('movement-deleted', 'Traspaso Anulado');
                 $this->render();
-
             } catch (\Throwable $th) {
 
                 DB::rollback();
                 throw $th;
             }
-
         }
     }
 
@@ -652,7 +630,7 @@ class Reports extends Component
 
         try {
 
-            if($sale->tax){
+            if ($sale->tax) {
 
                 $tax = $sale->tax;
 
@@ -663,16 +641,26 @@ class Reports extends Component
                 ]);
             }
 
-            if($sale->debt){
+            if ($sale->debt) {
 
                 $debt = $sale->debt;
-                
+
                 $debt->update([
 
                     'status_id' => 2
 
                 ]);
+            }
 
+            if ($sale->paycheck) {
+
+                $paycheck = $sale->paycheck;
+                
+                $paycheck->update([
+    
+                    'status_id' => 5
+    
+                ]);
             }
 
             $value->offices()->updateExistingPivot($office->id, [
@@ -693,7 +681,7 @@ class Reports extends Component
                 'office_value_id' => $pivot->id
 
             ]);
-    
+
             $sale->Update([
 
                 'status_id' => $this->status_no->id
@@ -702,12 +690,10 @@ class Reports extends Component
             DB::commit();
             $this->emit('movement-deleted', 'Venta Anulada');
             $this->render();
-
         } catch (\Throwable $th) {
 
             DB::rollback();
             throw $th;
         }
-
     }
 }

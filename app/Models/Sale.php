@@ -36,6 +36,11 @@ class Sale extends Model
         return $this->hasOne(CustomerDebt::class);
     }
 
+    public function paycheck()
+    {
+        return $this->hasOne(Paycheck::class);
+    }
+
     public function status()
     {
         return $this->belongsTo(Status::class);

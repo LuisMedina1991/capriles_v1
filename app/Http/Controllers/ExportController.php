@@ -16,10 +16,98 @@ use App\Models\DebtsWithSupplier;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\Product;
+use App\Models\Paycheck;
 use Maatwebsite\Excel\Facades\Excel;    //paquete facade para reporte excel
 
 class ExportController extends Controller
-{
+{   
+
+    public function PaychecksReport($total,$search_2,$search = ''){
+
+        switch ($search_2) {
+
+            case 0:
+
+                if(strlen($search) > 0){
+
+                    $paychecks = Paycheck::with(['status','sale','bank','customer'])
+                    ->where('status_id',4)
+                    ->where('amount','>',0)
+                    ->where(function ($q1) use ($search) {
+                        $q1->where('number', 'like', '%' . $search . '%');
+                        $q1->orWhere('description', 'like', '%' . $search . '%');
+                        $q1->orWhere(function ($q2) use ($search) {
+                            $q2->whereHas('bank', function ($q3) use ($search) {
+                                $q3->where('name', 'like', '%' . $search . '%');
+                                $q3->orWhere('alias', 'like', '%' . $search . '%');
+                            });
+                            $q2->orWhereHas('customer', function ($q3) use ($search) {
+                                $q3->where('name', 'like', '%' . $search . '%');
+                            });
+                            $q2->orWhereHas('sale', function ($q3) use ($search) {
+                                $q3->where('file_number', 'like', '%' . $search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+        
+                }else{
+        
+                    $paychecks = Paycheck::with(['status','sale','bank','customer'])
+                    ->where('status_id',4)
+                    ->where('amount','>',0)
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+        
+                }
+
+            break;
+
+            case 1:
+
+                if(strlen($search) > 0){
+
+                    $paychecks = Paycheck::with(['status','sale','bank','customer'])
+                    ->where('status_id','!=',4)
+                    ->where('amount','>',0)
+                    ->where(function ($q1) use ($search) {
+                        $q1->where('number', 'like', '%' . $search . '%');
+                        $q1->orWhere('description', 'like', '%' . $search . '%');
+                        $q1->orWhere(function ($q2) use ($search) {
+                            $q2->whereHas('bank', function ($q3) use ($search) {
+                                $q3->where('name', 'like', '%' . $search . '%');
+                                $q3->orWhere('alias', 'like', '%' . $search . '%');
+                            });
+                            $q2->orWhereHas('customer', function ($q3) use ($search) {
+                                $q3->where('name', 'like', '%' . $search . '%');
+                            });
+                            $q2->orWhereHas('sale', function ($q3) use ($search) {
+                                $q3->where('file_number', 'like', '%' . $search . '%');
+                            });
+                        });
+                    })
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+        
+                }else{
+        
+                    $paychecks = Paycheck::with(['status','sale','bank','customer'])
+                    ->where('status_id','!=',4)
+                    ->where('amount','>',0)
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+        
+                }
+
+            break;
+
+        }
+
+        $pdf = PDF::loadView('pdf.paychecks_report', compact('total','search_2','search','paychecks'));
+        return $pdf->stream('reporte.pdf');
+
+    }
 
     public function TaxesReport($total,$search_2,$search = ''){
 

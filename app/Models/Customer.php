@@ -26,4 +26,9 @@ class Customer extends Model
 
         return $this->hasMany(CustomerDebt::class);
     }
+
+    public function checks(){
+
+        return $this->hasMany(Paycheck::class);
+    }
 }

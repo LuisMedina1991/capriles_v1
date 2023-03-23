@@ -269,6 +269,9 @@
     @include('livewire.product.sale_form')
     @include('livewire.product.supplier_form')
     @include('livewire.product.customer_form')
+    @include('livewire.product.account_form')
+    @include('livewire.product.bank_form')
+    @include('livewire.product.company_form')
 
 </div>
 
@@ -276,6 +279,45 @@
 <script>
     document.addEventListener('DOMContentLoaded', function(){
 
+        window.livewire.on('show-account-modal-1', msg=>{
+            $('#income_modal').modal('hide')
+            $('#account_modal').modal('show')
+        });
+        window.livewire.on('show-account-modal-2', msg=>{
+            $('#sale_modal').modal('hide')
+            $('#account_modal').modal('show')
+        });
+        window.livewire.on('account-added', msg=>{
+            $('#account_modal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('show-bank-modal-1', msg=>{
+            $('#sale_modal').modal('hide')
+            $('#bank_modal').modal('show')
+        });
+        window.livewire.on('show-bank-modal-2', msg=>{
+            $('#account_modal').modal('hide')
+            $('#bank_modal').modal('show')
+        });
+        $('#bank_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('bank-added', msg=>{
+            $('#bank_modal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('show-company-modal', msg=>{
+            $('#account_modal').modal('hide')
+            $('#company_modal').modal('show')
+        });
+        $('#company_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('company-added', msg=>{
+            $('#company_modal').modal('hide')
+            $('#account_modal').modal('show')
+            noty(msg)
+        });
         window.livewire.on('show-supplier-modal', msg=>{
             $('#income_modal').modal('hide')
             $('#supplier_modal').modal('show')

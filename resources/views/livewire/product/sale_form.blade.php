@@ -83,13 +83,65 @@
                                 <option value="efectivo">efectivo</option>
                                 <option value="deposito">deposito</option>
                                 <option value="cheque">cheque</option>
-                                <option value="transferencia">transferencia</option>
                             </select>
                             @error('payment_type')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
+                    @if($payment_type == 'deposito')
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label><b>Cuenta de Banco</b></label>
+                            <select wire:model="accountId" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                @foreach ($allAccounts as $account)
+                                <option value="{{$account->id}}">{{$account->bank->alias}}-{{$account->company->alias}}-{{$account->number}}</option>
+                                @endforeach
+                            </select>
+                            @error('accountId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-2 mt-4">
+                        <div class="form-group">
+                            <button type="button" wire:click.prevent="ShowAccountModal({{$modal_id_2}})" class="btn btn-success"
+                                title="Nueva Cuenta">Añadir Nuevo</button>
+                        </div>
+                    </div>
+                    @endif
+                    @if($payment_type == 'cheque')
+                    <div class="col-sm-6">
+                        <div class="form-group">
+                            <label><b>Banco</b></label>
+                            <select wire:model="bankId" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                @foreach ($allBanks as $bank)
+                                <option value="{{$bank->id}}">{{$bank->alias}}</option>
+                                @endforeach
+                            </select>
+                            @error('bankId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-2 mt-4">
+                        <div class="form-group">
+                            <button type="button" wire:click.prevent="ShowBankModal({{$modal_id}})" class="btn btn-success"
+                                title="Nuevo Banco">Añadir Nuevo</button>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>N° Cheque</b></label>
+                            <input type="text" wire:model.lazy="number" class="form-control" placeholder="1234">
+                            @error('number')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    @endif
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Estado del Pago</b></label>

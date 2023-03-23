@@ -18,6 +18,26 @@ class Status extends Model
         return $this->hasMany(User::class);
     }
 
+    public function banks(){
+
+        return $this->hasMany(Bank::class);
+    }
+
+    public function companies(){
+
+        return $this->hasMany(Company::class);
+    }
+
+    public function accounts()
+    {
+        return $this->hasMany(BankAccount::class);
+    }
+
+    public function checks(){
+
+        return $this->hasMany(Paycheck::class);
+    }
+
     public function customer_debts(){
 
         return $this->hasMany(CustomerDebt::class);

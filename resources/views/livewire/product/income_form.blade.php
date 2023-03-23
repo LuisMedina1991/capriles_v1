@@ -46,22 +46,55 @@
                         <span class="text-danger er">{{ $message }}</span>
                         @enderror
                     </div>
-                    <div class="col-sm-5">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Pago con Impuesto</b></label>
+                            <select wire:model="tax" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                <option value="0">no</option>
+                                <option value="1">si</option>
+                            </select>
+                            @error('tax')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Estado del Pago</b></label>
+                            <select wire:model="statusId" class="form-control text-uppercase">
+                                <option value="Elegir">Elegir</option>
+                                <option value="3">realizado</option>
+                                <option value="4">pendiente</option>
+                            </select>
+                            @error('statusId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Tipo de Pago</b></label>
                             <select wire:model="payment_type" class="form-control text-uppercase">
                                 <option value="Elegir">Elegir</option>
                                 <option value="efectivo">efectivo</option>
                                 <option value="deposito">deposito</option>
-                                <option value="cheque">cheque</option>
-                                <option value="transferencia">transferencia</option>
                             </select>
                             @error('payment_type')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-5">
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Cantidad a Ingresar</b></label>
+                            <input type="number" wire:model.lazy="cant_2" class="form-control" placeholder="0">
+                            @error('cant_2')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
                         <div class="form-group">
                             <label><b>Proveedor</b></label>
                             <select wire:model="supplierId" class="form-control text-uppercase">
@@ -81,41 +114,42 @@
                                 title="Nuevo Proveedor">Añadir Nuevo</button>
                         </div>
                     </div>
+                    @if($payment_type == 'deposito')
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label><b>Estado del Pago</b></label>
-                            <select wire:model="statusId" class="form-control text-uppercase">
-                                <option value="Elegir">Elegir</option>
-                                <option value="3">realizado</option>
-                                <option value="4">pendiente</option>
+                            <label><b>Saldo</b></label>
+                            <select wire:model="accountId" class="form-control text-uppercase" disabled>
+                                <option value="Elegir">$0.00</option>
+                                @foreach ($allAccounts as $account)
+                                <option value="{{$account->id}}">${{number_format($account->balance,2)}}</option>
+                                @endforeach
                             </select>
-                            @error('statusId')
+                            @error('accountId')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-6">
                         <div class="form-group">
-                            <label><b>Pago con Impuesto</b></label>
-                            <select wire:model="tax" class="form-control text-uppercase">
+                            <label><b>Cuenta de Banco</b></label>
+                            <select wire:model="accountId" class="form-control text-uppercase">
                                 <option value="Elegir">Elegir</option>
-                                <option value="0">no</option>
-                                <option value="1">si</option>
+                                @foreach ($allAccounts as $account)
+                                <option value="{{$account->id}}">{{$account->bank->alias}}-{{$account->company->alias}}-{{$account->number}}</option>
+                                @endforeach
                             </select>
-                            @error('tax')
+                            @error('accountId')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-4">
+                    <div class="col-sm-2 mt-4">
                         <div class="form-group">
-                            <label><b>Cantidad a Ingresar</b></label>
-                            <input type="number" wire:model.lazy="cant_2" class="form-control" placeholder="0">
-                            @error('cant_2')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
+                            <button type="button" wire:click.prevent="ShowAccountModal({{$modal_id_2}})" class="btn btn-success"
+                                title="Nueva Cuenta">Añadir Nuevo</button>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
             <div class="modal-footer">
