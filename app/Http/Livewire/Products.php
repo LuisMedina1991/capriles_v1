@@ -32,12 +32,13 @@ class Products extends Component
     use WithFileUploads;
 
     public $search, $search_2, $selected_id, $pageTitle, $componentName, $comment, $value, $image;
-    public $brandId, $statusId, $containerId, $brand_name, $status_name;
+    public $brandId, $statusId, $containerId, $brand_name, $office_name;
     public $allBrands, $allStatuses, $allContainers, $allValues, $allOffices, $allProducts, $allAccounts, $allBanks,$allCompanies;
     public $allContainers_2, $allSuppliers, $allStatuses_2, $allCustomers;
-    public $my_total, $stock_details, $payment_type, $tax, $aux_1, $aux_2,$modal_id,$modal_id_2;
-    public $product_id, $office_id_1, $office_id_2, $value_id, $cant_1, $cant_2, $accountId, $bankId,$companyId;
+    public $my_total, $stock_details, $PaymentType,$tax_option, $tax, $aux_1, $aux_2,$modal_id,$modal_id_2;
+    public $product_id, $office_id_1, $office_id_2, $value_id, $cant_1, $cant_2,$quantity, $accountId, $bankId,$companyId;
     public $supplierId, $customerId, $name,$alias, $phone, $fax, $email, $nit, $city, $country, $number,$address,$type,$currency,$balance,$entity_code;
+    public $product_code,$cost,$price,$total_income,$total_sale,$stock,$total_income_tax,$total_sale_tax;
     private $pagination = 30;
     public $productValues = [];
 
@@ -68,11 +69,12 @@ class Products extends Component
         $this->accountId = 'Elegir';
         $this->bankId = 'Elegir';
         $this->companyId = 'Elegir';
-        $this->payment_type = 'Elegir';
-        $this->tax = 'Elegir';
+        $this->PaymentType = 'Elegir';
+        $this->tax_option = 'Elegir';
+        $this->tax = 0;
         $this->type = 'Elegir';
         $this->currency = 'Elegir';
-        $this->status_name = '';
+        $this->office_name = '';
         $this->brand_name = '';
         $this->name = '';
         $this->alias = '';
@@ -86,6 +88,15 @@ class Products extends Component
         $this->address = '';
         $this->balance = '';
         $this->entity_code = '';
+        $this->product_code = '';
+        $this->cost = '';
+        $this->price = 0;
+        $this->total_income = 0;
+        $this->total_sale = 0;
+        $this->total_income_tax = 0;
+        $this->total_sale_tax = 0;
+        $this->quantity = 0;
+        $this->stock = 0;
         $this->aux_1 = '';
         $this->aux_2 = '';
         $this->my_total = 0;
@@ -230,6 +241,98 @@ class Products extends Component
     public function updatedsearch()
     {
         $this->value = 'Elegir';
+    }
+
+    public function updatedPaymentType()
+    {
+        $this->statusId = 'Elegir';
+    }
+
+    /*public function updatedquantity()
+    {
+
+        if($this->quantity != '' && $this->quantity > 0){
+
+            $this->total_income = number_format($this->cost * $this->quantity,2);
+
+            if($this->price != '' && $this->price > 0){
+
+                $this->total_sale = number_format($this->price * $this->quantity,2);
+
+            }else{
+
+                $this->total_sale = 0;
+            }
+            
+            if($this->tax != '' && $this->tax > 0){
+
+                $this->total_income_tax = number_format($this->total_income * $this->tax,2);
+                $this->total_sale_tax = number_format($this->total_sale * $this->tax,2);
+
+            }else{
+
+                $this->total_income_tax = 0;
+                $this->total_sale_tax = 0;
+            }
+
+        }else{
+
+            $this->total_income = 0;
+            $this->total_income_tax = 0;
+            $this->total_sale = 0;
+            $this->total_sale_tax = 0;
+        }
+
+    }
+
+    public function updatedtax()
+    {
+        if($this->quantity == '' || $this->quantity <= 0 || $this->tax == '' || $this->tax <= 0){
+
+            $this->total_income_tax = 0;
+            $this->total_sale_tax = 0;
+
+        }else{
+
+            $this->total_income_tax = number_format($this->total_income * $this->tax,2);
+            $this->total_sale_tax = number_format($this->total_sale * $this->tax,2);
+        }
+
+    }
+
+    public function updatedprice()
+    {
+        if($this->price == '' || $this->price <= 0 || $this->quantity == '' || $this->quantity <= 0){
+
+            $this->total_sale = 0;
+
+        }else{
+
+            $this->total_sale = number_format($this->price * $this->quantity,2);
+
+            if($this->tax == '' || $this->tax <= 0){
+
+                $this->total_sale_tax = 0;
+    
+            }else{
+    
+                $this->total_sale_tax = number_format($this->total_sale * $this->tax,2);
+            }
+        }
+
+    }*/
+
+    public function updatedaccountId()
+    {
+        if($this->accountId != 'Elegir'){
+            
+            $this->balance = number_format($this->allAccounts->find($this->accountId)->balance,2);
+
+        }else{
+
+            $this->balance = 0;
+        }
+
     }
 
     public function addValue()
@@ -595,18 +698,24 @@ class Products extends Component
 
         $this->selected_id = $stock->id;
         $this->product_id = $stock->value->product_id;
+        $this->product_code = $stock->value->product->code;
         $this->office_id_1 = $stock->office_id;
+        $this->office_name = $stock->office->name;
         $this->value_id = $stock->value_id;
         $this->statusId = 'Elegir';
         $this->customerId = 'Elegir';
-        $this->payment_type = 'Elegir';
-        $this->tax = 'Elegir';
+        $this->PaymentType = 'Elegir';
+        $this->tax_option = 'Elegir';
         $this->accountId = 'Elegir';
         $this->bankId = 'Elegir';
-        $this->cant_1 = $stock->stock;
-        $this->cant_2 = '';
-        $this->aux_1 = number_format($stock->value->cost, 2);
-        $this->aux_2 = '';
+        $this->stock = $stock->stock;
+        $this->quantity = 0;
+        $this->balance = 0;
+        $this->total_sale_tax = 0;
+        $this->total_sale = 0;
+        $this->cost = number_format($stock->value->cost, 2);
+        $this->price = 0;
+        $this->tax = 0;
         $this->number = '';
         $this->modal_id_2 = 1;
         $this->emit('show-sale-modal', 'Abrir Modal');
@@ -615,7 +724,7 @@ class Products extends Component
     public function CloseSaleModal()
     {
 
-        $this->resetValidation($this->cant_2 = null);
+        $this->resetValidation($this->quantity = null);
         $this->modal_id_2 = 0;
         $this->Stock_Detail($this->product_id);
     }
@@ -625,33 +734,38 @@ class Products extends Component
 
         $rules = [
 
-            'customerId' => 'not_in:Elegir',
-            'payment_type' => 'not_in:Elegir',
+            'PaymentType' => 'not_in:Elegir',
             'statusId' => 'not_in:Elegir',
-            'tax' => 'not_in:Elegir',
-            'cant_2' => "required|lte:$this->cant_1|integer|gt:0",
-            'aux_2' => 'required|numeric',
-            'accountId' => 'exclude_unless:payment_type,deposito|not_in:Elegir',
-            'bankId' => 'exclude_unless:payment_type,cheque|not_in:Elegir',
-            'number' => 'exclude_unless:payment_type,cheque|required|digits_between:6,15',
+            'quantity' => "required|lte:$this->stock|integer|gt:0",
+            'customerId' => 'not_in:Elegir',
+            'accountId' => 'exclude_unless:PaymentType,deposito|not_in:Elegir',
+            'number' => 'exclude_unless:PaymentType,cheque|required|digits_between:6,15',
+            'bankId' => 'exclude_unless:PaymentType,cheque|not_in:Elegir',
+            'tax' => 'exclude_unless:tax_option,1|required|numeric|gt:0',
+            'tax_option' => 'not_in:Elegir',
+            'price' => 'required|numeric|gt:0',
         ];
 
         $messages = [
 
-            'customerId.not_in' => 'Seleccione una opcion',
-            'payment_type.not_in' => 'Seleccione una opcion',
+            'PaymentType.not_in' => 'Seleccione una opcion',
             'statusId.not_in' => 'Seleccione una opcion',
-            'tax.not_in' => 'Seleccione una opcion',
-            'cant_2.required' => 'Campo requerido',
-            'cant_2.lte' => 'La cantidad es mayor al stock',
-            'cant_2.integer' => 'Solo numeros enteros',
-            'cant_2.gt' => 'Solo numeros mayores a 0',
-            'aux_2.required' => 'Campo Requerido',
-            'aux_2.numeric' => 'Solo Numeros',
+            'quantity.required' => 'Campo requerido',
+            'quantity.lte' => 'La cantidad es mayor al stock',
+            'quantity.integer' => 'Solo numeros enteros',
+            'quantity.gt' => 'Solo numeros mayores a 0',
+            'customerId.not_in' => 'Seleccione una opcion',
             'accountId.not_in' => 'Seleccione una opcion',
-            'bankId.not_in' => 'Seleccione una opcion',
             'number.required' => 'Campo requerido',
             'number.digits_between' => 'Solo numeros enteros positivos, de 6 a 15 digitos',
+            'bankId.not_in' => 'Seleccione una opcion',
+            'tax.required' => 'Campo requerido',
+            'tax.numeric' => 'Solo numeros',
+            'tax.gt' => 'Solo numeros mayores a 0',
+            'tax_option.not_in' => 'Seleccione una opcion',
+            'price.required' => 'Campo Requerido',
+            'price.numeric' => 'Solo Numeros',
+            'price.gt' => 'Solo numeros mayores a 0',
         ];
 
         $this->validate($rules, $messages);
@@ -663,21 +777,21 @@ class Products extends Component
             $value = Value::find($this->value_id);
             $now = Carbon::parse(Carbon::now())->format('d-m-Y');
 
-            if ($this->tax == 1) {
+            if ($this->tax_option == 1) {
 
                 $sale = Sale::create([
 
-                    'quantity' => $this->cant_2,
-                    'sale_price' => $this->aux_2,
-                    'total_cost' => $value->cost * $this->cant_2,
-                    'total_price' => ($this->aux_2 * $this->cant_2) + (($value->cost * $this->cant_2) * 0.13),
-                    'utility' => ($this->aux_2 * $this->cant_2) - ($value->cost * $this->cant_2),
-                    'payment_type' => $this->payment_type,
+                    'quantity' => $this->quantity,
+                    'sale_price' => ($this->price * $this->tax) + $this->price,
+                    'total_cost' => $value->cost * $this->quantity,
+                    'total_price' => ($this->price * $this->quantity) + (($this->price * $this->quantity) * $this->tax),
+                    'utility' => (($this->price * $this->quantity) + (($this->price * $this->quantity) * $this->tax)) - ($value->cost * $this->quantity),
+                    'payment_type' => $this->PaymentType,
                     'status_id' => $this->statusId,
                     'user_id' => Auth()->user()->id,
                     'customer_id' => $this->customerId,
                     'office_value_id' => $this->selected_id
-
+    
                 ]);
 
                 $sale->tax()->create([
@@ -688,35 +802,40 @@ class Products extends Component
                         $value->product->code . ' ' .
                         'a' . ' ' .
                         '$' .
-                        number_format($sale->sale_price, 2) . ' ' .
+                        number_format($this->price, 2) . ' ' .
                         'por unidad' . ' ' .
+                        'con impuesto del' . ' ' .
+                        $this->tax * 100 .
+                        '%' . ' ' .
                         'en fecha' . ' ' .
                         $now,
-                    'amount' => ($value->cost * $sale->quantity) * 0.13,
+                    'amount' => ($this->price * $this->quantity) * $this->tax,
                     'status_id' => 1
                 ]);
-            } else {
+
+            }else{
 
                 $sale = Sale::create([
 
-                    'quantity' => $this->cant_2,
-                    'sale_price' => $this->aux_2,
-                    'total_cost' => $value->cost * $this->cant_2,
-                    'total_price' => $this->aux_2 * $this->cant_2,
-                    'utility' => ($this->aux_2 * $this->cant_2) - ($value->cost * $this->cant_2),
-                    'payment_type' => $this->payment_type,
+                    'quantity' => $this->quantity,
+                    'sale_price' => $this->price,
+                    'total_cost' => $value->cost * $this->quantity,
+                    'total_price' => $this->price * $this->quantity,
+                    'utility' => ($this->price * $this->quantity) - ($value->cost * $this->quantity),
+                    'payment_type' => $this->PaymentType,
                     'status_id' => $this->statusId,
                     'user_id' => Auth()->user()->id,
                     'customer_id' => $this->customerId,
                     'office_value_id' => $this->selected_id
-
+    
                 ]);
+
             }
 
 
             if ($sale) {
 
-                switch ($this->payment_type) {
+                switch ($sale->payment_type) {
 
                     case 'efectivo':
 
@@ -791,16 +910,19 @@ class Products extends Component
 
                 $value->offices()->updateExistingPivot($this->office_id_1, [
 
-                    'stock' => $this->cant_1 - $this->cant_2
+                    'stock' => $this->stock - $this->quantity
 
                 ]);
+
+
+                DB::commit();
+                $this->emit('item-saled', 'Venta Exitosa');
+                $this->value = 'Elegir';
+                $this->modal_id_2 = 0;
+                $this->Stock_Detail($this->product_id);
+
             }
 
-            DB::commit();
-            $this->emit('item-saled', 'Venta Exitosa');
-            $this->value = 'Elegir';
-            $this->modal_id_2 = 0;
-            $this->Stock_Detail($this->product_id);
         } catch (\Throwable $th) {
 
             DB::rollback();
@@ -813,22 +935,29 @@ class Products extends Component
 
         $this->selected_id = $stock->id;
         $this->product_id = $stock->value->product_id;
+        $this->product_code = $stock->value->product->code;
         $this->office_id_1 = $stock->office_id;
+        $this->office_name = $stock->office->name;
         $this->value_id = $stock->value_id;
+        $this->cost = number_format($stock->value->cost,2);
+        $this->stock = $stock->stock;
+        $this->quantity = 0;
         $this->statusId = 'Elegir';
         $this->supplierId = 'Elegir';
-        $this->payment_type = 'Elegir';
-        $this->tax = 'Elegir';
+        $this->PaymentType = 'Elegir';
+        $this->tax_option = 'Elegir';
+        $this->tax = 0;
+        $this->total_income = 0;
+        $this->total_income_tax = 0;
+        $this->balance = 0;
         $this->accountId = 'Elegir';
-        $this->cant_1 = $stock->stock;
-        $this->cant_2 = '';
         $this->emit('show-income-modal', 'Abrir Modal');
     }
 
     public function CloseIncomeModal()
     {
 
-        $this->resetValidation($this->cant_2 = null);
+        $this->resetValidation($this->quantity = null);
         $this->Stock_Detail($this->product_id);
     }
 
@@ -838,21 +967,29 @@ class Products extends Component
         $rules = [
 
             'supplierId' => 'not_in:Elegir',
-            'payment_type' => 'not_in:Elegir',
+            'PaymentType' => 'not_in:Elegir',
             'statusId' => 'not_in:Elegir',
-            'tax' => 'not_in:Elegir',
-            'cant_2' => "required|integer|gt:0",
+            'tax_option' => 'not_in:Elegir',
+            'quantity' => "required|integer|gt:0",
+            'accountId' => 'exclude_unless:PaymentType,deposito|not_in:Elegir',
+            'tax' => 'exclude_unless:tax_option,1|required|numeric|gt:0',
+            'balance' => "exclude_unless:PaymentType,deposito|gte:$this->total_income",
         ];
 
         $messages = [
 
             'supplierId.not_in' => 'Seleccione una opcion',
-            'payment_type.not_in' => 'Seleccione una opcion',
+            'PaymentType.not_in' => 'Seleccione una opcion',
             'statusId.not_in' => 'Seleccione una opcion',
-            'tax.not_in' => 'Seleccione una opcion',
-            'cant_2.required' => 'Campo requerido',
-            'cant_2.integer' => 'Solo numeros enteros',
-            'cant_2.gt' => 'Solo numeros mayores a 0',
+            'tax_option.not_in' => 'Seleccione una opcion',
+            'quantity.required' => 'Campo requerido',
+            'quantity.integer' => 'Solo numeros enteros',
+            'quantity.gt' => 'Solo numeros mayores a 0',
+            'accountId.not_in' => 'Seleccione una opcion',
+            'tax.required' => 'Campo requerido',
+            'tax.numeric' => 'Solo numeros',
+            'tax.gt' => 'Solo numeros mayores a 0',
+            'balance.gte' => 'Saldo insuficiente',
         ];
 
         $this->validate($rules, $messages);
@@ -868,10 +1005,10 @@ class Products extends Component
             $income = Income::create([
 
                 'income_type' => 'compra',
-                'payment_type' => $this->payment_type,
-                'previus_stock' => $this->cant_1,
-                'quantity' => $this->cant_2,
-                'total' => $value->cost * $this->cant_2,
+                'payment_type' => $this->PaymentType,
+                'previus_stock' => $this->stock,
+                'quantity' => $this->quantity,
+                'total' => $this->stock * $this->quantity,
                 'status_id' => $this->statusId,
                 'user_id' => Auth()->user()->id,
                 'supplier_id' => $this->supplierId,
@@ -882,7 +1019,50 @@ class Products extends Component
 
             if ($income) {
 
-                if ($this->tax == 1) {
+                switch($income->payment_type){
+
+                    case 'efectivo':
+
+                        if ($income->status_id == 4) {
+
+                            DebtsWithSupplier::create([
+        
+                                'description' =>
+                                $income->quantity . ' ' .
+                                    'unidades' . ' ' .
+                                    'de' . ' ' .
+                                    $value->product->code . ' ' .
+                                    'a' . ' ' .
+                                    '$' .
+                                    number_format($value->cost, 2) . ' ' .
+                                    'por unidad' . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now,
+                                'amount' => $income->total,
+                                'status_id' => 1,
+                                'income_id' => $income->id,
+                                'supplier_id' => $income->supplier_id
+        
+                            ]);
+                        }
+
+                    break;
+
+                    case 'deposito':
+
+                        $account = $this->allAccounts->find($this->accountId);
+
+                        $account->Update([
+
+                            'balance' => $account->balance - $income->total
+
+                        ]);
+
+                    break;
+
+                }
+
+                if ($this->tax_option == 1) {
 
                     $income->tax()->create([
                         'description' =>
@@ -894,47 +1074,30 @@ class Products extends Component
                             '$' .
                             number_format($value->cost, 2) . ' ' .
                             'por unidad' . ' ' .
+                            'con impuesto del' . ' ' .
+                            $this->tax * 100 .
+                            '%' . ' ' .
                             'en fecha' . ' ' .
                             $now,
-                        'amount' => ($value->cost * $income->quantity) * 0.13,
+                        'amount' => ($value->cost * $income->quantity) * $this->tax,
                         'status_id' => 1
-                    ]);
-                }
-
-                if ($income->status_id == 4) {
-
-                    DebtsWithSupplier::create([
-
-                        'description' =>
-                        $income->quantity . ' ' .
-                            'unidades' . ' ' .
-                            'de' . ' ' .
-                            $value->product->code . ' ' .
-                            'a' . ' ' .
-                            '$' .
-                            number_format($value->cost, 2) . ' ' .
-                            'por unidad' . ' ' .
-                            'en fecha' . ' ' .
-                            $now,
-                        'amount' => $income->total,
-                        'status_id' => 1,
-                        'income_id' => $income->id,
-                        'supplier_id' => $income->supplier_id
-
                     ]);
                 }
 
                 $value->offices()->updateExistingPivot($this->office_id_1, [
 
-                    'stock' => $this->cant_1 + $this->cant_2
+                    'stock' => $this->stock + $this->quantity
 
                 ]);
+
+                DB::commit();
+                $this->emit('item-entered', 'Ingreso Exitoso');
+                $this->value = 'Elegir';
+                $this->Stock_Detail($this->product_id);
+                
             }
 
-            DB::commit();
-            $this->emit('item-entered', 'Ingreso Exitoso');
-            $this->value = 'Elegir';
-            $this->Stock_Detail($this->product_id);
+            
         } catch (\Throwable $th) {
 
             DB::rollback();

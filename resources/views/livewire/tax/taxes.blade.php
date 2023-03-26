@@ -71,7 +71,7 @@
                                     <h6 class="text-center text-uppercase">{{$tax->description}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center">{{number_format($tax->amount,2)}}</h6>
+                                    <h6 class="text-center">${{number_format($tax->amount,2)}}</h6>
                                 </td>
                                 <td class="text-center">
                                     <a href="javascript:void(0)" wire:click="Edit({{$tax->id}})" class="btn btn-dark mtmobile" title="Editar">

@@ -59,14 +59,14 @@ class Taxes extends Component
                             $query->where('description', 'like', '%' . $this->search . '%');
                         });
                     })
-                    ->orderBy('id','asc')
+                    ->orderBy('created_at','asc')
                     ->paginate($this->pagination);
         
                 }else{
         
                     $data = Tax::with(['status','taxable'])
                     ->where('status_id',1)
-                    ->orderBy('id','asc')
+                    ->orderBy('created_at','asc')
                     ->paginate($this->pagination);
         
                 }
@@ -85,14 +85,14 @@ class Taxes extends Component
                             $query->where('description', 'like', '%' . $this->search . '%');
                         });
                     })
-                    ->orderBy('id','asc')
+                    ->orderBy('created_at','asc')
                     ->paginate($this->pagination);
         
                 }else{
         
                     $data = Tax::with(['status'])
                     ->where('status_id',2)
-                    ->orderBy('id','asc')
+                    ->orderBy('created_at','asc')
                     ->paginate($this->pagination);
         
                 }

@@ -25,7 +25,7 @@
                                     <h5>TOTAL DE IMPUESTOS: ${{number_format($incomes->sum('tax.amount'), 2)}}</h5>
                                     @break
                                     @case(3)
-                                    <h5>TOTAL DE VENTAS: ${{number_format($sales->sum('total_cost'), 2)}}</h5>
+                                    <h5>TOTAL DE VENTAS: ${{number_format($sales->sum('total_price'), 2)}}</h5>
                                     <h5>TOTAL DE UTILIDAD: ${{number_format($sales->sum('utility'), 2)}}</h5>
                                     <h5>TOTAL DE IMPUESTOS: ${{number_format($sales->sum('tax.amount'), 2)}}</h5>
                                     @break
@@ -165,7 +165,9 @@
                                         <th class="table-th text-white text-center">destino</th>
                                         @break
                                         @case(3)
-                                        <th class="table-th text-white text-center">total</th>
+                                        <th class="table-th text-white text-center">total costo</th>
+                                        <th class="table-th text-white text-center">p/venta</th>
+                                        <th class="table-th text-white text-center">total venta</th>
                                         <th class="table-th text-white text-center">impuesto</th>
                                         <th class="table-th text-white text-center">utilidad</th>
                                         <th class="table-th text-white text-center">sucursal</th>
@@ -423,6 +425,12 @@
                                         @else
                                         <td class="text-center">
                                             <h6>${{number_format($sale->total_cost,2)}}</h6>
+                                        </td>
+                                        <td class="text-center">
+                                            <h6>${{number_format($sale->sale_price,2)}}</h6>
+                                        </td>
+                                        <td class="text-center">
+                                            <h6>${{number_format($sale->total_price,2)}}</h6>
                                         </td>
                                         <td class="text-center">
                                             @if($sale->tax)
