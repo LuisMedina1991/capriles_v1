@@ -17,10 +17,87 @@ use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\Product;
 use App\Models\Paycheck;
+use App\Models\BankAccount;
 use Maatwebsite\Excel\Facades\Excel;    //paquete facade para reporte excel
 
 class ExportController extends Controller
 {   
+
+    public function BankAccountsReport($search_2,$search = ''){
+
+        switch ($search_2) {
+
+            case 0:
+
+                if (strlen($search) > 0) {
+
+                    $accounts = BankAccount::with(['status', 'bank', 'company'])
+                        ->where('status_id', 1)
+                        ->where(function ($q1) use($search) {
+                            $q1->where('number', 'like', '%' . $search . '%');
+                            $q1->orWhere('type', 'like', '%' . $search . '%');
+                            $q1->orWhere('currency', 'like', '%' . $search . '%');
+                            $q1->orWhere(function ($q2) use($search) {
+                                $q2->whereHas('bank', function ($q3) use($search) {
+                                    $q3->where('name', 'like', '%' . $search . '%');
+                                    $q3->orWhere('alias', 'like', '%' . $search . '%');
+                                });
+                                $q2->orWhereHas('company', function ($q3) use($search) {
+                                    $q3->where('name', 'like', '%' . $search . '%');
+                                    $q3->orWhere('alias', 'like', '%' . $search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('number', 'asc')
+                        ->get();
+                } else {
+
+                    $accounts = BankAccount::with(['status', 'bank', 'company'])
+                        ->where('status_id', 1)
+                        ->orderBy('number', 'asc')
+                        ->get();
+                }
+
+                break;
+
+            case 1:
+
+                if (strlen($search) > 0) {
+
+                    $accounts = BankAccount::with(['status', 'bank', 'company'])
+                        ->where('status_id', 2)
+                        ->where(function ($q1) use($search) {
+                            $q1->where('number', 'like', '%' . $search . '%');
+                            $q1->orWhere('type', 'like', '%' . $search . '%');
+                            $q1->orWhere('currency', 'like', '%' . $search . '%');
+                            $q1->orWhere(function ($q2) use($search) {
+                                $q2->whereHas('bank', function ($q3) use($search) {
+                                    $q3->where('name', 'like', '%' . $search . '%');
+                                    $q3->orWhere('alias', 'like', '%' . $search . '%');
+                                });
+                                $q2->orWhereHas('company', function ($q3) use($search) {
+                                    $q3->where('name', 'like', '%' . $search . '%');
+                                    $q3->orWhere('alias', 'like', '%' . $search . '%');
+                                });
+                            });
+                        })
+                        ->orderBy('number', 'asc')
+                        ->get();
+                } else {
+
+                    $accounts = BankAccount::with(['status', 'bank', 'company'])
+                        ->where('status_id', 2)
+                        ->orderBy('number', 'asc')
+                        ->get();
+                }
+
+                break;
+        }
+
+        $pdf = PDF::loadView('pdf.bank_accounts_report', compact('search_2','search','accounts'));
+        return $pdf->stream('reporte.pdf');
+
+    }
 
     public function PaychecksReport($total,$search_2,$search = ''){
 

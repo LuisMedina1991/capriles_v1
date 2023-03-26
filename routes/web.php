@@ -111,6 +111,8 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('taxes_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'TaxesReport']);
     Route::get('paychecks_report/pdf/{total}/{search_2}', [ExportController::class, 'PaychecksReport']);
     Route::get('paychecks_report/pdf/{total}/{search_2}/{search}', [ExportController::class, 'PaychecksReport']);
+    Route::get('bank_accounts_report/pdf/{search_2}', [ExportController::class, 'BankAccountsReport']);
+    Route::get('bank_accounts_report/pdf/{search_2}/{search}', [ExportController::class, 'BankAccountsReport']);
     //REPORTES EXCEL
     Route::get('report/excel/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reporteExcel']);
     Route::get('report/excel/{user}/{range}/{type}', [ExportController::class, 'reporteExcel']);

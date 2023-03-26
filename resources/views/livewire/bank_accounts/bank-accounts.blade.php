@@ -5,11 +5,16 @@
                 <h4 class="card-title text-uppercase">
                     <b>{{$pageTitle}} | {{$componentName}}</b>
                 </h4>
-                <ul class="tabs tab-pills">
-                    <li>
-                        <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal" data-target="#theModal">Agregar</a>
-                    </li>
-                </ul>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <a href="{{ url('bank_accounts_report/pdf' . '/' .  $search_2 . '/' . $search) }}" 
+                        class="btn btn-dark btn-md {{count($accounts) < 1 ? 'disabled' : ''}}"
+                            target="_blank" title="Reporte">Generar PDF</a>
+                    </div>
+                    <div class="col-sm-6">
+                        <a href="javascript:void(0)" class="btn btn-dark btn-md" data-toggle="modal" data-target="#theModal" title="Nueva Cuenta">Agregar</a>
+                    </div>
+                </div>
             </div>
 
             <div class="row">
