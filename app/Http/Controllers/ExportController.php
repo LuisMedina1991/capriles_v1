@@ -18,10 +18,79 @@ use App\Models\CustomerDebt;
 use App\Models\Product;
 use App\Models\Paycheck;
 use App\Models\BankAccount;
+use App\Models\Detail;
 use Maatwebsite\Excel\Facades\Excel;    //paquete facade para reporte excel
 
 class ExportController extends Controller
 {   
+
+    public function BankingTransactionsReport($account_id,$reportRange,$search_2,$dateFrom = null,$dateTo = null){
+
+        if($reportRange == 0){
+
+            $from = Carbon::parse(Carbon::now())->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse(Carbon::now())->format('Y-m-d') . ' 23:59:59';
+
+        }else{
+
+            $from = Carbon::parse($dateFrom)->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse($dateTo)->format('Y-m-d') . ' 23:59:59';
+
+        }
+
+        switch ($search_2){
+
+            case 0:
+
+                if($account_id == 0){
+
+                    $transactions = Detail::where('status_id',1)
+                    ->where('detailable_type','App\Models\BankAccount')
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('action', 'asc')
+                    ->get();
+        
+                }else{
+                    
+                    $transactions = Detail::where('status_id',1)
+                    ->where('detailable_type','App\Models\BankAccount')
+                    ->where('detailable_id',$account_id)
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('action', 'asc')
+                    ->get();
+                }
+
+            break;
+
+            case 1:
+
+                if($account_id == 0){
+
+                    $transactions = Detail::where('status_id',2)
+                    ->where('detailable_type','App\Models\BankAccount')
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('action', 'asc')
+                    ->get();
+        
+                }else{
+                    
+                    $transactions = Detail::where('status_id',2)
+                    ->where('detailable_type','App\Models\BankAccount')
+                    ->where('detailable_id',$account_id)
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('action', 'asc')
+                    ->get();
+                }
+
+            break;
+
+        }
+
+        $account = $account_id == 0 ? 'Todas' : BankAccount::find($account_id)->number;
+        $pdf = PDF::loadView('pdf.banking_transactions_report', compact('account','reportRange','search_2','dateFrom','dateTo','transactions'));
+        return $pdf->stream('reporte.pdf');
+
+    }
 
     public function BankAccountsReport($search_2,$search = ''){
 

@@ -38,6 +38,11 @@ class Status extends Model
         return $this->hasMany(Paycheck::class);
     }
 
+    public function details(){
+
+        return $this->hasMany(Detail::class);
+    }
+
     public function customer_debts(){
 
         return $this->hasMany(CustomerDebt::class);

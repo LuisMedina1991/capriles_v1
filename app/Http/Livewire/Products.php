@@ -868,6 +868,19 @@ class Products extends Component
 
                         $account = $this->allAccounts->find($this->accountId);
 
+                        $account->details()->create([
+                            'action' => 'ingreso',
+                            'relation_file_number' => $sale->file_number,
+                            'description' =>
+                                'venta de producto' . ' ' .
+                                'en fecha' . ' ' .
+                                $now,
+                            'amount' => $sale->total_price,
+                            'previus_balance' => $account->balance,
+                            'actual_balance' => $account->balance + $sale->total_price,
+                            'status_id' => 1
+                        ]);
+
                         $account->Update([
 
                             'balance' => $account->balance + $sale->total_price
@@ -1008,7 +1021,7 @@ class Products extends Component
                 'payment_type' => $this->PaymentType,
                 'previus_stock' => $this->stock,
                 'quantity' => $this->quantity,
-                'total' => $this->stock * $this->quantity,
+                'total' => $value->cost * $this->quantity,
                 'status_id' => $this->statusId,
                 'user_id' => Auth()->user()->id,
                 'supplier_id' => $this->supplierId,
@@ -1051,6 +1064,19 @@ class Products extends Component
                     case 'deposito':
 
                         $account = $this->allAccounts->find($this->accountId);
+
+                        $account->details()->create([
+                            'action' => 'egreso',
+                            'relation_file_number' => $income->file_number,
+                            'description' =>
+                                'compra de producto' . ' ' .
+                                'en fecha' . ' ' .
+                                $now,
+                            'amount' => $income->total,
+                            'previus_balance' => $account->balance,
+                            'actual_balance' => $account->balance - $income->total,
+                            'status_id' => 1
+                        ]);
 
                         $account->Update([
 

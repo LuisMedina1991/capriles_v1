@@ -3,15 +3,6 @@
         <div class="widget">
             <div class="widget-heading">
                 <h4 class="card-title text-center"><b>{{$componentName}}</b></h4>
-                {{--@switch($reportType)
-                @case(1)
-                <h5>TOTAL DE INGRESOS: ${{number_format($incomes->sum('total'), 2)}}</h5>
-                @break
-                @case(3)
-                <h5>TOTAL DE VENTAS: ${{number_format($sales->sum('total'), 2)}}</h5>
-                <h5>TOTAL DE UTILIDAD: ${{number_format($sales->sum('utility'), 2)}}</h5>
-                @break
-                @endswitch--}}
             </div>
             <div class="widget-content">
                 <div class="row">
@@ -747,7 +738,7 @@
     document.addEventListener('DOMContentLoaded', function(){
         flatpickr(document.getElementsByClassName('flatpickr'), {
             enableTime: false,
-            dateFormat: 'Y-m-d',
+            dateFormat: 'd-m-Y',
             locale: {
                 firstDayofWeek: 1,
                 weekdays: {

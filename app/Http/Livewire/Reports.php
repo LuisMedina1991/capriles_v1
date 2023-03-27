@@ -7,15 +7,13 @@ use App\Models\Income;
 use App\Models\User;
 use App\Models\Sale;
 use App\Models\Transfer;
-use App\Models\Product;
+use App\Models\Detail;
 use App\Models\Office;
 use App\Models\OfficeValue;
 use App\Models\Status;
+use App\Models\BankAccount;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-/*use App\Models\Cover;
-use App\Models\ProviderPayable;
-use App\Models\Paydesk;*/
 
 class Reports extends Component
 {
@@ -532,22 +530,58 @@ class Reports extends Component
 
             try {
 
+                switch ($income->payment_type){
+
+                    case 'efectivo':
+
+                        if ($income->debt) {
+
+                            $debt = $income->debt;
+        
+                            $debt->update([
+        
+                                'status_id' => 2
+        
+                            ]);
+                        }
+
+                    break;
+
+                    case 'deposito':
+
+                        $detail = Detail::firstWhere('relation_file_number',$income->file_number);
+                        $account = BankAccount::find($detail->detailable_id);
+
+                        if($account->balance != $detail->actual_balance){
+
+                            $this->emit('report-error', 'Se han realizado transacciones con la cuenta de destino. Anule esas transacciones primero');
+                            return;
+
+                        }else{
+
+                            $account->update([
+
+                                'balance' => $account->balance + $detail->amount
+
+                            ]);
+
+                            $detail->update([
+
+                                'status_id' => 2
+
+                            ]);
+
+                        }
+
+                    break;
+
+                }
+
                 if ($income->tax) {
 
                     $tax = $income->tax;
 
                     $tax->update([
-
-                        'status_id' => 2
-
-                    ]);
-                }
-
-                if ($income->debt) {
-
-                    $debt = $income->debt;
-
-                    $debt->update([
 
                         'status_id' => 2
 
@@ -630,6 +664,68 @@ class Reports extends Component
 
         try {
 
+            switch ($sale->payment_type){
+
+                case 'efectivo':
+
+                    if ($sale->debt) {
+
+                        $debt = $sale->debt;
+        
+                        $debt->update([
+        
+                            'status_id' => 2
+        
+                        ]);
+                    }
+
+                break;
+
+                case 'deposito':
+
+                    $detail = Detail::firstWhere('relation_file_number',$sale->file_number);
+                    $account = BankAccount::find($detail->detailable_id);
+
+                    if($account->balance != $detail->actual_balance){
+
+                        $this->emit('report-error', 'Se han realizado transacciones con la cuenta de destino. Anule esas transacciones primero');
+                        return;
+
+                    }else{
+
+                        $account->update([
+
+                            'balance' => $account->balance - $detail->amount
+
+                        ]);
+
+                        $detail->update([
+
+                            'status_id' => 2
+
+                        ]);
+
+                    }
+
+                break;
+
+                case 'cheque':
+
+                    if ($sale->paycheck) {
+
+                        $paycheck = $sale->paycheck;
+                        
+                        $paycheck->update([
+            
+                            'status_id' => 5
+            
+                        ]);
+                    }
+
+                break;
+
+            }
+
             if ($sale->tax) {
 
                 $tax = $sale->tax;
@@ -641,27 +737,6 @@ class Reports extends Component
                 ]);
             }
 
-            if ($sale->debt) {
-
-                $debt = $sale->debt;
-
-                $debt->update([
-
-                    'status_id' => 2
-
-                ]);
-            }
-
-            if ($sale->paycheck) {
-
-                $paycheck = $sale->paycheck;
-                
-                $paycheck->update([
-    
-                    'status_id' => 5
-    
-                ]);
-            }
 
             $value->offices()->updateExistingPivot($office->id, [
 

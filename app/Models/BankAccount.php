@@ -26,4 +26,9 @@ class BankAccount extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    public function details(){
+
+        return $this->morphMany(Detail::class,'detailable');
+    }
 }
