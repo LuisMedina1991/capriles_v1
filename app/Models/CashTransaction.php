@@ -27,6 +27,11 @@ class CashTransaction extends Model
         return $this->belongsTo(Detail::class);
     }
 
+    /*public function details(){
+
+        return $this->morphMany(Detail::class,'detailable');
+    }*/
+
 
     public static function boot()
     {

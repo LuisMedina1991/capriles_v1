@@ -205,6 +205,24 @@ class CashTransactions extends Component
 
                     switch ($this->relation){
 
+                        case 'caja general':
+
+                            CashTransaction::create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now,
+                                'amount' => $this->amount,
+                                'status_id' => 1,
+                                'cashable_id' => CashTransaction::all()->max('id') + 1,
+                                'cashable_type' => 'App\Models\CashTransaction'
+
+                            ]);
+
+                        break;
+
                         case 'cuentas bancarias':
 
                             $account = $this->bank_accounts->find($this->AccountId);
@@ -262,6 +280,24 @@ class CashTransactions extends Component
                 case 'egreso':
 
                     switch ($this->relation){
+
+                        case 'caja general':
+
+                            CashTransaction::create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now,
+                                'amount' => $this->amount,
+                                'status_id' => 1,
+                                'cashable_id' => CashTransaction::all()->max('id') + 1,
+                                'cashable_type' => 'App\Models\CashTransaction'
+
+                            ]);
+
+                        break;
 
                         case 'cuentas bancarias':
 

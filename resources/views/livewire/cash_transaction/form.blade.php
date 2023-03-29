@@ -33,6 +33,7 @@
                     <label><b>Tipo de transaccion</b></label>
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
+                        <option value="caja general">variado</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
                     @error('relation')
@@ -83,6 +84,7 @@
                     <label><b>Tipo de transaccion</b></label>
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
+                        <option value="caja general">variado</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
                     @error('relation')
