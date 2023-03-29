@@ -31,4 +31,9 @@ class BankAccount extends Model
 
         return $this->morphMany(Detail::class,'detailable');
     }
+
+    public function CashTransactions(){
+
+        return $this->morphMany(CashTransaction::class,'cashable','cashable_type','cashable_id','id');
+    }
 }

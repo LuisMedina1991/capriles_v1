@@ -18,6 +18,16 @@
                 </a>
             </li>
             {{--@endcan--}}
+            <li>
+                <a href="{{ url('cash_transactions') }}" class="menu-toggle" data-active="true">
+                    <div class="base-menu">
+                        <div class="base-icons">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-codepen"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"></polygon><line x1="12" y1="22" x2="12" y2="15.5"></line><polyline points="22 8.5 12 15.5 2 8.5"></polyline><polyline points="2 15.5 12 8.5 22 15.5"></polyline><line x1="12" y1="2" x2="12" y2="8.5"></line></svg>
+                        </div>
+                        <span>CAJA GENERAL</span>
+                    </div>
+                </a>
+            </li>
             <li class="">
                 <a href="{{ url('banking_transactions') }}" class="menu-toggle" data-active="false">
                     <div class="base-menu">

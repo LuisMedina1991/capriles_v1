@@ -21,4 +21,9 @@ class Detail extends Model
 
         return $this->belongsTo(Status::class);
     }
+
+    public function CashTransaction(){
+
+        return $this->hasOne(CashTransaction::class);
+    }
 }
