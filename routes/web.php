@@ -119,6 +119,10 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('bank_accounts_report/pdf/{search_2}/{search}', [ExportController::class, 'BankAccountsReport']);
     Route::get('banking_transactions_report/pdf/{account}/{range}/{search_2}', [ExportController::class, 'BankingTransactionsReport']);
     Route::get('banking_transactions_report/pdf/{account}/{range}/{search_2}/{f1}/{f2}', [ExportController::class, 'BankingTransactionsReport']);
+    Route::get('cash_transactions_report/pdf/{total}/{range}/{search_2}', [ExportController::class, 'CashTransactionsReport']);
+    Route::get('cash_transactions_report/pdf/{total}/{range}/{search_2}/{search}', [ExportController::class, 'CashTransactionsReport']);
+    Route::get('cash_transactions_report/pdf/{total}/{range}/{search_2}/{f1}/{f2}', [ExportController::class, 'CashTransactionsReport']);
+    Route::get('cash_transactions_report/pdf/{total}/{range}/{search_2}/{f1}/{f2}/{search}', [ExportController::class, 'CashTransactionsReport']);
     //REPORTES EXCEL
     Route::get('report/excel/{user}/{range}/{type}/{f1}/{f2}', [ExportController::class, 'reporteExcel']);
     Route::get('report/excel/{user}/{range}/{type}', [ExportController::class, 'reporteExcel']);

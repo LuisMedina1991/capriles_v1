@@ -10,7 +10,7 @@
                         <h5 class="text-uppercase">saldo de caja: ${{number_format(($my_total),2)}}</h5>
                     </div>
                     <div class="col-sm-4">
-                        <a href="#" 
+                        <a href="{{ url('cash_transactions_report/pdf' . '/' . $my_total . '/' . $reportRange . '/' . $search_2 . '/' . $dateFrom . '/' . $dateTo . '/' . $search) }}" 
                         class="btn btn-dark btn-md {{count($transactions) < 1 ? 'disabled' : ''}}"
                             target="_blank" title="Reporte">Generar PDF</a>
                     </div>

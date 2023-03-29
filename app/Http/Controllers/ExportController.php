@@ -19,10 +19,88 @@ use App\Models\Product;
 use App\Models\Paycheck;
 use App\Models\BankAccount;
 use App\Models\Detail;
+use App\Models\CashTransaction;
 use Maatwebsite\Excel\Facades\Excel;    //paquete facade para reporte excel
 
 class ExportController extends Controller
 {   
+
+    public function CashTransactionsReport($total,$reportRange,$search_2,$dateFrom = null,$dateTo = null,$search = ''){
+
+        if($reportRange == 0){
+
+            $from = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse(Carbon::today())->format('Y-m-d') . ' 23:59:59';
+
+        }else{
+
+            $from = Carbon::parse($dateFrom)->format('Y-m-d') . ' 00:00:00';
+            $to = Carbon::parse($dateTo)->format('Y-m-d') . ' 23:59:59';
+
+        }
+
+        switch ($search_2){
+
+            case 0:
+
+                if (strlen($search) > 0){
+
+                    $transactions = CashTransaction::where('status_id',1)
+                    ->with(['status','detail'])
+                    ->where(function ($q1) use ($search) {
+                        $q1->where('file_number', 'like', '%' . $search . '%');
+                        $q1->orWhere('action', 'like', '%' . $search . '%');
+                        $q1->orWhere('description', 'like', '%' . $search . '%');
+                    })
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }else{
+
+                    $transactions = CashTransaction::where('status_id',1)
+                    ->with(['status','detail'])
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }
+
+            break;
+
+            case 1:
+
+                if (strlen($search) > 0){
+
+                    $transactions = CashTransaction::where('status_id',2)
+                    ->with(['status','detail'])
+                    ->where(function ($q1) use ($search) {
+                        $q1->where('file_number', 'like', '%' . $search . '%');
+                        $q1->orWhere('action', 'like', '%' . $search . '%');
+                        $q1->orWhere('description', 'like', '%' . $search . '%');
+                    })
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }else{
+
+                    $transactions = CashTransaction::where('status_id',2)
+                    ->with(['status','detail'])
+                    ->whereBetween('created_at', [$from, $to])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }
+
+            break;
+
+        }
+
+        $pdf = PDF::loadView('pdf.cash_transactions_report', compact('transactions','total','reportRange','search_2','dateFrom','dateTo','search'));
+        return $pdf->stream('reporte.pdf');
+
+    }
 
     public function BankingTransactionsReport($account_id,$reportRange,$search_2,$dateFrom = null,$dateTo = null){
 

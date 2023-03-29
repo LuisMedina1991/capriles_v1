@@ -90,7 +90,9 @@ class CashTransactions extends Component
 
             case 0:
 
-                $this->transactions = CashTransaction::where('status_id',1)
+                if (strlen($this->search) > 0){
+
+                    $this->transactions = CashTransaction::where('status_id',1)
                     ->with(['status','detail'])
                     ->where(function ($q1) {
                         $q1->where('file_number', 'like', '%' . $this->search . '%');
@@ -100,12 +102,26 @@ class CashTransactions extends Component
                     ->whereBetween('created_at', [$fecha1, $fecha2])
                     ->orderBy('file_number','asc')
                     ->get();
+
+                }else{
+
+                    $this->transactions = CashTransaction::where('status_id',1)
+                    ->with(['status','detail'])
+                    ->whereBetween('created_at', [$fecha1, $fecha2])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }
+
+                
 
             break;
 
             case 1:
 
-                $this->transactions = CashTransaction::where('status_id',2)
+                if (strlen($this->search) > 0){
+
+                    $this->transactions = CashTransaction::where('status_id',2)
                     ->with(['status','detail'])
                     ->where(function ($q1) {
                         $q1->where('file_number', 'like', '%' . $this->search . '%');
@@ -115,6 +131,16 @@ class CashTransactions extends Component
                     ->whereBetween('created_at', [$fecha1, $fecha2])
                     ->orderBy('file_number','asc')
                     ->get();
+
+                }else{
+
+                    $this->transactions = CashTransaction::where('status_id',2)
+                    ->with(['status','detail'])
+                    ->whereBetween('created_at', [$fecha1, $fecha2])
+                    ->orderBy('file_number','asc')
+                    ->get();
+
+                }
 
             break;
 
