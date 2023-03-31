@@ -11,6 +11,7 @@ use App\Models\Detail;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
 use App\Models\Paycheck;
+use App\Models\Tax;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 //use Livewire\WithPagination;
@@ -22,10 +23,10 @@ class CashTransactions extends Component
     public $pageTitle,$componentName,$selected_id,$search,$search_2,$total_income,$total_discharge,$my_total,$dateFrom,$dateTo,$reportRange,$transactions,$transactions_2;
     public $description,$action,$relation,$income_amount,$discharge_amount;
     public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$customers,$active_customer_debts,$customer_debts;
-    public $active_paychecks,$paychecks;
-    public $AccountId,$SupplierId,$DebtWithSupplierId,$CustomerId,$CustomerDebtId,$PaycheckId,$PaycheckCustomerId;
-    public $bank_account_balance,$debt_with_supplier_balance,$customer_debt_balance,$paycheck_balance;
-    public $debt_with_supplier_detail,$customer_debt_detail,$paycheck_detail,$paycheck_description;
+    public $active_paychecks,$paychecks,$active_taxes,$taxes;
+    public $AccountId,$SupplierId,$DebtWithSupplierId,$CustomerId,$CustomerDebtId,$PaycheckId,$PaycheckCustomerId,$TaxId;
+    public $bank_account_balance,$debt_with_supplier_balance,$customer_debt_balance,$paycheck_balance,$tax_balance;
+    public $debt_with_supplier_detail,$customer_debt_detail,$paycheck_detail,$paycheck_description,$tax_description;
     public $details;
     //private $pagination = 30;
 
@@ -57,8 +58,9 @@ class CashTransactions extends Component
         $this->CustomerId = 'elegir';
         $this->DebtWithSupplierId = 'elegir';
         $this->CustomerDebtId = 'elegir';
-        $this->PaycheckId = '';
+        $this->PaycheckId = 'elegir';
         $this->PaycheckCustomerId = 'elegir';
+        $this->TaxId = 'elegir';
         $this->suppliers = Supplier::all();
         $this->customers = Customer::all();
         $this->bank_accounts = BankAccount::where('status_id',1)->with(['bank','company'])->get();
@@ -68,15 +70,19 @@ class CashTransactions extends Component
         $this->active_customer_debts = CustomerDebt::where('status_id',1)->with(['customer','sale'])->get();
         $this->paychecks = Paycheck::with(['customer','sale','bank'])->get();
         $this->active_paychecks = Paycheck::where('status_id',1)->with(['customer','sale','bank'])->get();
+        $this->active_taxes = Tax::where('status_id',1)->with('taxable')->get();
+        $this->taxes = Tax::with('taxable')->get();
         $this->details = Detail::where('status_id',1)->get();
         $this->debt_with_supplier_detail = [];
         $this->customer_debt_detail = [];
         $this->paycheck_detail = [];
         $this->paycheck_description = '';
+        $this->tax_description = '';
         $this->bank_account_balance = 0;
         $this->debt_with_supplier_balance = 0;
         $this->customer_debt_balance = 0;
         $this->paycheck_balance = 0;
+        $this->tax_balance = 0;
         $this->resetValidation();
         //$this->resetPage();
     }
@@ -216,6 +222,21 @@ class CashTransactions extends Component
         $this->paycheck_detail = $this->active_paychecks->where('customer_id',$relation_id);
     }
 
+    public function updatedTaxId($relation_id)
+    {
+        if($this->active_taxes->firstWhere('id',$relation_id) != null){
+
+            $this->tax_description = $this->active_taxes->firstWhere('id',$relation_id)->description;
+            $this->tax_balance = number_format($this->active_taxes->firstWhere('id',$relation_id)->amount,2);
+
+        }else{
+            
+            $this->tax_description = '';
+            $this->tax_balance = 0;
+
+        }
+    }
+
     public function updatedPaycheckId($detail_id){
 
         if($this->active_paychecks->firstWhere('id',$detail_id) != null){
@@ -280,6 +301,8 @@ class CashTransactions extends Component
             'PaycheckCustomerId' => 'exclude_unless:relation,cheques de pago|not_in:elegir',
             'PaycheckId' => 'exclude_unless:relation,cheques de pago|exclude_if:PaycheckCustomerId,elegir|not_in:elegir',
             'paycheck_balance' => 'exclude_unless:relation,cheques de pago|exclude_if:PaycheckId,elegir|gte:income_amount',
+            'TaxId' => 'exclude_unless:relation,impuestos|not_in:elegir',
+            'tax_balance' => 'exclude_unless:relation,impuestos|exclude_if:TaxId,elegir|gte:discharge_amount',
         ];
 
         $messages = [
@@ -305,6 +328,8 @@ class CashTransactions extends Component
             'PaycheckCustomerId.not_in' => 'Seleccione una opcion',
             'PaycheckId.not_in' => 'Seleccione una opcion',
             'paycheck_balance.gte' => 'Saldo de deuda sobrepasado',
+            'TaxId.not_in' => 'Seleccione una opcion',
+            'tax_balance.gte' => 'Saldo de deuda sobrepasado',
         ];
         
         $this->validate($rules, $messages);
@@ -540,6 +565,61 @@ class CashTransactions extends Component
                                 'cashable_type' => 'App\Models\CashTransaction'
 
                             ]);
+
+                        break;
+
+                        case 'impuestos':
+
+                            $tax = $this->active_taxes->find($this->TaxId);
+
+                            $transaction = $tax->CashTransactions()->create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now . ' ' .
+                                    'por transaccion con recibo' . ' ' .
+                                    $tax->taxable->file_number,
+                                'amount' => $this->discharge_amount,
+                                'status_id' => 1
+                            ]);
+
+                            $detail = $tax->details()->create([
+
+                                'action' => 'egreso',
+                                'relation_file_number' => $transaction->file_number,
+                                'description' => $transaction->description,
+                                'amount' => $transaction->amount,
+                                'previus_balance' => $tax->amount,
+                                'actual_balance' => $tax->amount - $transaction->amount,
+                                'status_id' => 1
+                            ]);
+
+                            $transaction->Update([
+    
+                                'detail_id' => $detail->id
+    
+                            ]);
+
+                            if(($tax->amount - $transaction->amount) == 0){
+
+                                $tax->Update([
+    
+                                    'amount' => $tax->amount - $transaction->amount,
+                                    'status_id' => 2
+        
+                                ]);
+
+                            }else{
+
+                                $tax->Update([
+    
+                                    'amount' => $tax->amount - $transaction->amount
+        
+                                ]);
+
+                            }
 
                         break;
 
@@ -820,6 +900,48 @@ class CashTransactions extends Component
                 case 'egreso':
     
                     switch ($transaction->cashable_type){
+
+                        case 'App\Models\Tax':
+
+                            $detail = $this->details->find($transaction->detail_id);
+
+                            $tax = $this->taxes->find($detail->detailable_id);
+
+                            if($tax->amount != $detail->actual_balance){
+
+                                $this->emit('item-error','Se han realizado transacciones adicionales con la deuda. Anule esas transacciones primero');
+                                return;
+
+                            }else{
+
+                                if($tax->amount == 0){
+                                    
+                                    $tax->update([
+
+                                        'amount' => $tax->amount + $transaction->amount,
+                                        'status_id' => 1
+
+                                    ]);
+
+                                }else{
+
+                                    $tax->update([
+
+                                        'amount' => $tax->amount + $transaction->amount
+
+                                    ]);
+
+                                }
+
+                                $detail->update([
+
+                                    'status_id' => 2
+
+                                ]);
+
+                            }
+
+                        break;
 
                         case 'App\Models\DebtsWithSupplier':
 

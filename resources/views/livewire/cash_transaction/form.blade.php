@@ -67,7 +67,7 @@
 
                     <div class="col-sm-12">
                         <div class="form-group">
-                            <label><b>Detalles del cheque</b></label>
+                            <label><b>Detalles</b></label>
                             <input type="text" wire:model.lazy="paycheck_description" class="form-control" disabled>
                             @error('paycheck_description')
                             <span class="text-danger er">{{ $message }}</span>
@@ -100,7 +100,7 @@
 
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label><b>Saldo del cheque</b></label>
+                            <label><b>Saldo</b></label>
                             <input type="text" wire:model.lazy="paycheck_balance" class="form-control" disabled>
                             @error('paycheck_balance')
                             <span class="text-danger er">{{ $message }}</span>
@@ -133,7 +133,7 @@
 
                     <div class="col-sm-12">
                         <div class="form-group">
-                            <label><b>Detalle de la deuda</b></label>
+                            <label><b>Detalles</b></label>
                             <select wire:model="CustomerDebtId" class="form-control text-uppercase">
                                 <option value="elegir">elegir</option>
                                 @foreach ($customer_debt_detail as $detail)
@@ -152,7 +152,7 @@
 
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label><b>Saldo de la deuda</b></label>
+                            <label><b>Saldo</b></label>
                             <input type="text" wire:model.lazy="customer_debt_balance" class="form-control" disabled>
                             @error('customer_debt_balance')
                             <span class="text-danger er">{{ $message }}</span>
@@ -219,6 +219,7 @@
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
                         <option value="caja general">variada</option>
+                        <option value="impuestos">impuestos</option>
                         <option value="deudas con proveedores">proveedores</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
@@ -229,6 +230,49 @@
             </div>
 
             @switch($relation)
+
+                @case('impuestos')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>N° Recibo</b></label>
+                            <select wire:model="TaxId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($active_taxes as $tax)
+                                <option value="{{$tax->id}}">{{$tax->taxable->file_number}}</option>
+                                @endforeach
+                            </select>
+                            @error('TaxId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @if($TaxId != 'elegir')
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label><b>Detalles</b></label>
+                            <textarea wire:model.lazy="tax_description" class="form-control" cols="30" rows="2" disabled></textarea>
+                            @error('tax_description')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Saldo</b></label>
+                            <input type="text" wire:model.lazy="tax_balance" class="form-control" disabled>
+                            @error('tax_balance')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                @break
 
                 @case('deudas con proveedores')
 
@@ -251,7 +295,7 @@
 
                     <div class="col-sm-12">
                         <div class="form-group">
-                            <label><b>Detalle de la deuda</b></label>
+                            <label><b>Detalles</b></label>
                             <select wire:model="DebtWithSupplierId" class="form-control text-uppercase">
                                 <option value="elegir">elegir</option>
                                 @foreach ($debt_with_supplier_detail as $detail)
@@ -270,7 +314,7 @@
 
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label><b>Saldo de la deuda</b></label>
+                            <label><b>Saldo</b></label>
                             <input type="text" wire:model.lazy="debt_with_supplier_balance" class="form-control" disabled>
                             @error('debt_with_supplier_balance')
                             <span class="text-danger er">{{ $message }}</span>
