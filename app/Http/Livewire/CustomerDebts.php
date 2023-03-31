@@ -15,7 +15,7 @@ class CustomerDebts extends Component
 
     public $search,$search_2,$selected_id,$pageTitle,$componentName;
     public $name,$phone,$fax,$email,$nit,$city,$country,$statusId;
-    public $description,$amount,$income,$supplier;
+    public $description,$amount,$income,$supplier,$details;
     private $pagination = 20;
 
     public function mount(){
@@ -33,6 +33,7 @@ class CustomerDebts extends Component
         $this->search = '';
         $this->search_2 = 0;
         $this->selected_id = 0;
+        $this->details = [];
         $this->resetValidation();
         $this->resetPage();
     }
@@ -225,6 +226,12 @@ class CustomerDebts extends Component
 
         $this->emit('item-updated', 'Actualizado correctamente');
         $this->mount();
+    }
+
+    public function Details(CustomerDebt $debt){
+
+        $this->details = $debt->details->where('status_id',1);
+        $this->emit('show-detail-modal', 'Mostrando modal');
     }
 
     protected $listeners = [

@@ -18,8 +18,6 @@
                 </div>
             </div>
 
-            {{--@include('common.searchbox')--}}
-
             <div class="row">
                 <div class="col-sm-3">
                     <div class="input-group mb-4">
@@ -74,11 +72,13 @@
                                     <h6 class="text-center">{{number_format($debt->amount,2)}}</h6>
                                 </td>
                                 <td class="text-center">
+                                    @if($search_2 == 0)
                                     <a href="javascript:void(0)" wire:click="Edit({{$debt->id}})" class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$debt->id}}')" class="btn btn-dark" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
+                                    @endif
+                                    <a href="javascript:void(0)" wire:click="Details({{$debt->id}})" class="btn btn-dark mtmobile" title="Detalles">
+                                        <i class="fas fa-list"></i>
                                     </a>
                                 </td>
                             </tr>
@@ -95,7 +95,7 @@
         </div>
     </div>
 
-    {{--@include('livewire.supplier.form')--}}
+    @include('livewire.customer_debts.details')
 
 </div>
 
@@ -105,6 +105,9 @@
 
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
+        });
+        window.livewire.on('show-detail-modal', msg=>{
+            $('#details_modal').modal('show')
         });
         window.livewire.on('item-added', msg=>{
             $('#theModal').modal('hide')

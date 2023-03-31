@@ -8,6 +8,8 @@ use App\Models\BankAccount;
 use App\Models\Supplier;
 use App\Models\DebtsWithSupplier;
 use App\Models\Detail;
+use App\Models\Customer;
+use App\Models\CustomerDebt;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 //use Livewire\WithPagination;
@@ -18,10 +20,10 @@ class CashTransactions extends Component
 
     public $pageTitle,$componentName,$selected_id,$search,$search_2,$total_income,$total_discharge,$my_total,$dateFrom,$dateTo,$reportRange,$transactions,$transactions_2;
     public $description,$action,$relation,$income_amount,$discharge_amount;
-    public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$details;
-    public $AccountId,$SupplierId,$DebtWithSupplierId;
-    public $bank_account_balance,$debt_with_supplier_balance;
-    public $debt_with_supplier_detail;
+    public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$customers,$active_customer_debts,$customer_debts,$details;
+    public $AccountId,$SupplierId,$DebtWithSupplierId,$CustomerId,$CustomerDebtId;
+    public $bank_account_balance,$debt_with_supplier_balance,$customer_debt_balance;
+    public $debt_with_supplier_detail,$customer_debt_detail;
     //private $pagination = 30;
 
     public function paginationView(){
@@ -49,15 +51,22 @@ class CashTransactions extends Component
         $this->discharge_amount = '';
         $this->AccountId = 'elegir';
         $this->SupplierId = 'elegir';
+        $this->CustomerId = 'elegir';
         $this->DebtWithSupplierId = 'elegir';
+        $this->CustomerDebtId = 'elegir';
         $this->suppliers = Supplier::all();
+        $this->customers = Customer::all();
         $this->bank_accounts = BankAccount::where('status_id',1)->with(['bank','company'])->get();
-        $this->active_debts_with_suppliers = DebtsWithSupplier::where('status_id',1)->with(['supplier','income'])->get();
         $this->debts_with_suppliers = DebtsWithSupplier::with(['supplier','income'])->get();
+        $this->active_debts_with_suppliers = DebtsWithSupplier::where('status_id',1)->with(['supplier','income'])->get();
+        $this->customer_debts = CustomerDebt::with(['customer','sale'])->get();
+        $this->active_customer_debts = CustomerDebt::where('status_id',1)->with(['customer','sale'])->get();
         $this->details = Detail::where('status_id',1)->get();
         $this->debt_with_supplier_detail = [];
+        $this->customer_debt_detail = [];
         $this->bank_account_balance = 0;
         $this->debt_with_supplier_balance = 0;
+        $this->customer_debt_balance = 0;
         $this->resetValidation();
         //$this->resetPage();
     }
@@ -183,6 +192,14 @@ class CashTransactions extends Component
 
     }
 
+    public function updatedCustomerId($relation_id)
+    {
+        $this->CustomerDebtId = 'elegir';
+
+        $this->customer_debt_detail = $this->active_customer_debts->where('customer_id',$relation_id);
+
+    }
+
     public function updatedDebtWithSupplierId($detail_id){
 
         if($this->active_debts_with_suppliers->firstWhere('id',$detail_id) != null){
@@ -192,6 +209,20 @@ class CashTransactions extends Component
         }else{
 
             $this->debt_with_supplier_balance = 0;
+
+        }
+
+    }
+
+    public function updatedCustomerDebtId($detail_id){
+
+        if($this->active_customer_debts->firstWhere('id',$detail_id) != null){
+
+            $this->customer_debt_balance = number_format($this->active_customer_debts->firstWhere('id',$detail_id)->amount,2);
+
+        }else{
+
+            $this->customer_debt_balance = 0;
 
         }
 
@@ -211,6 +242,9 @@ class CashTransactions extends Component
             'SupplierId' => 'exclude_unless:relation,deudas con proveedores|not_in:elegir',
             'DebtWithSupplierId' => 'exclude_unless:relation,deudas con proveedores|exclude_if:SupplierId,elegir|not_in:elegir',
             'debt_with_supplier_balance' => 'exclude_unless:relation,deudas con proveedores|exclude_if:DebtWithSupplierId,elegir|gte:discharge_amount',
+            'CustomerId' => 'exclude_unless:relation,deudas de clientes|not_in:elegir',
+            'CustomerDebtId' => 'exclude_unless:relation,deudas de clientes|exclude_if:CustomerId,elegir|not_in:elegir',
+            'customer_debt_balance' => 'exclude_unless:relation,deudas de clientes|exclude_if:CustomerDebtId,elegir|gte:income_amount',
         ];
 
         $messages = [
@@ -230,6 +264,9 @@ class CashTransactions extends Component
             'SupplierId.not_in' => 'Seleccione una opcion',
             'DebtWithSupplierId.not_in' => 'Seleccione una opcion',
             'debt_with_supplier_balance.gte' => 'Saldo de deuda sobrepasado',
+            'CustomerId.not_in' => 'Seleccione una opcion',
+            'CustomerDebtId.not_in' => 'Seleccione una opcion',
+            'customer_debt_balance.gte' => 'Saldo de deuda sobrepasado',
         ];
         
         $this->validate($rules, $messages);
@@ -265,6 +302,70 @@ class CashTransactions extends Component
                                 'cashable_type' => 'App\Models\CashTransaction'
 
                             ]);
+
+                        break;
+
+                        case 'deudas de clientes':
+
+                            $debt = $this->active_customer_debts->find($this->CustomerDebtId);
+
+                            $transaction = $debt->CashTransactions()->create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    $debt->customer->name . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now . ' ' .
+                                    'por venta' . ' ' .
+                                    $debt->sale->file_number,
+                                'amount' => $this->income_amount,
+                                'status_id' => 1
+                            ]);
+
+                            $detail = $debt->details()->create([
+
+                                'action' => 'egreso',
+                                'relation_file_number' => $transaction->file_number,
+                                'description' => $transaction->description,
+                                'amount' => $transaction->amount,
+                                'previus_balance' => $debt->amount,
+                                'actual_balance' => $debt->amount - $transaction->amount,
+                                'status_id' => 1
+                            ]);
+
+                            $transaction->Update([
+    
+                                'detail_id' => $detail->id
+    
+                            ]);
+
+                            if(($debt->amount - $transaction->amount) == 0){
+
+                                $sale = $debt->sale;
+
+                                $debt->Update([
+    
+                                    'amount' => $debt->amount - $transaction->amount,
+                                    'status_id' => 2
+        
+                                ]);
+
+                                $sale->Update([
+    
+                                    'status_id' => 3
+        
+                                ]);
+
+                            }else{
+
+                                $debt->Update([
+    
+                                    'amount' => $debt->amount - $transaction->amount
+        
+                                ]);
+
+                            }
 
                         break;
 
@@ -478,6 +579,56 @@ class CashTransactions extends Component
                 case 'ingreso':
     
                     switch ($transaction->cashable_type){
+
+                        case 'App\Models\CustomerDebt':
+
+                            $detail = $this->details->find($transaction->detail_id);
+
+                            $debt = $this->customer_debts->find($detail->detailable_id);
+
+                            if($debt->amount != $detail->actual_balance){
+
+                                $this->emit('item-error','Se han realizado transacciones adicionales con la deuda. Anule esas transacciones primero');
+                                return;
+
+                            }else{
+
+                                if($debt->amount == 0){
+
+                                    $sale = $debt->sale;
+                                    
+                                    $debt->update([
+
+                                        'amount' => $debt->amount + $transaction->amount,
+                                        'status_id' => 1
+
+                                    ]);
+
+                                    $sale->update([
+
+                                        'status_id' => 4
+
+                                    ]);
+
+                                }else{
+
+                                    $debt->update([
+
+                                        'amount' => $debt->amount + $transaction->amount
+
+                                    ]);
+
+                                }
+
+                                $detail->update([
+
+                                    'status_id' => 2
+
+                                ]);
+
+                            }
+
+                        break;
     
                         case 'App\Models\BankAccount':
     

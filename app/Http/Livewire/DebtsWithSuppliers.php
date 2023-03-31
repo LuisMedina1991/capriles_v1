@@ -167,7 +167,6 @@ class DebtsWithSuppliers extends Component
     public function Details(DebtsWithSupplier $debt){
 
         $this->details = $debt->details->where('status_id',1);
-        //dd($this->details);
         $this->emit('show-detail-modal', 'Mostrando modal');
     }
 

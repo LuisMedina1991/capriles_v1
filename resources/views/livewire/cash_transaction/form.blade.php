@@ -34,6 +34,7 @@
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
                         <option value="caja general">variada</option>
+                        <option value="deudas de clientes">clientes</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
                     @error('relation')
@@ -43,6 +44,58 @@
             </div>
 
             @switch($relation)
+
+                @case('deudas de clientes')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Cliente</b></label>
+                            <select wire:model="CustomerId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($customers as $customer)
+                                <option value="{{$customer->id}}">{{$customer->name}}</option>
+                                @endforeach
+                            </select>
+                            @error('CustomerId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @if($CustomerId != 'elegir')
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label><b>Detalle de la deuda</b></label>
+                            <select wire:model="CustomerDebtId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($customer_debt_detail as $detail)
+                                <option value="{{$detail->id}}">{{$detail->description}}</option>
+                                @endforeach
+                            </select>
+                            @error('CustomerDebtId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                    @if($CustomerId != 'elegir' && $CustomerDebtId != 'elegir')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Saldo de la deuda</b></label>
+                            <input type="text" wire:model.lazy="customer_debt_balance" class="form-control" disabled>
+                            @error('customer_debt_balance')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                @break
 
                 @case('cuentas bancarias')
                     
