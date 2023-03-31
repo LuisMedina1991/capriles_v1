@@ -34,6 +34,7 @@
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
                         <option value="caja general">variada</option>
+                        <option value="cheques de pago">cheques</option>
                         <option value="deudas de clientes">clientes</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
@@ -44,6 +45,72 @@
             </div>
 
             @switch($relation)
+
+                @case('cheques de pago')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Cliente</b></label>
+                            <select wire:model="PaycheckCustomerId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($customers as $customer)
+                                <option value="{{$customer->id}}">{{$customer->name}}</option>
+                                @endforeach
+                            </select>
+                            @error('PaycheckCustomerId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @if($PaycheckCustomerId != 'elegir' && $PaycheckId != 'elegir')
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label><b>Detalles del cheque</b></label>
+                            <input type="text" wire:model.lazy="paycheck_description" class="form-control" disabled>
+                            @error('paycheck_description')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                    @if($PaycheckCustomerId != 'elegir')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>N° Cheque</b></label>
+                            <select wire:model="PaycheckId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($paycheck_detail as $detail)
+                                <option value="{{$detail->id}}">{{$detail->number}}</option>
+                                @endforeach
+                            </select>
+                            @error('PaycheckId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                    @if($PaycheckCustomerId != 'elegir' && $PaycheckId != 'elegir')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Saldo del cheque</b></label>
+                            <input type="text" wire:model.lazy="paycheck_balance" class="form-control" disabled>
+                            @error('paycheck_balance')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                @break
 
                 @case('deudas de clientes')
 

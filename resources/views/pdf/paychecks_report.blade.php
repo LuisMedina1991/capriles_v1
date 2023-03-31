@@ -43,7 +43,6 @@
                     <th>n° recibo</th>
                     <th>cliente</th>
                     <th>banco</th>
-                    <th>cobro</th>
                     <th>descripcion</th>
                     <th>saldo</th>
                 </tr>
@@ -65,9 +64,6 @@
                     </td>
                     <td align="center">
                         <h6 class="text-center">{{$paycheck->bank->alias}}</h6>
-                    </td>
-                    <td align="center">
-                        <h6 class="text-center">{{$paycheck->status->name}}</h6>
                     </td>
                     <td align="center">
                         <h6 class="text-center">{{$paycheck->description}}</h6>

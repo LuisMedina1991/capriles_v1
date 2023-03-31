@@ -255,7 +255,7 @@ class ExportController extends Controller
                 if(strlen($search) > 0){
 
                     $paychecks = Paycheck::with(['status','sale','bank','customer'])
-                    ->where('status_id',4)
+                    ->where('status_id',1)
                     ->where('amount','>',0)
                     ->where(function ($q1) use ($search) {
                         $q1->where('number', 'like', '%' . $search . '%');
@@ -279,7 +279,7 @@ class ExportController extends Controller
                 }else{
         
                     $paychecks = Paycheck::with(['status','sale','bank','customer'])
-                    ->where('status_id',4)
+                    ->where('status_id',2)
                     ->where('amount','>',0)
                     ->orderBy('created_at', 'asc')
                     ->get();
@@ -293,7 +293,7 @@ class ExportController extends Controller
                 if(strlen($search) > 0){
 
                     $paychecks = Paycheck::with(['status','sale','bank','customer'])
-                    ->where('status_id','!=',4)
+                    ->where('status_id',2)
                     ->where('amount','>',0)
                     ->where(function ($q1) use ($search) {
                         $q1->where('number', 'like', '%' . $search . '%');
@@ -317,7 +317,7 @@ class ExportController extends Controller
                 }else{
         
                     $paychecks = Paycheck::with(['status','sale','bank','customer'])
-                    ->where('status_id','!=',4)
+                    ->where('status_id',2)
                     ->where('amount','>',0)
                     ->orderBy('created_at', 'asc')
                     ->get();

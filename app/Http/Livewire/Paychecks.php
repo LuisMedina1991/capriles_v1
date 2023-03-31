@@ -16,7 +16,7 @@ class Paychecks extends Component
     public $search, $search_2, $selected_id, $pageTitle, $componentName;
     public $customers, $banks, $statuses;
     public $customer_id,$bank_id,$status_id,$description,$number,$amount;
-    public $name,$alias,$entity_code,$phone,$fax,$email,$nit,$city,$country;
+    public $name,$alias,$entity_code,$phone,$fax,$email,$nit,$city,$country,$details;
     private $pagination = 20;
 
     public function mount()
@@ -45,6 +45,7 @@ class Paychecks extends Component
         $this->customers = Customer::select('id','name')->get();
         $this->banks = Bank::select('id','alias')->get();
         $this->statuses = Status::where('type','transaccion')->get();
+        $this->details = [];
         $this->resetValidation();
         $this->resetPage();
     }
@@ -64,7 +65,7 @@ class Paychecks extends Component
                 if (strlen($this->search) > 0) {
 
                     $data = Paycheck::with(['status','sale', 'bank', 'customer'])
-                        ->where('status_id', 4)
+                        ->where('status_id', 1)
                         ->where(function ($q1) {
                             $q1->where('number', 'like', '%' . $this->search . '%');
                             $q1->orWhere('description', 'like', '%' . $this->search . '%');
@@ -86,7 +87,7 @@ class Paychecks extends Component
                 } else {
 
                     $data = Paycheck::with(['status','sale', 'bank', 'customer'])
-                        ->where('status_id', 4)
+                        ->where('status_id', 1)
                         ->orderBy('created_at', 'asc')
                         ->paginate($this->pagination);
                 }
@@ -98,7 +99,7 @@ class Paychecks extends Component
                 if (strlen($this->search) > 0) {
 
                     $data = Paycheck::with(['status','sale', 'bank', 'customer'])
-                        ->where('status_id','!=', 4)
+                        ->where('status_id', 2)
                         ->where(function ($q1) {
                             $q1->where('number', 'like', '%' . $this->search . '%');
                             $q1->orWhere('description', 'like', '%' . $this->search . '%');
@@ -120,7 +121,7 @@ class Paychecks extends Component
                 } else {
 
                     $data = Paycheck::with(['status','sale', 'bank', 'customer'])
-                        ->where('status_id','!=', 4)
+                        ->where('status_id',2)
                         ->orderBy('created_at', 'asc')
                         ->paginate($this->pagination);
                 }
@@ -334,6 +335,12 @@ class Paychecks extends Component
         $this->emit('item-updated', 'Actualizado correctamente');
         $this->mount();
 
+    }
+
+    public function Details(Paycheck $paycheck){
+
+        $this->details = $paycheck->details->where('status_id',1);
+        $this->emit('show-detail-modal', 'Mostrando modal');
     }
 
     protected $listeners = [

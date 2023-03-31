@@ -908,7 +908,7 @@ class Products extends Component
                                     $now,
                                 'number' => $this->number,
                                 'amount' => $sale->total_price,
-                                'status_id' => $sale->status_id,
+                                'status_id' => 1,
                                 'sale_id' => $sale->id,
                                 'bank_id' => $this->bankId,
                                 'customer_id' => $sale->customer_id

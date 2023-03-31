@@ -717,7 +717,7 @@ class Reports extends Component
                         
                         $paycheck->update([
             
-                            'status_id' => 5
+                            'status_id' => 2
             
                         ]);
                     }

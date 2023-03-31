@@ -47,7 +47,6 @@
                                 <th class="table-th text-center text-white">n° recibo</th>
                                 <th class="table-th text-center text-white">cliente</th>
                                 <th class="table-th text-center text-white">banco</th>
-                                <th class="table-th text-center text-white">cobro</th>
                                 <th class="table-th text-center text-white">descripcion</th>
                                 <th class="table-th text-center text-white">saldo</th>
                                 <th class="table-th text-center text-white">opciones</th>
@@ -73,27 +72,6 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{$paycheck->bank->alias}}</h6>
                                 </td>
-                                <td class="text-center">
-                                    <h6>
-                                        @switch($paycheck->status->name)
-                                        @case('realizado')
-                                        <span class="text-uppercase badge badge-success">
-                                            {{$paycheck->status->name}}
-                                        </span>
-                                        @break
-                                        @case('pendiente')
-                                        <span class="text-uppercase badge badge-warning">
-                                            {{$paycheck->status->name}}
-                                        </span>
-                                        @break
-                                        @case('anulado')
-                                        <span class="text-uppercase badge badge-danger">
-                                            {{$paycheck->status->name}}
-                                        </span>
-                                        @break
-                                        @endswitch
-                                    </h6>
-                                </td>
                                 <td>
                                     <h6 class="text-center text-uppercase">{{$paycheck->description}}</h6>
                                 </td>
@@ -106,8 +84,7 @@
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     @endif
-                                    <a href="javascript:void(0)" 
-                                        class="btn btn-dark mtmobile" title="Detalles">
+                                    <a href="javascript:void(0)" wire:click="Details({{$paycheck->id}})" class="btn btn-dark mtmobile" title="Detalles">
                                         <i class="fas fa-list"></i>
                                     </a>
                                 </td>
@@ -128,7 +105,7 @@
     @include('livewire.paycheck.form')
     @include('livewire.paycheck.bank_form')
     @include('livewire.paycheck.customer_form')
-
+    @include('livewire.paycheck.details')
 </div>
 
 
@@ -137,6 +114,9 @@
 
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
+        });
+        window.livewire.on('show-detail-modal', msg=>{
+            $('#details_modal').modal('show')
         });
         $('#theModal').on('shown.bs.modal', function(e){
             $('.component-name').focus()

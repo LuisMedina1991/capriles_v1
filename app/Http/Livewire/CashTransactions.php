@@ -10,6 +10,7 @@ use App\Models\DebtsWithSupplier;
 use App\Models\Detail;
 use App\Models\Customer;
 use App\Models\CustomerDebt;
+use App\Models\Paycheck;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 //use Livewire\WithPagination;
@@ -20,10 +21,12 @@ class CashTransactions extends Component
 
     public $pageTitle,$componentName,$selected_id,$search,$search_2,$total_income,$total_discharge,$my_total,$dateFrom,$dateTo,$reportRange,$transactions,$transactions_2;
     public $description,$action,$relation,$income_amount,$discharge_amount;
-    public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$customers,$active_customer_debts,$customer_debts,$details;
-    public $AccountId,$SupplierId,$DebtWithSupplierId,$CustomerId,$CustomerDebtId;
-    public $bank_account_balance,$debt_with_supplier_balance,$customer_debt_balance;
-    public $debt_with_supplier_detail,$customer_debt_detail;
+    public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$customers,$active_customer_debts,$customer_debts;
+    public $active_paychecks,$paychecks;
+    public $AccountId,$SupplierId,$DebtWithSupplierId,$CustomerId,$CustomerDebtId,$PaycheckId,$PaycheckCustomerId;
+    public $bank_account_balance,$debt_with_supplier_balance,$customer_debt_balance,$paycheck_balance;
+    public $debt_with_supplier_detail,$customer_debt_detail,$paycheck_detail,$paycheck_description;
+    public $details;
     //private $pagination = 30;
 
     public function paginationView(){
@@ -54,6 +57,8 @@ class CashTransactions extends Component
         $this->CustomerId = 'elegir';
         $this->DebtWithSupplierId = 'elegir';
         $this->CustomerDebtId = 'elegir';
+        $this->PaycheckId = '';
+        $this->PaycheckCustomerId = 'elegir';
         $this->suppliers = Supplier::all();
         $this->customers = Customer::all();
         $this->bank_accounts = BankAccount::where('status_id',1)->with(['bank','company'])->get();
@@ -61,12 +66,17 @@ class CashTransactions extends Component
         $this->active_debts_with_suppliers = DebtsWithSupplier::where('status_id',1)->with(['supplier','income'])->get();
         $this->customer_debts = CustomerDebt::with(['customer','sale'])->get();
         $this->active_customer_debts = CustomerDebt::where('status_id',1)->with(['customer','sale'])->get();
+        $this->paychecks = Paycheck::with(['customer','sale','bank'])->get();
+        $this->active_paychecks = Paycheck::where('status_id',1)->with(['customer','sale','bank'])->get();
         $this->details = Detail::where('status_id',1)->get();
         $this->debt_with_supplier_detail = [];
         $this->customer_debt_detail = [];
+        $this->paycheck_detail = [];
+        $this->paycheck_description = '';
         $this->bank_account_balance = 0;
         $this->debt_with_supplier_balance = 0;
         $this->customer_debt_balance = 0;
+        $this->paycheck_balance = 0;
         $this->resetValidation();
         //$this->resetPage();
     }
@@ -197,6 +207,28 @@ class CashTransactions extends Component
         $this->CustomerDebtId = 'elegir';
 
         $this->customer_debt_detail = $this->active_customer_debts->where('customer_id',$relation_id);
+    }
+
+    public function updatedPaycheckCustomerId($relation_id)
+    {
+        $this->PaycheckId = 'elegir';
+
+        $this->paycheck_detail = $this->active_paychecks->where('customer_id',$relation_id);
+    }
+
+    public function updatedPaycheckId($detail_id){
+
+        if($this->active_paychecks->firstWhere('id',$detail_id) != null){
+
+            $this->paycheck_description = $this->active_paychecks->firstWhere('id',$detail_id)->description;
+            $this->paycheck_balance = number_format($this->active_paychecks->firstWhere('id',$detail_id)->amount,2);
+
+        }else{
+            
+            $this->paycheck_description = '';
+            $this->paycheck_balance = 0;
+
+        }
 
     }
 
@@ -245,6 +277,9 @@ class CashTransactions extends Component
             'CustomerId' => 'exclude_unless:relation,deudas de clientes|not_in:elegir',
             'CustomerDebtId' => 'exclude_unless:relation,deudas de clientes|exclude_if:CustomerId,elegir|not_in:elegir',
             'customer_debt_balance' => 'exclude_unless:relation,deudas de clientes|exclude_if:CustomerDebtId,elegir|gte:income_amount',
+            'PaycheckCustomerId' => 'exclude_unless:relation,cheques de pago|not_in:elegir',
+            'PaycheckId' => 'exclude_unless:relation,cheques de pago|exclude_if:PaycheckCustomerId,elegir|not_in:elegir',
+            'paycheck_balance' => 'exclude_unless:relation,cheques de pago|exclude_if:PaycheckId,elegir|gte:income_amount',
         ];
 
         $messages = [
@@ -267,6 +302,9 @@ class CashTransactions extends Component
             'CustomerId.not_in' => 'Seleccione una opcion',
             'CustomerDebtId.not_in' => 'Seleccione una opcion',
             'customer_debt_balance.gte' => 'Saldo de deuda sobrepasado',
+            'PaycheckCustomerId.not_in' => 'Seleccione una opcion',
+            'PaycheckId.not_in' => 'Seleccione una opcion',
+            'paycheck_balance.gte' => 'Saldo de deuda sobrepasado',
         ];
         
         $this->validate($rules, $messages);
@@ -302,6 +340,73 @@ class CashTransactions extends Component
                                 'cashable_type' => 'App\Models\CashTransaction'
 
                             ]);
+
+                        break;
+
+                        case 'cheques de pago':
+
+                            $paycheck = $this->active_paychecks->find($this->PaycheckId);
+
+                            $transaction = $paycheck->CashTransactions()->create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    'n°' . ' ' .
+                                    $paycheck->number . ' ' .
+                                    'de cliente' . ' ' .
+                                    $paycheck->customer->name . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now . ' ' .
+                                    'por venta' . ' ' .
+                                    $paycheck->sale->file_number,
+                                'amount' => $this->income_amount,
+                                'status_id' => 1
+                            ]);
+
+                            $detail = $paycheck->details()->create([
+
+                                'action' => 'egreso',
+                                'relation_file_number' => $transaction->file_number,
+                                'description' => $transaction->description,
+                                'amount' => $transaction->amount,
+                                'previus_balance' => $paycheck->amount,
+                                'actual_balance' => $paycheck->amount - $transaction->amount,
+                                'status_id' => 1
+                            ]);
+
+                            $transaction->Update([
+    
+                                'detail_id' => $detail->id
+    
+                            ]);
+
+                            if(($paycheck->amount - $transaction->amount) == 0){
+
+                                $sale = $paycheck->sale;
+
+                                $paycheck->Update([
+    
+                                    'amount' => $paycheck->amount - $transaction->amount,
+                                    'status_id' => 2
+        
+                                ]);
+
+                                $sale->Update([
+    
+                                    'status_id' => 3
+        
+                                ]);
+
+                            }else{
+
+                                $paycheck->Update([
+    
+                                    'amount' => $paycheck->amount - $transaction->amount
+        
+                                ]);
+
+                            }
 
                         break;
 
@@ -579,6 +684,56 @@ class CashTransactions extends Component
                 case 'ingreso':
     
                     switch ($transaction->cashable_type){
+
+                        case 'App\Models\Paycheck':
+
+                            $detail = $this->details->find($transaction->detail_id);
+
+                            $paycheck = $this->paychecks->find($detail->detailable_id);
+
+                            if($paycheck->amount != $detail->actual_balance){
+
+                                $this->emit('item-error','Se han realizado transacciones adicionales con la deuda. Anule esas transacciones primero');
+                                return;
+
+                            }else{
+
+                                if($paycheck->amount == 0){
+
+                                    $sale = $paycheck->sale;
+                                    
+                                    $paycheck->update([
+
+                                        'amount' => $paycheck->amount + $transaction->amount,
+                                        'status_id' => 1
+
+                                    ]);
+
+                                    $sale->update([
+
+                                        'status_id' => 4
+
+                                    ]);
+
+                                }else{
+
+                                    $paycheck->update([
+
+                                        'amount' => $paycheck->amount + $transaction->amount
+
+                                    ]);
+
+                                }
+
+                                $detail->update([
+
+                                    'status_id' => 2
+
+                                ]);
+
+                            }
+
+                        break;
 
                         case 'App\Models\CustomerDebt':
 
