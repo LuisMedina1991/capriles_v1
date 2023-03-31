@@ -26,4 +26,14 @@ class DebtsWithSupplier extends Model
     {
         return $this->belongsTo(status::class);
     }
+
+    public function details(){
+
+        return $this->morphMany(Detail::class,'detailable');
+    }
+
+    public function CashTransactions(){
+
+        return $this->morphMany(CashTransaction::class,'cashable','cashable_type','cashable_id','id');
+    }
 }

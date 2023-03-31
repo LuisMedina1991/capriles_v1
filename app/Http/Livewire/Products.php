@@ -1014,20 +1014,58 @@ class Products extends Component
             $value = Value::find($this->value_id);
             $now = Carbon::parse(Carbon::now())->format('d-m-Y');
 
+            if ($this->tax_option == 1) {
 
-            $income = Income::create([
+                $income = Income::create([
 
-                'income_type' => 'compra',
-                'payment_type' => $this->PaymentType,
-                'previus_stock' => $this->stock,
-                'quantity' => $this->quantity,
-                'total' => $value->cost * $this->quantity,
-                'status_id' => $this->statusId,
-                'user_id' => Auth()->user()->id,
-                'supplier_id' => $this->supplierId,
-                'office_value_id' => $this->selected_id
+                    'income_type' => 'compra',
+                    'payment_type' => $this->PaymentType,
+                    'previus_stock' => $this->stock,
+                    'quantity' => $this->quantity,
+                    'total' => (($value->cost * $this->quantity) + (($value->cost * $this->quantity) * $this->tax)),
+                    'status_id' => $this->statusId,
+                    'user_id' => Auth()->user()->id,
+                    'supplier_id' => $this->supplierId,
+                    'office_value_id' => $this->selected_id
+    
+                ]);
 
-            ]);
+                $income->tax()->create([
+                    'description' =>
+                    $income->quantity . ' ' .
+                        'unidades' . ' ' .
+                        'de' . ' ' .
+                        $value->product->code . ' ' .
+                        'a' . ' ' .
+                        '$' .
+                        number_format($value->cost, 2) . ' ' .
+                        'por unidad' . ' ' .
+                        'con impuesto del' . ' ' .
+                        $this->tax * 100 .
+                        '%' . ' ' .
+                        'en fecha' . ' ' .
+                        $now,
+                    'amount' => ($value->cost * $income->quantity) * $this->tax,
+                    'status_id' => 1
+                ]);
+
+            }else{
+
+                $income = Income::create([
+
+                    'income_type' => 'compra',
+                    'payment_type' => $this->PaymentType,
+                    'previus_stock' => $this->stock,
+                    'quantity' => $this->quantity,
+                    'total' => $value->cost * $this->quantity,
+                    'status_id' => $this->statusId,
+                    'user_id' => Auth()->user()->id,
+                    'supplier_id' => $this->supplierId,
+                    'office_value_id' => $this->selected_id
+    
+                ]);
+
+            }
 
 
             if ($income) {
@@ -1086,28 +1124,6 @@ class Products extends Component
 
                     break;
 
-                }
-
-                if ($this->tax_option == 1) {
-
-                    $income->tax()->create([
-                        'description' =>
-                        $income->quantity . ' ' .
-                            'unidades' . ' ' .
-                            'de' . ' ' .
-                            $value->product->code . ' ' .
-                            'a' . ' ' .
-                            '$' .
-                            number_format($value->cost, 2) . ' ' .
-                            'por unidad' . ' ' .
-                            'con impuesto del' . ' ' .
-                            $this->tax * 100 .
-                            '%' . ' ' .
-                            'en fecha' . ' ' .
-                            $now,
-                        'amount' => ($value->cost * $income->quantity) * $this->tax,
-                        'status_id' => 1
-                    ]);
                 }
 
                 $value->offices()->updateExistingPivot($this->office_id_1, [

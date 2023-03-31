@@ -5,6 +5,8 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use App\Models\CashTransaction;
 use App\Models\BankAccount;
+use App\Models\Supplier;
+use App\Models\DebtsWithSupplier;
 use App\Models\Detail;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -15,10 +17,11 @@ class CashTransactions extends Component
     //use WithPagination;
 
     public $pageTitle,$componentName,$selected_id,$search,$search_2,$total_income,$total_discharge,$my_total,$dateFrom,$dateTo,$reportRange,$transactions,$transactions_2;
-    public $description,$action,$relation,$amount;
-    public $bank_accounts,$details;
-    public $AccountId;
-    public $balance;
+    public $description,$action,$relation,$income_amount,$discharge_amount;
+    public $bank_accounts,$suppliers,$active_debts_with_suppliers,$debts_with_suppliers,$details;
+    public $AccountId,$SupplierId,$DebtWithSupplierId;
+    public $bank_account_balance,$debt_with_supplier_balance;
+    public $debt_with_supplier_detail;
     //private $pagination = 30;
 
     public function paginationView(){
@@ -42,11 +45,19 @@ class CashTransactions extends Component
         $this->description = '';
         $this->action = 'elegir';
         $this->relation = 'elegir';
-        $this->amount = '';
+        $this->income_amount = '';
+        $this->discharge_amount = '';
         $this->AccountId = 'elegir';
+        $this->SupplierId = 'elegir';
+        $this->DebtWithSupplierId = 'elegir';
+        $this->suppliers = Supplier::all();
         $this->bank_accounts = BankAccount::where('status_id',1)->with(['bank','company'])->get();
+        $this->active_debts_with_suppliers = DebtsWithSupplier::where('status_id',1)->with(['supplier','income'])->get();
+        $this->debts_with_suppliers = DebtsWithSupplier::with(['supplier','income'])->get();
         $this->details = Detail::where('status_id',1)->get();
-        $this->balance = 0;
+        $this->debt_with_supplier_detail = [];
+        $this->bank_account_balance = 0;
+        $this->debt_with_supplier_balance = 0;
         $this->resetValidation();
         //$this->resetPage();
     }
@@ -150,15 +161,38 @@ class CashTransactions extends Component
 
     }
 
-    public function updatedAccountId()
+    public function updatedAccountId($relation_id)
     {
-        if($this->AccountId != 'elegir'){
+        if($this->bank_accounts->firstWhere('id',$relation_id) != null){
             
-            $this->balance = number_format($this->bank_accounts->find($this->AccountId)->balance,2);
+            $this->bank_account_balance = number_format($this->bank_accounts->firstWhere('id',$relation_id)->balance,2);
 
         }else{
 
-            $this->balance = 0;
+            $this->bank_account_balance = 0;
+
+        }
+
+    }
+
+    public function updatedSupplierId($relation_id)
+    {
+        $this->DebtWithSupplierId = 'elegir';
+
+        $this->debt_with_supplier_detail = $this->active_debts_with_suppliers->where('supplier_id',$relation_id);
+
+    }
+
+    public function updatedDebtWithSupplierId($detail_id){
+
+        if($this->active_debts_with_suppliers->firstWhere('id',$detail_id) != null){
+
+            $this->debt_with_supplier_balance = number_format($this->active_debts_with_suppliers->firstWhere('id',$detail_id)->amount,2);
+
+        }else{
+
+            $this->debt_with_supplier_balance = 0;
+
         }
 
     }
@@ -169,10 +203,14 @@ class CashTransactions extends Component
 
             'description' => 'required|min:10|max:255',
             'action' => 'not_in:elegir',
-            'relation' => 'not_in:elegir',
-            'amount' => 'required|gt:0',
+            'relation' => 'exclude_if:action,elegir|not_in:elegir',
+            'income_amount' => 'exclude_unless:action,ingreso|required|gt:0',
+            'discharge_amount' => "exclude_unless:action,egreso|required|gt:0|lte:$this->my_total",
             'AccountId' => 'exclude_unless:relation,cuentas bancarias|not_in:elegir',
-            'balance' => 'exclude_unless:relation,cuentas bancarias|exclude_if:action,egreso|gte:amount',
+            'bank_account_balance' => 'exclude_unless:relation,cuentas bancarias|exclude_if:action,egreso|gte:income_amount',
+            'SupplierId' => 'exclude_unless:relation,deudas con proveedores|not_in:elegir',
+            'DebtWithSupplierId' => 'exclude_unless:relation,deudas con proveedores|exclude_if:SupplierId,elegir|not_in:elegir',
+            'debt_with_supplier_balance' => 'exclude_unless:relation,deudas con proveedores|exclude_if:DebtWithSupplierId,elegir|gte:discharge_amount',
         ];
 
         $messages = [
@@ -182,16 +220,23 @@ class CashTransactions extends Component
             'description.max' => 'Maximo 255 caracteres',
             'action.not_in' => 'Seleccione una opcion',
             'relation.not_in' => 'Seleccione una opcion',
-            'amount.required' => 'Campo requerido',
-            'amount.gt' => 'Numeros mayores a 0',
+            'income_amount.required' => 'Campo requerido',
+            'income_amount.gt' => 'El monto debe ser mayor 0',
+            'discharge_amount.required' => 'Campo requerido',
+            'discharge_amount.gt' => 'El monto debe ser mayor 0',
+            'discharge_amount.lte' => 'Saldo de caja insuficiente',
             'AccountId.not_in' => 'Seleccione una opcion',
-            'balance.gte' => 'El saldo es menor al monto',
+            'bank_account_balance.gte' => 'Saldo insuficiente',
+            'SupplierId.not_in' => 'Seleccione una opcion',
+            'DebtWithSupplierId.not_in' => 'Seleccione una opcion',
+            'debt_with_supplier_balance.gte' => 'Saldo de deuda sobrepasado',
         ];
         
         $this->validate($rules, $messages);
 
-        //$account = $this->bank_accounts->find($this->AccountId);
-        //dd($account);
+        //$debt = $this->debts_with_suppliers->find($this->DebtWithSupplierId);
+        //$income = $debt->income;
+        //dd($income);
 
         DB::beginTransaction();
 
@@ -214,7 +259,7 @@ class CashTransactions extends Component
                                     $this->description . ' ' .
                                     'en fecha' . ' ' .
                                     $now,
-                                'amount' => $this->amount,
+                                'amount' => $this->income_amount,
                                 'status_id' => 1,
                                 'cashable_id' => CashTransaction::all()->max('id') + 1,
                                 'cashable_type' => 'App\Models\CashTransaction'
@@ -238,21 +283,14 @@ class CashTransactions extends Component
                                     'en fecha' . ' ' .
                                     $now . ' ' .
                                     $this->description,
-                                'amount' => $this->amount,
+                                'amount' => $this->income_amount,
                                 'status_id' => 1
                             ]);
 
                             $detail = $account->details()->create([
                                 'action' => 'egreso',
                                 'relation_file_number' => $transaction->file_number,
-                                'description' => 
-                                    'retiro de cuenta bancaria' . ' ' .
-                                    $account->bank->alias . '-' .
-                                    $account->company->alias . '-' .
-                                    $account->number . ' ' .
-                                    'en fecha' . ' ' .
-                                    $now . ' ' .
-                                    $this->description,
+                                'description' => $transaction->description,
                                 'amount' => $transaction->amount,
                                 'previus_balance' => $account->balance,
                                 'actual_balance' => $account->balance - $transaction->amount,
@@ -290,12 +328,76 @@ class CashTransactions extends Component
                                     $this->description . ' ' .
                                     'en fecha' . ' ' .
                                     $now,
-                                'amount' => $this->amount,
+                                'amount' => $this->discharge_amount,
                                 'status_id' => 1,
                                 'cashable_id' => CashTransaction::all()->max('id') + 1,
                                 'cashable_type' => 'App\Models\CashTransaction'
 
                             ]);
+
+                        break;
+
+                        case 'deudas con proveedores':
+
+                            $debt = $this->active_debts_with_suppliers->find($this->DebtWithSupplierId);
+
+                            $transaction = $debt->CashTransactions()->create([
+
+                                'action' => $this->action,
+                                'description' => 
+                                    $this->description . ' ' .
+                                    $debt->supplier->name . ' ' .
+                                    'en fecha' . ' ' .
+                                    $now . ' ' .
+                                    'por ingreso' . ' ' .
+                                    $debt->income->file_number,
+                                'amount' => $this->discharge_amount,
+                                'status_id' => 1
+                            ]);
+
+                            $detail = $debt->details()->create([
+
+                                'action' => 'egreso',
+                                'relation_file_number' => $transaction->file_number,
+                                'description' => $transaction->description,
+                                'amount' => $transaction->amount,
+                                'previus_balance' => $debt->amount,
+                                'actual_balance' => $debt->amount - $transaction->amount,
+                                'status_id' => 1
+                            ]);
+
+                            $transaction->Update([
+    
+                                'detail_id' => $detail->id
+    
+                            ]);
+
+                            if(($debt->amount - $transaction->amount) == 0){
+
+                                $income = $debt->income;
+
+                                $debt->Update([
+    
+                                    'amount' => $debt->amount - $transaction->amount,
+                                    'status_id' => 2
+        
+                                ]);
+
+                                $income->Update([
+    
+                                    'status_id' => 3
+        
+                                ]);
+
+                            }else{
+
+                                $debt->Update([
+    
+                                    'amount' => $debt->amount - $transaction->amount
+        
+                                ]);
+
+                            }
 
                         break;
 
@@ -314,21 +416,14 @@ class CashTransactions extends Component
                                     'en fecha' . ' ' .
                                     $now . ' ' .
                                     $this->description,
-                                'amount' => $this->amount,
+                                'amount' => $this->discharge_amount,
                                 'status_id' => 1
                             ]);
 
                             $detail = $account->details()->create([
                                 'action' => 'ingreso',
                                 'relation_file_number' => $transaction->file_number,
-                                'description' => 
-                                    'deposito a cuenta bancaria' . ' ' .
-                                    $account->bank->alias . '-' .
-                                    $account->company->alias . '-' .
-                                    $account->number . ' ' .
-                                    'en fecha' . ' ' .
-                                    $now . ' ' .
-                                    $this->description,
+                                'description' => $transaction->description,
                                 'amount' => $transaction->amount,
                                 'previus_balance' => $account->balance,
                                 'actual_balance' => $account->balance + $transaction->amount,
@@ -419,6 +514,56 @@ class CashTransactions extends Component
                 case 'egreso':
     
                     switch ($transaction->cashable_type){
+
+                        case 'App\Models\DebtsWithSupplier':
+
+                            $detail = $this->details->find($transaction->detail_id);
+
+                            $debt = $this->debts_with_suppliers->find($detail->detailable_id);
+
+                            if($debt->amount != $detail->actual_balance){
+
+                                $this->emit('item-error','Se han realizado transacciones adicionales con la deuda. Anule esas transacciones primero');
+                                return;
+
+                            }else{
+
+                                if($debt->amount == 0){
+
+                                    $income = $debt->income;
+                                    
+                                    $debt->update([
+
+                                        'amount' => $debt->amount + $transaction->amount,
+                                        'status_id' => 1
+
+                                    ]);
+
+                                    $income->update([
+
+                                        'status_id' => 4
+
+                                    ]);
+
+                                }else{
+
+                                    $debt->update([
+
+                                        'amount' => $debt->amount + $transaction->amount
+
+                                    ]);
+
+                                }
+
+                                $detail->update([
+
+                                    'status_id' => 2
+
+                                ]);
+
+                            }
+
+                        break;
     
                         case 'App\Models\BankAccount':
     

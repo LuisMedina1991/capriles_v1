@@ -33,7 +33,7 @@
                     <label><b>Tipo de transaccion</b></label>
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
-                        <option value="caja general">variado</option>
+                        <option value="caja general">variada</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
                     @error('relation')
@@ -46,15 +46,19 @@
 
                 @case('cuentas bancarias')
                     
+                    @if($AccountId != 'elegir')
+
                     <div class="col-sm-4">
                         <div class="form-group">
                             <label><b>Saldo</b></label>
-                            <input type="text" wire:model.lazy="balance" class="form-control" disabled>
-                            @error('balance')
+                            <input type="text" wire:model.lazy="bank_account_balance" class="form-control" disabled>
+                            @error('bank_account_balance')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
+
+                    @endif
 
                     <div class="col-sm-6">
                         <div class="form-group">
@@ -74,6 +78,16 @@
                 @break
                     
             @endswitch
+
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label><b>Monto</b></label>
+                    <input type="number" wire:model.lazy="income_amount" class="form-control" placeholder="0.00">
+                    @error('income_amount')
+                    <span class="text-danger er">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
 
         @break
 
@@ -84,7 +98,8 @@
                     <label><b>Tipo de transaccion</b></label>
                     <select wire:model="relation" class="form-control text-uppercase">
                         <option value="elegir">elegir</option>
-                        <option value="caja general">variado</option>
+                        <option value="caja general">variada</option>
+                        <option value="deudas con proveedores">proveedores</option>
                         <option value="cuentas bancarias">cuentas bancarias</option>
                     </select>
                     @error('relation')
@@ -95,17 +110,73 @@
 
             @switch($relation)
 
-                @case('cuentas bancarias')
-                    
+                @case('deudas con proveedores')
+
                     <div class="col-sm-4">
                         <div class="form-group">
-                            <label><b>Saldo</b></label>
-                            <input type="text" wire:model.lazy="balance" class="form-control" disabled>
-                            @error('balance')
+                            <label><b>Proveedor</b></label>
+                            <select wire:model="SupplierId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($suppliers as $supplier)
+                                <option value="{{$supplier->id}}">{{$supplier->name}}</option>
+                                @endforeach
+                            </select>
+                            @error('SupplierId')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
                     </div>
+
+                    @if($SupplierId != 'elegir')
+
+                    <div class="col-sm-12">
+                        <div class="form-group">
+                            <label><b>Detalle de la deuda</b></label>
+                            <select wire:model="DebtWithSupplierId" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                @foreach ($debt_with_supplier_detail as $detail)
+                                <option value="{{$detail->id}}">{{$detail->description}}</option>
+                                @endforeach
+                            </select>
+                            @error('DebtWithSupplierId')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                    @if($SupplierId != 'elegir' && $DebtWithSupplierId != 'elegir')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Saldo de la deuda</b></label>
+                            <input type="text" wire:model.lazy="debt_with_supplier_balance" class="form-control" disabled>
+                            @error('debt_with_supplier_balance')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
+
+                @break
+
+                @case('cuentas bancarias')
+                    
+                    @if($AccountId != 'elegir')
+
+                    <div class="col-sm-4">
+                        <div class="form-group">
+                            <label><b>Saldo</b></label>
+                            <input type="text" wire:model.lazy="bank_account_balance" class="form-control" disabled>
+                            @error('bank_account_balance')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+
+                    @endif
 
                     <div class="col-sm-6">
                         <div class="form-group">
@@ -126,19 +197,20 @@
                     
             @endswitch
 
+            <div class="col-sm-4">
+                <div class="form-group">
+                    <label><b>Monto</b></label>
+                    <input type="number" wire:model.lazy="discharge_amount" class="form-control" placeholder="0.00">
+                    @error('discharge_amount')
+                    <span class="text-danger er">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
+
         @break
 
     @endswitch
 
-    <div class="col-sm-4">
-        <div class="form-group">
-            <label><b>Monto</b></label>
-            <input type="number" wire:model.lazy="amount" class="form-control" placeholder="0.00">
-            @error('amount')
-            <span class="text-danger er">{{ $message }}</span>
-            @enderror
-        </div>
-    </div>
 </div>
 
 @include('common.modalFooter')

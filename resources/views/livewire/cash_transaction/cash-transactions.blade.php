@@ -15,7 +15,7 @@
                             target="_blank" title="Reporte">Generar PDF</a>
                     </div>
                     <div class="col-sm-4">
-                        <a href="javascript:void(0)" class="btn btn-dark btn-md" data-toggle="modal"
+                        <a href="javascript:void(0)" class="btn btn-dark btn-md {{$reportRange != 0 || $search_2 != 0 ? 'disabled' : ''}}" data-toggle="modal"
                             data-target="#theModal" title="Nuevo Registro">Agregar</a>
                     </div>
                 </div>
