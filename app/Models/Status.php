@@ -12,7 +12,26 @@ class Status extends Model
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
     protected $fillable = ['name','type'];
 
-    
+    public function miscellaneous_receivables(){
+
+        return $this->hasMany(MiscellaneousReceivable::class);
+    }
+
+    public function miscellaneous_payables(){
+
+        return $this->hasMany(MiscellaneousPayable::class);
+    }
+
+    public function balance_sheet_accounts(){
+
+        return $this->hasMany(BalanceSheetAccount::class);
+    }
+
+    public function cash_transactions(){
+
+        return $this->hasMany(CashTransaction::class);
+    }
+
     public function users(){
 
         return $this->hasMany(User::class);
