@@ -19,6 +19,7 @@ class CreateMiscellaneousReceivablesTable extends Migration
             $table->string('reference',45);
             $table->text('description',1000);
             $table->decimal('amount',60,30);
+            $table->foreignId('status_id')->constrained();
             $table->timestamps();
         });
     }
