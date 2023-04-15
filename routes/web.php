@@ -18,6 +18,7 @@ use App\Http\Livewire\Stocks;
 use App\Http\Livewire\Subcategories;
 use App\Http\Livewire\Users;
 use App\Http\Controllers\ExportController;
+use App\Http\Livewire\BalanceSheetAccounts;
 use App\Http\Livewire\BankAccounts;
 use App\Http\Livewire\BankingTransactions;
 use App\Http\Livewire\Banks;
@@ -79,6 +80,7 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('paychecks', Paychecks::class);
     Route::get('banking_transactions', BankingTransactions::class);
     Route::get('cash_transactions', CashTransactions::class);
+    Route::get('balance_sheet_accounts', BalanceSheetAccounts::class);
     /*Route::get('products', Products::class)->middleware('permission:Product_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('stocks', Stocks::class)->middleware('permission:Stock_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
     Route::get('pos', Pos::class)->middleware('permission:Ventas_Index');    //ruta para componente que por defecto ejecuta el metodo render del controlador
