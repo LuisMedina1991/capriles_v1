@@ -16,4 +16,9 @@ class MiscellaneousReceivable extends Model
 
         return $this->belongsTo(Status::class);
     }
+
+    public function details(){
+
+        return $this->morphMany(Detail::class,'detailable');
+    }
 }
