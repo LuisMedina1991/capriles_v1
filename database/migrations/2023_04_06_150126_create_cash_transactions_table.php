@@ -18,12 +18,12 @@ class CreateCashTransactionsTable extends Migration
             $table->integer('number');
             $table->string('file_number',45);
             $table->enum('action',['ingreso','egreso']);
-            $table->text('description',1000);
+            $table->string('type',45)->nullable();
+            $table->integer('relation')->nullable();
+            $table->string('description',255);
             $table->decimal('amount',60,30);
             $table->foreignId('status_id')->constrained();
-            $table->foreignId('detail_id')->nullable()->constrained();
-            $table->unsignedBigInteger('cashable_id');
-            $table->string('cashable_type',80);
+            $table->foreignId('balance_sheet_account_id')->constrained();
             $table->timestamps();
         });
     }

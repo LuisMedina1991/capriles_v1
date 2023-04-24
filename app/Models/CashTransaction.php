@@ -9,28 +9,18 @@ class CashTransaction extends Model
 {
     use HasFactory;
 
-    protected $guarded = [];
+    protected $fillable = ['number','file_number','action','type','relation','description','amount','status_id','balance_sheet_account_id'];
 
-
-    public function cashable(){
-
-        return $this->morphTo('cashable','cashable_type','cashable_id','id');
-    }
 
     public function status(){
 
         return $this->belongsTo(Status::class);
     }
 
-    public function detail(){
+    public function balance_sheet_account(){
 
-        return $this->belongsTo(Detail::class);
+        return $this->belongsTo(BalanceSheetAccount::class);
     }
-
-    /*public function details(){
-
-        return $this->morphMany(Detail::class,'detailable');
-    }*/
 
 
     public static function boot()

@@ -75,6 +75,7 @@
                                 @endif
                                 <th class="table-th text-white text-center">n° recibo</th>
                                 <th class="table-th text-white text-center">accion</th>
+                                <th class="table-th text-white text-center">tipo</th>
                                 <th class="table-th text-white text-center">detalles</th>
                                 <th class="table-th text-white text-center">monto</th>
                                 @if($search_2 == 0 && $reportRange == 0)
@@ -90,6 +91,7 @@
                                 @endif
                                 <td><h6 class="text-center text-uppercase">{{$transaction->file_number}}</h6></td>
                                 <td><h6 class="text-center text-uppercase">{{$transaction->action}}</h6></td>
+                                <td><h6 class="text-center text-uppercase">{{$transaction->type}}</h6></td>
                                 <td><h6 class="text-center text-uppercase">{{$transaction->description}}</h6></td>  
                                 <td><h6 class="text-center">${{number_format($transaction->amount,2)}}</h6></td>
                                 @if($search_2 == 0 && $reportRange == 0)
@@ -103,13 +105,11 @@
                             @endforeach
                         </tbody>
                     </table>
-                    {{--$transactions->links()--}}
                 </div>
             </div>
         </div>
     </div>
     @include('livewire.cash_transaction.form')
-    {{--@include('livewire.cash_transaction.form2')--}}
 </div>
 
 
