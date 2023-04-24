@@ -5,12 +5,6 @@
                 <h4 class="card-title text-uppercase">
                     <b>{{$pageTitle}} | {{$componentName}}</b>
                 </h4>
-                <ul class="tabs tab-pills">
-                    <li>
-                        <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal"
-                            data-target="#theModal">Agregar</a>
-                    </li>
-                </ul>
             </div>
 
             @include('common.searchbox')
@@ -20,9 +14,8 @@
                     <table class="table table-striped table-bordered mt-1">
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
-                                <th class="table-th text-white text-center">estado</th>
+                                <th class="table-th text-white text-center">nombre de estado</th>
                                 <th class="table-th text-white text-center">tipo de estado</th>
-                                <th class="table-th text-white text-center">opciones</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -36,24 +29,6 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $status->type }}</h6>
                                 </td>
-                                <td class="text-center">
-                                    <a href="javascript:void(0)" wire:click="Edit({{$status->id}})"
-                                        class="btn btn-dark mtmobile" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="javascript:void(0)"
-                                        onclick="Confirm(
-                                            '{{$status->id}}',
-                                            '{{$status->products_count}}',
-                                            '{{$status->users_count}}',
-                                            '{{$status->containers_count}}',
-                                            '{{$status->values_count}}'
-                                            )"
-                                        class="btn btn-dark" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>
-
-                                </td>
                             </tr>
 
                             @endforeach
@@ -62,73 +37,9 @@
                     </table>
 
                     {{$statuses->links()}}
-
+                    
                 </div>
             </div>
         </div>
     </div>
-
-    @include('livewire.status.form')
-
 </div>
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function(){
-        
-        window.livewire.on('item-added', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('item-updated', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('item-deleted', msg=>{
-            noty(msg)
-        });
-        window.livewire.on('show-modal', msg=>{
-            $('#theModal').modal('show')
-        });
-        window.livewire.on('modal-hide', msg=>{
-            $('#theModal').modal('hide')
-        });
-        $('#theModal').on('shown.bs.modal', function(e){
-            $('.component-name').focus()
-        });
-        window.livewire.on('item-error', msg=>{
-            noty(msg,2)
-        });
-        
-    });
-
-    function Confirm(id,products_count,users_count,containers_count,values_count){
-
-        if(products_count > 0 || users_count > 0 || containers_count > 0 || values_count > 0){
-
-            swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
-            return;
-        }
-
-        swal({
-
-            title: 'CONFIRMAR',
-            text: '¿CONFIRMA ELIMINAR EL REGISTRO?',
-            type: 'warning',
-            showCancelButton: true,
-            cancelButtonText: 'CERRAR',
-            cancelButtonColor: '#fff',
-            confirmButtonColor: '#3B3F5C',
-            confirmButtonText: 'ACEPTAR'
-
-        }).then(function(result){
-
-            if(result.value){
-
-                window.livewire.emit('destroy',id,products_count,users_count,containers_count,values_count)
-                swal.close()
-            }
-        })
-    }
-
-</script>

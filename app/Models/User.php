@@ -32,6 +32,7 @@ class User extends Authenticatable
     ];
 
 
+    //relacion muchos a uno con estados
     public function statuses(){
 
         return $this->belongsTo(Status::class);
