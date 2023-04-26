@@ -28,19 +28,19 @@
                         </thead>
                         <tbody>
 
-                            @foreach ($coins as $coin)
+                            @foreach ($denominations as $denomination)
 
                             <tr>
                                 <td>
-                                    <h6 class="text-uppercase text-center">{{ $coin->type }}</h6>
+                                    <h6 class="text-uppercase text-center">{{ $denomination->type }}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center">${{ number_format($coin->value,2) }}</h6>
+                                    <h6 class="text-center">${{ number_format($denomination->value,2) }}</h6>
                                 </td>
                                 <td class="text-center">
                                     <span>
-                                        @if($coin->image != null)
-                                        <img src="{{ asset('storage/denominations/' . $coin->image->url) }}"
+                                        @if($denomination->image != null)
+                                        <img src="{{ asset('storage/denominations/' . $denomination->image->url) }}"
                                             alt="imagen de ejemplo" height="70" width="80" class="rounded">
                                         @else
                                         <img src="{{ asset('storage/noimg.jpg') }}" alt="imagen de ejemplo" height="70"
@@ -49,11 +49,11 @@
                                     </span>
                                 </td>
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" wire:click="Edit({{$coin->id}})"
+                                    <a href="javascript:void(0)" wire:click="Edit({{$denomination->id}})"
                                         class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$coin->id}}')" class="btn btn-dark"
+                                    <a href="javascript:void(0)" onclick="Confirm('{{$denomination->id}}')" class="btn btn-dark"
                                         title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
@@ -66,7 +66,7 @@
                         </tbody>
                     </table>
 
-                    {{$coins->links()}}
+                    {{$denominations->links()}}
 
                 </div>
             </div>

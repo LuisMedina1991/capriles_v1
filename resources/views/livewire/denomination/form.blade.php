@@ -1,11 +1,11 @@
 @include('common.modalHead')
 
 <div class="row">
-    <div class="col-sm-12 col-md-6">
+    <div class="col-sm-6">
         <div class="form-group">
-            <label><b>Tipo</b></label>
-            <select wire:model="type" class="form-control">
-                <option value="Elegir">Elegir</option>
+            <label><b>Tipo de denominacion</b></label>
+            <select wire:model="type" class="form-control text-uppercase">
+                <option value="elegir">elegir</option>
                 <option value="billete">billete</option>
                 <option value="moneda">moneda</option>
                 <option value="otro">otro</option>
@@ -15,17 +15,15 @@
             @enderror
         </div>
     </div>
-    <div class="col-sm-12 col-md-6">
-        <label><b>Valor</b></label>
+    <div class="col-sm-6">
+        <label><b>Valor de la denominacion</b></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <span class="input-group-text">
-                    <span class="fas fa-edit">
-
-                    </span>
+                    <span class="fas fa-edit"></span>
                 </span>
             </div>
-            <input type="text" wire:model.lazy="value" class="form-control" placeholder="Ingrese un valor..."
+            <input type="number" wire:model.lazy="value" class="form-control" placeholder="0.00"
                 maxlength="25">
         </div>
         @error('value')

@@ -7,13 +7,13 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
-class Coins extends Component
+class Denominations extends Component
 {
 
     use WithFileUploads;
     use WithPagination;
 
-    public $type, $value, $search, $image, $selected_id, $pageTitle, $componentName;
+    public $pageTitle,$componentName,$selected_id,$search,$type,$value,$image;
     private $pagination = 20;
 
     public function mount()
@@ -21,45 +21,50 @@ class Coins extends Component
 
         $this->pageTitle = 'listado';
         $this->componentName = 'denominaciones';
-        $this->type = 'Elegir';
-        $this->image = null;
-        $this->value = '';
-        $this->search = '';
         $this->selected_id = 0;
+        $this->search = '';
+        $this->type = 'elegir';
+        $this->value = '';
+        $this->image = null;
         $this->resetValidation();
         $this->resetPage();
     }
 
     public function paginationView()
     {
-
         return 'vendor.livewire.bootstrap';
     }
 
     public function render()
     {
-        if (strlen($this->search) > 0)
+        if (strlen($this->search) > 0){
 
-            $data = Denomination::where('type', 'like', '%' . $this->search . '%')
+            $data = Denomination::with('image')
+            ->where('type', 'like', '%' . $this->search . '%')
+            ->orWhere('value', 'like', '%' . $this->search . '%')
+            ->orderBy('value', 'asc')
             ->paginate($this->pagination);
 
-        else
+        }else{
 
-            $data = Denomination::with('image')->orderBy('id', 'asc')
+            $data = Denomination::with('image')
+            ->orderBy('value', 'asc')
             ->paginate($this->pagination);
 
-        return view('livewire.denomination.coins', ['coins' => $data])
+        }
+
+        return view('livewire.denomination.denominations', ['denominations' => $data])
             ->extends('layouts.theme.app')
             ->section('content');
     }
 
     public function Store()
     {
-
         $rules = [
 
-            'type' => 'not_in:Elegir',
-            'value' => 'required|unique:denominations|numeric',
+            'type' => 'not_in:elegir',
+            'value' => 'required|unique:denominations|min:1|max:10',
+            'image' => 'exclude_if:image,null|mimes:jpg,png'
         ];
 
         $messages = [
@@ -67,8 +72,9 @@ class Coins extends Component
             'type.not_in' => 'Seleccione una opcion',
             'value.required' => 'Campo requerido',
             'value.unique' => 'Ya existe',
-            //'value.max' => 'Maximo 45 digitos',
-            'value.numeric' => 'Este campo solo admite numeros',
+            'value.min' => 'Minimo 1 digito',
+            'value.max' => 'Maximo 10 digitos',
+            'image.mimes' => 'Solo formatos jpg o png'
         ];
 
         $this->validate($rules, $messages);
@@ -95,7 +101,6 @@ class Coins extends Component
 
     public function Edit(Denomination $denomination)
     {
-
         $this->type = $denomination->type;
         $this->value = $denomination->value;
         $this->selected_id = $denomination->id;
@@ -105,11 +110,11 @@ class Coins extends Component
 
     public function Update()
     {
-
         $rules = [
 
-            'type' => 'not_in:Elegir',
-            'value' => "required|unique:denominations,value,{$this->selected_id}|numeric"
+            'type' => 'not_in:elegir',
+            'value' => "required|unique:denominations,value,{$this->selected_id}|min:1|max:10",
+            'image' => 'exclude_if:image,null|mimes:jpg,png'
         ];
 
         $messages = [
@@ -117,8 +122,9 @@ class Coins extends Component
             'type.not_in' => 'Seleccione una opcion',
             'value.required' => 'Campo requerido',
             'value.unique' => 'Ya existe',
-            //'value.max' => 'Maximo 45 digitos',
-            'value.numeric' => 'Este campo solo admite numeros',
+            'value.min' => 'Minimo 1 digito',
+            'value.max' => 'Maximo 10 digitos',
+            'image.mimes' => 'Solo formatos jpg o png'
         ];
 
         $this->validate($rules, $messages);
@@ -149,6 +155,7 @@ class Coins extends Component
                         unlink('storage/denominations/' . $imageTemp);
                     }
                 }
+
             } else {
 
                 $denomination->image()->create(['url' => $customFileName]);
@@ -166,22 +173,19 @@ class Coins extends Component
 
     public function Destroy(Denomination $denomination)
     {
-
-        $denomination->delete();
-
         if ($denomination->image != null) {
 
             $imageTemp = $denomination->image->url;
             $denomination->image()->delete();
 
-            if ($imageTemp != null) {
+            if (file_exists('storage/denominations/' . $imageTemp)) {
 
-                if (file_exists('storage/denominations/' . $imageTemp)) {
-
-                    unlink('storage/denominations/' . $imageTemp);
-                }
+                unlink('storage/denominations/' . $imageTemp);
             }
+
         }
+
+        $denomination->delete();
 
         $this->mount();
         $this->emit('item-deleted', 'Eliminado correctamente');

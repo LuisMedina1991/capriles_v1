@@ -5,7 +5,7 @@ use App\Http\Livewire\Cashout;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Livewire\Categories;
-use App\Http\Livewire\Coins;
+use App\Http\Livewire\Denominations;
 use App\Http\Livewire\Incomes;
 use App\Http\Livewire\Movement;
 use App\Http\Livewire\Offices;
@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function(){   //proteger grupo de rutas con e
     Route::get('categories', Categories::class);
     Route::get('subcategories', Subcategories::class);
     Route::get('offices', Offices::class);
-    Route::get('coins', Coins::class);
+    Route::get('denominations', Denominations::class);
     Route::get('statuses', Statuses::class);
     Route::get('products', Products::class);
     Route::get('brands',Brands::class);
