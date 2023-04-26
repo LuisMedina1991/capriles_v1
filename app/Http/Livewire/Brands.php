@@ -10,41 +10,48 @@ class Brands extends Component
 {
     use WithPagination;
 
-    public $name, $search, $selected_id, $pageTitle, $componentName;
+    public $pageTitle,$componentName,$search,$selected_id,$name;
     private $pagination = 30;
 
     public function mount()
     {
-
         $this->pageTitle = 'listado';
         $this->componentName = 'marcas';
-        $this->name = '';
         $this->search = '';
         $this->selected_id = 0;
+        $this->name = '';
         $this->resetValidation();
         $this->resetPage();
     }
 
     public function paginationView()
     {
-
         return 'vendor.livewire.bootstrap';
     }
 
     public function render()
     {
-        if (strlen($this->search) > 0)
+        if (strlen($this->search) > 0){
 
-            $data = Brand::withCount('products')
+            /*$data = Brand::withCount('products')
             ->where('name', 'like', '%' . $this->search . '%')
-            ->paginate($this->pagination);
+            ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
 
-        else
-
-            $data = Brand::withCount('products')
+            $data = Brand::where('name', 'like', '%' . $this->search . '%')
             ->orderBy('name', 'asc')
             ->paginate($this->pagination);
 
+        }else{
+
+            /*$data = Brand::withCount('products')
+            ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
+
+            $data = Brand::orderBy('name', 'asc')
+            ->paginate($this->pagination);
+
+        }
 
         return view('livewire.brand.brands', ['brands' => $data])
             ->extends('layouts.theme.app')
@@ -53,10 +60,9 @@ class Brands extends Component
 
     public function Store()
     {
-
         $rules = [
 
-            'name' => 'required|unique:brands|min:3|max:100'
+            'name' => 'required|unique:brands|min:3|max:45'
         ];
 
         $messages = [
@@ -64,7 +70,7 @@ class Brands extends Component
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
         ];
 
         $this->validate($rules, $messages);
@@ -74,13 +80,12 @@ class Brands extends Component
             'name' => $this->name
         ]);
 
-        $this->mount();
         $this->emit('item-added', 'Registrado correctamente');
+        $this->mount();
     }
 
     public function Edit(Brand $brand)
     {
-
         $this->name = $brand->name;
         $this->selected_id = $brand->id;
         $this->emit('show-modal', 'Mostrando modal');
@@ -88,10 +93,9 @@ class Brands extends Component
 
     public function Update()
     {
-
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:brands,name,{$this->selected_id}"
+            'name' => "required|min:3|max:45|unique:brands,name,{$this->selected_id}"
         ];
 
         $messages = [
@@ -99,7 +103,7 @@ class Brands extends Component
             'name.required' => 'Campo requerido',
             'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
         ];
 
         $this->validate($rules, $messages);
@@ -111,8 +115,8 @@ class Brands extends Component
             'name' => $this->name
         ]);
 
-        $this->mount();
         $this->emit('item-updated', 'Actualizado correctamente');
+        $this->mount();
     }
 
     protected $listeners = [
@@ -120,7 +124,7 @@ class Brands extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Brand $brand,$products_count)
+    /*public function Destroy(Brand $brand,$products_count)
     {
         if ($products_count > 0) {
 
@@ -133,6 +137,13 @@ class Brands extends Component
             $this->mount();
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
+    }*/
+
+    public function Destroy(Brand $brand)
+    {
+        $brand->delete();
+        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->mount();
     }
 
     public function resetUI()
