@@ -10,23 +10,22 @@ class Customers extends Component
 {
     use WithPagination;
 
-    public $search,$selected_id,$pageTitle,$componentName;
-    public $name,$phone,$fax,$email,$nit,$city,$country;
+    public $pageTitle,$componentName,$search,$selected_id;
+    public $name,$alias,$phone,$email,$city,$country;
     private $pagination = 20;
 
     public function mount(){
 
         $this->pageTitle = 'listado';
         $this->componentName = 'clientes';
-        $this->name = '';
-        $this->phone = '';
-        $this->fax = '';
-        $this->email = '';
-        $this->nit = '';
-        $this->city = '';
-        $this->country = '';
         $this->search = '';
         $this->selected_id = 0;
+        $this->name = '';
+        $this->alias = '';
+        $this->phone = '';
+        $this->email = '';
+        $this->city = '';
+        $this->country = '';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -40,23 +39,34 @@ class Customers extends Component
     {
         if(strlen($this->search) > 0){
 
-            $data = Customer::with(['incomes','sales','debts'])
+            /*$data = Customer::with(['incomes','sales','debts'])
             ->where('name', 'like', '%' . $this->search . '%')
+            ->orWhere('alias', 'like', '%' . $this->search . '%')
             ->orWhere('phone', 'like', '%' . $this->search . '%')
-            ->orWhere('fax', 'like', '%' . $this->search . '%')
             ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->orWhere('nit', 'like', '%' . $this->search . '%')
             ->orWhere('city', 'like', '%' . $this->search . '%')
             ->orWhere('country', 'like', '%' . $this->search . '%')
             ->withCount(['incomes','sales','debts'])
+            ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
+
+            $data = Customer::where('name', 'like', '%' . $this->search . '%')
+            ->orWhere('alias', 'like', '%' . $this->search . '%')
+            ->orWhere('phone', 'like', '%' . $this->search . '%')
+            ->orWhere('email', 'like', '%' . $this->search . '%')
+            ->orWhere('city', 'like', '%' . $this->search . '%')
+            ->orWhere('country', 'like', '%' . $this->search . '%')
             ->orderBy('name', 'asc')
             ->paginate($this->pagination);
 
         }else{
 
-            $data = Customer::with(['incomes','sales','debts'])
+            /*$data = Customer::with(['incomes','sales','debts'])
             ->withCount(['incomes','sales','debts'])
             ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
+
+            $data = Customer::orderBy('name', 'asc')
             ->paginate($this->pagination);
 
         }   
@@ -70,11 +80,10 @@ class Customers extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100',
-            'email' => 'max:100',
+            'name' => 'required|min:3|max:100|unique:customers',
+            'alias' => 'required|min:3|max:45|unique:customers',
             'phone' => 'max:12',
-            'fax' => 'max:12',
-            'nit' => 'max:12',
+            'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
         ];
@@ -84,11 +93,13 @@ class Customers extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
-            'email.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 45 caracteres',
+            'alias.unique' => 'Ya existe',
             'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
-            'nit.max' => 'Maximo 12 caracteres',
-            //'nit.unique' => 'Otro cliente ocupa este NIT',
+            'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
         ];
@@ -98,10 +109,9 @@ class Customers extends Component
         $customer = Customer::create([
 
             'name' => $this->name,
-            'email' => $this->email,
+            'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
-            'nit' => $this->nit,
+            'email' => $this->email,
             'city' => $this->city,
             'country' => $this->country
         ]);
@@ -122,10 +132,9 @@ class Customers extends Component
 
         $this->selected_id = $customer->id;
         $this->name = $customer->name;
+        $this->alias = $customer->alias;
         $this->phone = $customer->phone;
-        $this->fax = $customer->fax;
         $this->email = $customer->email;
-        $this->nit = $customer->nit;
         $this->city = $customer->city;
         $this->country = $customer->country;
         $this->emit('show-modal', 'Mostrando modal');
@@ -133,14 +142,12 @@ class Customers extends Component
 
     public function Update(){
 
-
         $rules = [
 
-            'name' => 'required|min:3|max:100',
-            'email' => 'max:100',
+            'name' => "required|min:3|max:100|unique:customers,name,{$this->selected_id}",
+            'alias' => "required|min:3|max:45|unique:customers,alias,{$this->selected_id}",
             'phone' => 'max:12',
-            'fax' => 'max:12',
-            'nit' => "max:12|unique:customers,nit,{$this->selected_id}",
+            'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
         ];
@@ -150,11 +157,13 @@ class Customers extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
-            'email.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 45 caracteres',
+            'alias.unique' => 'Ya existe',
             'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
-            'nit.max' => 'Maximo 12 caracteres',
-            'nit.unique' => 'Otro cliente ocupa este NIT',
+            'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
         ];
@@ -166,10 +175,9 @@ class Customers extends Component
         $customer->update([
 
             'name' => $this->name,
+            'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
             'email' => $this->email,
-            'nit' => $this->nit,
             'city' => $this->city,
             'country' => $this->country
         ]);
@@ -183,7 +191,7 @@ class Customers extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Customer $customer,$incomes_count,$sales_count,$debts_count){
+    /*public function Destroy(Customer $customer,$incomes_count,$sales_count,$debts_count){
 
         if ($incomes_count > 0 || $sales_count > 0 || $debts_count > 0) {
 
@@ -197,6 +205,14 @@ class Customers extends Component
             $this->mount();
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
+
+    }*/
+
+    public function Destroy(Customer $customer){
+
+        $customer->delete();
+        $this->mount();
+        $this->emit('item-deleted', 'Eliminado correctamente');
 
     }
 
