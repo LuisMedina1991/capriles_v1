@@ -20,10 +20,9 @@
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
                                 <th class="table-th text-center text-white">nombre</th>
+                                <th class="table-th text-white text-center">alias</th>
                                 <th class="table-th text-white text-center">telefono</th>
-                                <th class="table-th text-white text-center">fax</th>
                                 <th class="table-th text-white text-center">email</th>
-                                <th class="table-th text-white text-center">nit</th>
                                 <th class="table-th text-white text-center">ciudad</th>
                                 <th class="table-th text-white text-center">pais</th>
                                 <th class="table-th text-center text-white">opciones</th>
@@ -38,16 +37,13 @@
                                     <h6 class="text-center text-uppercase">{{ $supplier->name }}</h6>
                                 </td>
                                 <td>
+                                    <h6 class="text-center text-uppercase">{{ $supplier->alias }}</h6>
+                                </td>
+                                <td>
                                     <h6 class="text-center text-uppercase">{{ $supplier->phone }}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->fax }}</h6>
-                                </td>
-                                <td>
                                     <h6 class="text-center">{{ $supplier->email }}</h6>
-                                </td>
-                                <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->nit }}</h6>
                                 </td>
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $supplier->city }}</h6>
@@ -59,9 +55,9 @@
                                     <a href="javascript:void(0)" wire:click="Edit({{$supplier->id}})" class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$supplier->id}}','{{$supplier->incomes_count}}','{{$supplier->debts_count}}')" class="btn btn-dark" title="Eliminar">
+                                    {{--<a href="javascript:void(0)" onclick="Confirm('{{$supplier->id}}','{{$supplier->incomes_count}}','{{$supplier->debts_count}}')" class="btn btn-dark" title="Eliminar">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </a>--}}
                                 </td>
                             </tr>
 

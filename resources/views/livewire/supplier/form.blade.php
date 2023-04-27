@@ -10,7 +10,7 @@
                     </span>
                 </div>
                 <input type="text" wire:model.lazy="name" class="form-control component-name"
-                    placeholder="Nombre del proveedor...">
+                    placeholder="Nombre para el proveedor...">
             </div>
             @error('name')
             <span class="text-danger er">{{ $message }}</span>
@@ -19,16 +19,16 @@
     </div>
     <div class="col-sm-6">
         <div class="form-group">
-            <label><b>Email</b></label>
+            <label><b>Alias</b></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">
                         <span class="fas fa-edit"></span>
                     </span>
                 </div>
-                <input type="text" wire:model.lazy="email" class="form-control" placeholder="Email del proveedor...">
+                <input type="text" wire:model.lazy="alias" class="form-control" placeholder="Alias para el proveedor...">
             </div>
-            @error('email')
+            @error('alias')
             <span class="text-danger er">{{ $message }}</span>
             @enderror
         </div>
@@ -42,7 +42,7 @@
                         <span class="fas fa-edit"></span>
                     </span>
                 </div>
-                <input type="text" wire:model.lazy="phone" class="form-control" placeholder="Telefono del proveedor...">
+                <input type="text" wire:model.lazy="phone" class="form-control" placeholder="Telefono para el proveedor...">
             </div>
             @error('phone')
             <span class="text-danger er">{{ $message }}</span>
@@ -51,32 +51,16 @@
     </div>
     <div class="col-sm-6">
         <div class="form-group">
-            <label><b>Fax</b></label>
+            <label><b>Email</b></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">
                         <span class="fas fa-edit"></span>
                     </span>
                 </div>
-                <input type="text" wire:model.lazy="fax" class="form-control" placeholder="Fax del proveedor...">
+                <input type="text" wire:model.lazy="email" class="form-control" placeholder="Email para el proveedor...">
             </div>
-            @error('fax')
-            <span class="text-danger er">{{ $message }}</span>
-            @enderror
-        </div>
-    </div>
-    <div class="col-sm-6">
-        <div class="form-group">
-            <label><b>NIT</b></label>
-            <div class="input-group">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">
-                        <span class="fas fa-edit"></span>
-                    </span>
-                </div>
-                <input type="text" wire:model.lazy="nit" class="form-control" placeholder="NIT del proveedor...">
-            </div>
-            @error('nit')
+            @error('email')
             <span class="text-danger er">{{ $message }}</span>
             @enderror
         </div>
@@ -90,7 +74,7 @@
                         <span class="fas fa-edit"></span>
                     </span>
                 </div>
-                <input type="text" wire:model.lazy="city" class="form-control" placeholder="Ciudad del proveedor...">
+                <input type="text" wire:model.lazy="city" class="form-control" placeholder="Ciudad para el proveedor...">
             </div>
             @error('city')
             <span class="text-danger er">{{ $message }}</span>
@@ -106,7 +90,7 @@
                         <span class="fas fa-edit"></span>
                     </span>
                 </div>
-                <input type="text" wire:model.lazy="country" class="form-control" placeholder="Pais del proveedor...">
+                <input type="text" wire:model.lazy="country" class="form-control" placeholder="Pais para el proveedor...">
             </div>
             @error('country')
             <span class="text-danger er">{{ $message }}</span>

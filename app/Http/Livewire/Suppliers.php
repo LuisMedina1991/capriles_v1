@@ -10,23 +10,22 @@ class Suppliers extends Component
 {
     use WithPagination;
 
-    public $search,$selected_id,$pageTitle,$componentName;
-    public $name,$phone,$fax,$email,$nit,$city,$country;
+    public $pageTitle,$componentName,$search,$selected_id;
+    public $name,$alias,$phone,$email,$city,$country;
     private $pagination = 20;
 
     public function mount(){
 
         $this->pageTitle = 'listado';
         $this->componentName = 'proveedores';
-        $this->name = '';
-        $this->phone = '';
-        $this->fax = '';
-        $this->email = '';
-        $this->nit = '';
-        $this->city = '';
-        $this->country = '';
         $this->search = '';
         $this->selected_id = 0;
+        $this->name = '';
+        $this->alias = '';
+        $this->phone = '';
+        $this->email = '';
+        $this->city = '';
+        $this->country = '';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -40,23 +39,34 @@ class Suppliers extends Component
     {
         if(strlen($this->search) > 0){
 
-            $data = Supplier::with(['incomes','debts'])
+            /*$data = Supplier::with(['incomes','debts'])
             ->where('name', 'like', '%' . $this->search . '%')
+            ->orWhere('alias', 'like', '%' . $this->search . '%')
             ->orWhere('phone', 'like', '%' . $this->search . '%')
-            ->orWhere('fax', 'like', '%' . $this->search . '%')
             ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->orWhere('nit', 'like', '%' . $this->search . '%')
             ->orWhere('city', 'like', '%' . $this->search . '%')
             ->orWhere('country', 'like', '%' . $this->search . '%')
             ->withCount(['incomes','debts'])
+            ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
+
+            $data = Supplier::where('name', 'like', '%' . $this->search . '%')
+            ->orWhere('alias', 'like', '%' . $this->search . '%')
+            ->orWhere('phone', 'like', '%' . $this->search . '%')
+            ->orWhere('email', 'like', '%' . $this->search . '%')
+            ->orWhere('city', 'like', '%' . $this->search . '%')
+            ->orWhere('country', 'like', '%' . $this->search . '%')
             ->orderBy('name', 'asc')
             ->paginate($this->pagination);
 
         }else{
 
-            $data = Supplier::with(['incomes','debts'])
+            /*$data = Supplier::with(['incomes','debts'])
             ->withCount(['incomes','debts'])
             ->orderBy('name', 'asc')
+            ->paginate($this->pagination);*/
+
+            $data = Supplier::orderBy('name', 'asc')
             ->paginate($this->pagination);
 
         }   
@@ -70,11 +80,10 @@ class Suppliers extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100',
-            'email' => 'max:100',
+            'name' => 'required|min:3|max:100|unique:suppliers',
+            'alias' => 'required|min:3|max:45|unique:suppliers',
             'phone' => 'max:12',
-            'fax' => 'max:12',
-            'nit' => 'max:12',
+            'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
         ];
@@ -84,11 +93,13 @@ class Suppliers extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
-            'email.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 45 caracteres',
+            'alias.unique' => 'Ya existe',
             'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
-            'nit.max' => 'Maximo 12 caracteres',
-            //'nit.unique' => 'Otro proveedor ocupa este NIT',
+            'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
         ];
@@ -98,10 +109,9 @@ class Suppliers extends Component
         $supplier = Supplier::create([
 
             'name' => $this->name,
-            'email' => $this->email,
+            'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
-            'nit' => $this->nit,
+            'email' => $this->email,
             'city' => $this->city,
             'country' => $this->country
         ]);
@@ -122,25 +132,22 @@ class Suppliers extends Component
 
         $this->selected_id = $supplier->id;
         $this->name = $supplier->name;
+        $this->alias = $supplier->alias;
         $this->phone = $supplier->phone;
-        $this->fax = $supplier->fax;
         $this->email = $supplier->email;
-        $this->nit = $supplier->nit;
         $this->city = $supplier->city;
         $this->country = $supplier->country;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
-    public function Update(){
-
-
+    public function Update()
+    {
         $rules = [
 
-            'name' => 'required|min:3|max:100',
-            'email' => 'max:100',
+            'name' => "required|min:3|max:100|unique:suppliers,name,{$this->selected_id}",
+            'alias' => "required|min:3|max:45|unique:suppliers,alias,{$this->selected_id}",
             'phone' => 'max:12',
-            'fax' => 'max:12',
-            'nit' => "max:12|unique:suppliers,nit,{$this->selected_id}",
+            'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
         ];
@@ -150,11 +157,13 @@ class Suppliers extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
-            'email.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 45 caracteres',
+            'alias.unique' => 'Ya existe',
             'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
-            'nit.max' => 'Maximo 12 caracteres',
-            'nit.unique' => 'Otro proveedor ocupa este NIT',
+            'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
         ];
@@ -166,10 +175,9 @@ class Suppliers extends Component
         $supplier->update([
 
             'name' => $this->name,
+            'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
             'email' => $this->email,
-            'nit' => $this->nit,
             'city' => $this->city,
             'country' => $this->country
         ]);
@@ -183,7 +191,7 @@ class Suppliers extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Supplier $supplier,$incomes_count,$debts_count){
+    /*public function Destroy(Supplier $supplier,$incomes_count,$debts_count){
 
         if ($incomes_count > 0 || $debts_count > 0) {
 
@@ -198,6 +206,13 @@ class Suppliers extends Component
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
 
+    }*/
+
+    public function Destroy(Supplier $supplier){
+
+        $supplier->delete();
+        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->mount();
     }
 
     public function resetUI(){
