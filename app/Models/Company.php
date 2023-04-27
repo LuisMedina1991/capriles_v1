@@ -9,7 +9,7 @@ class Company extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','alias','phone','fax','email','nit','address','status_id'];
+    protected $fillable = ['name','alias','phone','email','nit','status_id'];
 
 
     public function status()
@@ -17,7 +17,7 @@ class Company extends Model
         return $this->belongsTo(status::class);
     }
 
-    public function accounts()
+    public function bank_accounts()
     {
         return $this->hasMany(BankAccount::class);
     }

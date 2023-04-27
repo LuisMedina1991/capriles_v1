@@ -19,6 +19,11 @@ class Status extends Model
         return $this->hasMany(User::class);
     }
 
+    public function companies(){
+
+        return $this->hasMany(Company::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);
@@ -42,11 +47,6 @@ class Status extends Model
     public function banks(){
 
         return $this->hasMany(Bank::class);
-    }
-
-    public function companies(){
-
-        return $this->hasMany(Company::class);
     }
 
     public function accounts()

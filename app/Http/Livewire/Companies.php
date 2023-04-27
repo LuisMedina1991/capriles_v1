@@ -4,32 +4,29 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use App\Models\Company;
-use App\Models\Status;
 use Livewire\WithPagination;
 
 class Companies extends Component
 {
     use WithPagination;
 
-    public $search,$search_2,$selected_id,$pageTitle,$componentName;
-    public $name,$alias,$phone,$fax,$email,$nit,$address,$statusId;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $name,$alias,$phone,$email,$nit,$status_id;
     private $pagination = 20;
 
     public function mount(){
 
         $this->pageTitle = 'listado';
         $this->componentName = 'empresas';
-        $this->name = '';
-        $this->alias = '';
-        $this->phone = '';
-        $this->fax = '';
-        $this->email = '';
-        $this->nit = '';
-        $this->address = '';
-        $this->statusId = 'Elegir';
         $this->search = '';
         $this->search_2 = 0;
         $this->selected_id = 0;
+        $this->name = '';
+        $this->alias = '';
+        $this->phone = '';
+        $this->email = '';
+        $this->nit = '';
+        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -48,24 +45,22 @@ class Companies extends Component
 
                 if(strlen($this->search) > 0){
 
-                    $data = Company::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',1)
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('alias', 'like', '%' . $this->search . '%')
-                    ->orWhere('phone', 'like', '%' . $this->search . '%')
-                    ->orWhere('fax', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('nit', 'like', '%' . $this->search . '%')
-                    ->orWhere('address', 'like', '%' . $this->search . '%')
+                    $data = Company:://withCount('bank_accounts')
+                    where('status_id',1)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('email', 'like', '%' . $this->search . '%');
+                        $query->orWhere('nit', 'like', '%' . $this->search . '%');
+                    })
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
-                    $data = Company::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',1)
+                    $data = Company:://withCount('bank_accounts')
+                    where('status_id',1)
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
@@ -77,24 +72,22 @@ class Companies extends Component
 
                 if(strlen($this->search) > 0){
 
-                    $data = Company::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',2)
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('alias', 'like', '%' . $this->search . '%')
-                    ->orWhere('phone', 'like', '%' . $this->search . '%')
-                    ->orWhere('fax', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%')
-                    ->orWhere('nit', 'like', '%' . $this->search . '%')
-                    ->orWhere('address', 'like', '%' . $this->search . '%')
+                    $data = Company:://withCount('bank_accounts')
+                    where('status_id',2)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('email', 'like', '%' . $this->search . '%');
+                        $query->orWhere('nit', 'like', '%' . $this->search . '%');
+                    })
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
-                    $data = Company::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',2)
+                    $data = Company:://withCount('bank_accounts')
+                    where('status_id',2)
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
@@ -113,13 +106,11 @@ class Companies extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100',
+            'name' => 'required|min:3|max:100|unique:companies',
             'alias' => 'required|min:3|max:15|unique:companies',
-            'phone' => 'max:12',
-            'fax' => 'max:12',
+            'phone' => 'digits_between:7,12',
             'email' => 'max:100',
-            'nit' => 'required|digits_between:12,13|unique:companies',
-            'address' => 'max:100',
+            'nit' => 'required|digits_between:13,15|unique:companies',
         ];
 
         $messages = [
@@ -127,48 +118,52 @@ class Companies extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
             'alias.max' => 'Maximo 15 caracteres',
             'alias.unique' => 'Ya existe',
-            'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'nit.required' => 'Campo requerido',
+            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 15 digitos',
             'nit.unique' => 'Ya existe',
-            'nit.digits_between' => 'Solo numeros enteros positivos entre 12 y 13 digitos',
-            'address.max' => 'Maximo 100 caracteres',
         ];
 
         $this->validate($rules, $messages);
 
-        Company::create([
+        $company = Company::create([
             
             'name' => $this->name,
             'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
             'email' => $this->email,
             'nit' => $this->nit,
-            'address' => $this->address,
             'status_id' => 1
         ]);
 
-        $this->mount();
-        $this->emit('item-added', 'Registrado correctamente');
+        if($company){
+
+            $this->emit('item-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('item-error', 'Error al registrar');
+            return;
+        }
+
     }
 
     public function Edit(Company $company){
-
+        
         $this->selected_id = $company->id;
         $this->name = $company->name;
         $this->alias = $company->alias;
         $this->phone = $company->phone;
-        $this->fax = $company->fax;
         $this->email = $company->email;
         $this->nit = $company->nit;
-        $this->address = $company->address;
-        $this->statusId = $company->status_id;
+        $this->status_id = $company->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -176,14 +171,12 @@ class Companies extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100',
+            'name' => "required|min:3|max:100|unique:companies,name,{$this->selected_id}",
             'alias' => "required|min:3|max:15|unique:companies,alias,{$this->selected_id}",
-            'phone' => 'max:12',
-            'fax' => 'max:12',
+            'phone' => 'digits_between:7,12',
             'email' => 'max:100',
-            'nit' => "required|digits_between:12,13|unique:companies,nit,{$this->selected_id}",
-            'address' => 'max:100',
-            'statusId' => 'not_in:Elegir',
+            'nit' => "required|digits_between:13,15|unique:companies,nit,{$this->selected_id}",
+            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -191,18 +184,17 @@ class Companies extends Component
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 100 caracteres',
+            'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
             'alias.max' => 'Maximo 15 caracteres',
             'alias.unique' => 'Ya existe',
-            'phone.max' => 'Maximo 12 caracteres',
-            'fax.max' => 'Maximo 12 caracteres',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'nit.required' => 'Campo requerido',
+            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 15 digitos',
             'nit.unique' => 'Ya existe',
-            'nit.digits_between' => 'Solo numeros enteros positivos entre 12 y 13 digitos',
-            'address.max' => 'Maximo 100 caracteres',
-            'statusId.not_int' => 'Seleccione una opcion',
+            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -214,11 +206,9 @@ class Companies extends Component
             'name' => $this->name,
             'alias' => $this->alias,
             'phone' => $this->phone,
-            'fax' => $this->fax,
             'email' => $this->email,
             'nit' => $this->nit,
-            'address' => $this->address,
-            'status_id' => $this->statusId
+            'status_id' => $this->status_id
         ]);
 
         $this->mount();
@@ -230,7 +220,7 @@ class Companies extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Company $company,$accounts_count){
+    /*public function Destroy(Company $company,$accounts_count){
 
         if ($accounts_count > 0) {
 
@@ -248,6 +238,17 @@ class Companies extends Component
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
 
+    }*/
+
+    public function Destroy(Company $company){
+        
+        $company->update([
+
+            'status_id' => 2
+        ]);
+
+        $this->mount();
+        $this->emit('item-deleted', 'Eliminado correctamente');
     }
 
     public function resetUI(){
