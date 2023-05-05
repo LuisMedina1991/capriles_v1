@@ -10,8 +10,8 @@ class Customers extends Component
 {
     use WithPagination;
 
-    public $pageTitle,$componentName,$search,$selected_id;
-    public $name,$alias,$phone,$email,$city,$country;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $name,$alias,$phone,$email,$city,$country,$status_id;
     private $pagination = 20;
 
     public function mount(){
@@ -19,6 +19,7 @@ class Customers extends Component
         $this->pageTitle = 'listado';
         $this->componentName = 'clientes';
         $this->search = '';
+        $this->search_2 = 0;
         $this->selected_id = 0;
         $this->name = '';
         $this->alias = '';
@@ -26,6 +27,7 @@ class Customers extends Component
         $this->email = '';
         $this->city = '';
         $this->country = '';
+        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -36,40 +38,60 @@ class Customers extends Component
     }
 
     public function render()
-    {
-        if(strlen($this->search) > 0){
+    {   
+        switch ($this->search_2){
 
-            /*$data = Customer::with(['incomes','sales','debts'])
-            ->where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('alias', 'like', '%' . $this->search . '%')
-            ->orWhere('phone', 'like', '%' . $this->search . '%')
-            ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->orWhere('city', 'like', '%' . $this->search . '%')
-            ->orWhere('country', 'like', '%' . $this->search . '%')
-            ->withCount(['incomes','sales','debts'])
-            ->orderBy('name', 'asc')
-            ->paginate($this->pagination);*/
+            case 0:
 
-            $data = Customer::where('name', 'like', '%' . $this->search . '%')
-            ->orWhere('alias', 'like', '%' . $this->search . '%')
-            ->orWhere('phone', 'like', '%' . $this->search . '%')
-            ->orWhere('email', 'like', '%' . $this->search . '%')
-            ->orWhere('city', 'like', '%' . $this->search . '%')
-            ->orWhere('country', 'like', '%' . $this->search . '%')
-            ->orderBy('name', 'asc')
-            ->paginate($this->pagination);
+                if(strlen($this->search) > 0){
 
-        }else{
+                    $data = Customer::where('status_id',1)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('email', 'like', '%' . $this->search . '%');
+                        $query->orWhere('city', 'like', '%' . $this->search . '%');
+                        $query->orWhere('country', 'like', '%' . $this->search . '%');
+                    })
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Customer::where('status_id',1)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
 
-            /*$data = Customer::with(['incomes','sales','debts'])
-            ->withCount(['incomes','sales','debts'])
-            ->orderBy('name', 'asc')
-            ->paginate($this->pagination);*/
+            break;
 
-            $data = Customer::orderBy('name', 'asc')
-            ->paginate($this->pagination);
+            case 1:
 
-        }   
+                if(strlen($this->search) > 0){
+
+                    $data = Customer::where('status_id',2)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('email', 'like', '%' . $this->search . '%');
+                        $query->orWhere('city', 'like', '%' . $this->search . '%');
+                        $query->orWhere('country', 'like', '%' . $this->search . '%');
+                    })
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Customer::where('status_id',2)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
+
+            break;
+
+        }
 
         return view('livewire.customer.customers', ['customers' => $data])
         ->extends('layouts.theme.app')
@@ -80,9 +102,9 @@ class Customers extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100|unique:customers',
-            'alias' => 'required|min:3|max:45|unique:customers',
-            'phone' => 'max:12',
+            'name' => 'required|min:3|max:45',
+            'alias' => 'required|min:3|max:15|unique:customers',
+            'phone' => 'digits_between:7,12',
             'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
@@ -92,13 +114,12 @@ class Customers extends Component
 
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
-            'name.unique' => 'Ya existe',
+            'name.max' => 'Maximo 45 caracteres',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
-            'alias.max' => 'Maximo 45 caracteres',
+            'alias.max' => 'Maximo 15 caracteres',
             'alias.unique' => 'Ya existe',
-            'phone.max' => 'Maximo 12 caracteres',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
@@ -113,7 +134,8 @@ class Customers extends Component
             'phone' => $this->phone,
             'email' => $this->email,
             'city' => $this->city,
-            'country' => $this->country
+            'country' => $this->country,
+            'status_id' => 1
         ]);
 
         if ($customer) {
@@ -137,6 +159,7 @@ class Customers extends Component
         $this->email = $customer->email;
         $this->city = $customer->city;
         $this->country = $customer->country;
+        $this->status_id = $customer->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -144,28 +167,29 @@ class Customers extends Component
 
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:customers,name,{$this->selected_id}",
-            'alias' => "required|min:3|max:45|unique:customers,alias,{$this->selected_id}",
-            'phone' => 'max:12',
+            'name' => 'required|min:3|max:45',
+            'alias' => "required|min:3|max:15|unique:customers,alias,{$this->selected_id}",
+            'phone' => 'digits_between:7,12',
             'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
+            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
-            'name.unique' => 'Ya existe',
+            'name.max' => 'Maximo 45 caracteres',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
-            'alias.max' => 'Maximo 45 caracteres',
+            'alias.max' => 'Maximo 15 caracteres',
             'alias.unique' => 'Ya existe',
-            'phone.max' => 'Maximo 12 caracteres',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
+            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -179,7 +203,8 @@ class Customers extends Component
             'phone' => $this->phone,
             'email' => $this->email,
             'city' => $this->city,
-            'country' => $this->country
+            'country' => $this->country,
+            'status_id' => $this->status_id
         ]);
 
         $this->emit('item-updated', 'Actualizado correctamente');
@@ -210,7 +235,13 @@ class Customers extends Component
 
     public function Destroy(Customer $customer){
 
-        $customer->delete();
+        $customer->update([
+
+            'status_id' => 2
+
+        ]);
+
+
         $this->mount();
         $this->emit('item-deleted', 'Eliminado correctamente');
 

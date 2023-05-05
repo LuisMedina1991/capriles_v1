@@ -9,25 +9,35 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','alias','phone','email','city','country'];
+    protected $fillable = ['name','alias','phone','email','city','country','status_id'];
 
 
+    //relacion muchos a uno con statuses
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
+    //relacion uno a muchos con incomes
     public function incomes(){
 
         return $this->hasMany(Income::class);
     }
 
+    //relacion uno a muchos con sales
     public function sales(){
 
         return $this->hasMany(Sale::class);
     }
 
+    //relacion uno a muchos con customer_debts
     public function debts(){
 
         return $this->hasMany(CustomerDebt::class);
     }
 
-    public function checks(){
+    //relacion uno a muchos con paychecks
+    public function paychecks(){
 
         return $this->hasMany(Paycheck::class);
     }
