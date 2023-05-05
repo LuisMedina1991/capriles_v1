@@ -19,6 +19,13 @@ class Status extends Model
         return $this->hasMany(User::class);
     }
 
+    //relacion uno a muchos con suppliers
+    public function suppliers(){
+
+        return $this->hasMany(Supplier::class);
+    }
+
+    //relacion uno a muchos con companies
     public function companies(){
 
         return $this->hasMany(Company::class);
