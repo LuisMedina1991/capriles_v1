@@ -106,18 +106,18 @@ class Companies extends Component
 
         $rules = [
 
-            'name' => 'required|min:3|max:100|unique:companies',
+            'name' => 'required|min:3|max:45|unique:companies',
             'alias' => 'required|min:3|max:15|unique:companies',
             'phone' => 'digits_between:7,12',
             'email' => 'max:100',
-            'nit' => 'required|digits_between:13,15|unique:companies',
+            'nit' => 'required|digits_between:13,16|unique:companies',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
             'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
@@ -126,7 +126,7 @@ class Companies extends Component
             'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'nit.required' => 'Campo requerido',
-            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 15 digitos',
+            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 16 digitos',
             'nit.unique' => 'Ya existe',
         ];
 
@@ -171,11 +171,11 @@ class Companies extends Component
 
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:companies,name,{$this->selected_id}",
+            'name' => "required|min:3|max:45|unique:companies,name,{$this->selected_id}",
             'alias' => "required|min:3|max:15|unique:companies,alias,{$this->selected_id}",
             'phone' => 'digits_between:7,12',
             'email' => 'max:100',
-            'nit' => "required|digits_between:13,15|unique:companies,nit,{$this->selected_id}",
+            'nit' => "required|digits_between:13,16|unique:companies,nit,{$this->selected_id}",
             'status_id' => 'not_in:elegir',
         ];
 
@@ -183,7 +183,7 @@ class Companies extends Component
 
             'name.required' => 'Campo requerido',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
             'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
             'alias.min' => 'Minimo 3 caracteres',
@@ -192,7 +192,7 @@ class Companies extends Component
             'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'email.max' => 'Maximo 100 caracteres',
             'nit.required' => 'Campo requerido',
-            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 15 digitos',
+            'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 16 digitos',
             'nit.unique' => 'Ya existe',
             'status_id.not_in' => 'Seleccione una opcion',
         ];
