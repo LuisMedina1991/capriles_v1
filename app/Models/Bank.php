@@ -12,18 +12,20 @@ class Bank extends Model
     protected $fillable = ['name','alias','entity_code','status_id'];
 
 
-    public function status()
-    {
+    //relacion muchos a uno con statuses
+    public function status(){
+
         return $this->belongsTo(status::class);
     }
 
-    public function accounts()
-    {
-        
+    //relacion uno a muchos con bank_accounts
+    public function bank_accounts(){
+
         return $this->hasMany(BankAccount::class);
     }
 
-    public function checks(){
+    //relacion uno a muchos con paychecks
+    public function paychecks(){
 
         return $this->hasMany(Paycheck::class);
     }

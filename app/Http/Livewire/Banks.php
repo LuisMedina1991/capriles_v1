@@ -11,21 +11,21 @@ class Banks extends Component
 {
     use WithPagination;
 
-    public $search,$search_2,$selected_id,$pageTitle,$componentName;
-    public $name,$alias,$entity_code,$statusId;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $name,$alias,$entity_code,$status_id;
     private $pagination = 20;
 
     public function mount(){
 
         $this->pageTitle = 'listado';
         $this->componentName = 'bancos';
-        $this->name = '';
-        $this->alias = '';
-        $this->entity_code = '';
-        $this->statusId = 'Elegir';
         $this->search = '';
         $this->search_2 = 0;
         $this->selected_id = 0;
+        $this->name = '';
+        $this->alias = '';
+        $this->entity_code = '';
+        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -44,23 +44,20 @@ class Banks extends Component
 
                 if(strlen($this->search) > 0){
 
-                    $data = Bank::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',1)
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('alias', 'like', '%' . $this->search . '%')
-                    ->orWhere('entity_code', 'like', '%' . $this->search . '%')
+                    $data = Bank::where('status_id',1)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('entity_code', 'like', '%' . $this->search . '%');
+                    })
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
-                    $data = Bank::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',1)
+                    $data = Bank::where('status_id',1)
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
-        
                 }
                 
             break;
@@ -69,23 +66,20 @@ class Banks extends Component
 
                 if(strlen($this->search) > 0){
 
-                    $data = Bank::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',2)
-                    ->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('alias', 'like', '%' . $this->search . '%')
-                    ->orWhere('entity_code', 'like', '%' . $this->search . '%')
+                    $data = Bank::where('status_id',2)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('entity_code', 'like', '%' . $this->search . '%');
+                    })
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
-                    $data = Bank::with('status')
-                    ->withCount('accounts')
-                    ->where('status_id',2)
+                    $data = Bank::where('status_id',2)
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
-        
                 }
                 
             break;
@@ -101,29 +95,29 @@ class Banks extends Component
 
         $rules = [
 
-            'name' => 'required|unique:banks|min:3|max:100',
-            'alias' => 'required|unique:banks|min:3|max:45',
+            'name' => 'required|min:3|max:45|unique:banks',
+            'alias' => 'required|min:3|max:15|unique:banks',
             'entity_code' => 'required|digits_between:4,6|unique:banks',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
-            'alias.unique' => 'Ya existe',
             'alias.min' => 'Minimo 3 caracteres',
-            'alias.max' => 'Maximo 45 caracteres',
+            'alias.max' => 'Maximo 15 caracteres',
+            'alias.unique' => 'Ya existe',
             'entity_code.required' => 'Campo requerido',
+            'entity_code.digits_between' => 'Solo numeros enteros y positivos. De 4 a 6 digitos',
             'entity_code.unique' => 'Ya existe',
-            'entity_code.digits_between' => 'Solo numeros enteros positivos entre 4 y 6 digitos',
         ];
 
         $this->validate($rules, $messages);
 
-        Bank::create([
+        $bank = Bank::create([
             
             'name' => $this->name,
             'alias' => $this->alias,
@@ -131,8 +125,17 @@ class Banks extends Component
             'status_id' => 1
         ]);
 
-        $this->mount();
-        $this->emit('item-added', 'Registrado correctamente');
+        if($bank){
+
+            $this->emit('item-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('item-error', 'Error al registrar');
+            return;
+        }
+        
     }
 
     public function Edit(Bank $bank){
@@ -141,7 +144,7 @@ class Banks extends Component
         $this->name = $bank->name;
         $this->alias = $bank->alias;
         $this->entity_code = $bank->entity_code;
-        $this->statusId = $bank->status_id;
+        $this->status_id = $bank->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -149,26 +152,26 @@ class Banks extends Component
 
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:banks,name,{$this->selected_id}",
+            'name' => "required|min:3|max:45|unique:banks,name,{$this->selected_id}",
             'alias' => "required|min:3|max:15|unique:banks,alias,{$this->selected_id}",
             'entity_code' => "required|digits_between:4,6|unique:banks,entity_code,{$this->selected_id}",
-            'statusId' => 'not_in:Elegir',
+            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
             'alias.required' => 'Campo requerido',
-            'alias.unique' => 'Ya existe',
             'alias.min' => 'Minimo 3 caracteres',
             'alias.max' => 'Maximo 15 caracteres',
+            'alias.unique' => 'Ya existe',
             'entity_code.required' => 'Campo requerido',
+            'entity_code.digits_between' => 'Solo numeros enteros y positivos. De 4 a 6 digitos',
             'entity_code.unique' => 'Ya existe',
-            'entity_code.digits_between' => 'Solo numeros enteros positivos entre 4 y 6 digitos',
-            'statusId.not_in' => 'Seleccione una opcion'
+            'status_id.not_in' => 'Seleccione una opcion'
         ];
 
         $this->validate($rules, $messages);
@@ -180,7 +183,7 @@ class Banks extends Component
             'name' => $this->name,
             'alias' => $this->alias,
             'entity_code' => $this->entity_code,
-            'status_id' => $this->statusId
+            'status_id' => $this->status_id
         ]);
 
         $this->mount();
@@ -192,7 +195,7 @@ class Banks extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Bank $bank,$accounts_count){
+    /*public function Destroy(Bank $bank,$accounts_count){
 
         if ($accounts_count > 0) {
 
@@ -210,6 +213,17 @@ class Banks extends Component
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
 
+    }*/
+
+    public function Destroy(Bank $bank){
+
+        $bank->update([
+
+            'status_id' => 2
+        ]);
+
+        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->mount();
     }
 
     public function resetUI(){
