@@ -9,13 +9,35 @@
                 <ul class="tabs tab-pills">
                     <li>
                         <a href="javascript:void(0)" class="btn bg-dark" data-toggle="modal"
-                            data-target="#category_modal">Agregar</a>
+                            data-target="#theModal">Agregar</a>
                     </li>
                 </ul>
             </div>
 
-            @include('common.searchbox')
-            <!--barra de busqueda-->
+            <div class="row">
+                <div class="col-sm-3">
+                    <h6><b>Filtro de busqueda</b></h6>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text input-gp">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <h6><b>Estado del registro</b></h6>
+                    <div class="form-group">
+                        <select wire:model="search_2" class="form-control">
+                            <option value="0">Activo</option>
+                            <option value="1">Bloqueado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <div class="widget-content">
                 <!--card-->
@@ -26,35 +48,33 @@
                             <!--encabezado de tabla-->
                             <tr>
                                 <th class="table-th text-center text-white">categoria</th>
-                                <th class="table-th text-center text-white">subcategorias relacionadas</th>
+                                {{--<th class="table-th text-center text-white">subcategorias relacionadas</th>--}}
                                 <th class="table-th text-center text-white">opciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             <!--cuerpo de tabla-->
-
                             @foreach ($categories as $category)
                             <!--iteracion de los datos almacenados en variable pasada desde controlador-->
-
                             <tr>
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $category->name }}</h6>
                                 </td>
-                                <td>
+                                {{--<td>
                                     <h6 class="text-center text-uppercase">{{ $category->subcategories_count }}</h6>
-                                </td>
+                                </td>--}}
                                 <td class="text-center">
                                     <!--directiva click de livewire que hace llamado al metodo edit del componente pasandole el id-->
                                     <a href="javascript:void(0)" wire:click="Edit({{$category->id}})"
                                         class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
+                                    {{--<!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
                                     <a href="javascript:void(0)"
                                         onclick="Confirm('{{$category->id}}','{{$category->subcategories_count}}')"
                                         class="btn btn-dark" title="Eliminar">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </a>--}}
                                 </td>
                             </tr>
 
@@ -81,17 +101,17 @@
     document.addEventListener('DOMContentLoaded', function(){
 
         window.livewire.on('show-modal', msg=>{     //evento para mostral modal
-            $('#category_modal').modal('show')
+            $('#theModal').modal('show')
         });
         window.livewire.on('item-added', msg=>{     //evento para agregar registro
-            $('#category_modal').modal('hide')
+            $('#theModal').modal('hide')
             noty(msg)
         });
         window.livewire.on('item-deleted', msg=>{   //evento para eliminar registro
             noty(msg)
         });
         window.livewire.on('item-updated', msg=>{   //evento para actualizar registro
-            $('#category_modal').modal('hide')
+            $('#theModal').modal('hide')
             noty(msg)
         });
         window.livewire.on('item-error', msg=>{   //evento para actualizar registro
@@ -102,7 +122,7 @@
             $('.er').css('display', 'none')
         });
         */
-        $('#category_modal').on('shown.bs.modal', function(e){    //metodo para autofocus al campo nombre
+        $('#theModal').on('shown.bs.modal', function(e){    //metodo para autofocus al campo nombre
             $('.component-name').focus()
         });
     });

@@ -49,6 +49,12 @@ class Status extends Model
         return $this->hasMany(Office::class);
     }
 
+    //relacion uno a muchos con categories
+    public function categories(){
+
+        return $this->hasMany(Category::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);
