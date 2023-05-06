@@ -10,9 +10,16 @@ class Office extends Model
     use HasFactory;
 
 
-    protected $fillable = ['name','address','phone'];
+    protected $fillable = ['name','alias','phone','address','status_id'];
 
     
+    //relacion muchos a uno con statuses
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
+    //relacion muchos a muchos con values
     public function values(){
         
         return $this->belongsToMany(Value::class)
@@ -21,6 +28,7 @@ class Office extends Model
         ->using(OfficeValue::class);
     }
 
+    //relacion muchos a muchos con values con estado activo
     public function activeValues(){
         
         return $this->belongsToMany(Value::class)

@@ -12,46 +12,83 @@ class Offices extends Component
 {
     use WithPagination;
 
-    public $name, $address, $phone, $search, $selected_id, $pageTitle, $componentName,$values;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $name,$alias,$phone,$address,$status_id;
     private $pagination = 20;
 
     public function mount()
     {
         $this->pageTitle = 'listado';
         $this->componentName = 'sucursales';
-        $this->name = '';
-        $this->address = '';
-        $this->phone = '';
-        $this->selected_id = 0;
         $this->search = '';
-        $this->values = Value::all();
+        $this->search_2 = 0;
+        $this->selected_id = 0;
+        $this->name = '';
+        $this->alias = '';
+        $this->phone = '';
+        $this->address = '';
+        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
 
     public function paginationView()
     {
-
         return 'vendor.livewire.bootstrap';
     }
 
     public function render()
     {
 
-        if (strlen($this->search) > 0)
+        switch ($this->search_2){
 
-            $data = Office::withCount('values','activeValues')
-                ->where('name', 'like', '%' . $this->search . '%')
-                ->orWhere('address', 'like', '%' . $this->search . '%')
-                ->orWhere('phone', 'like', '%' . $this->search . '%')
-                ->paginate($this->pagination);
+            case 0:
 
-        else
+                if (strlen($this->search) > 0){
 
-            $data = Office::withCount('values','activeValues')
-            ->orderBy('name', 'asc')
-            ->paginate($this->pagination);
+                    $data = Office::where('status_id',1)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('address', 'like', '%' . $this->search . '%');
+                    })
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Office::where('status_id',1)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
 
+            break;
+
+            case 1:
+
+                if (strlen($this->search) > 0){
+
+                    $data = Office::where('status_id',2)
+                    ->where(function ($query) {
+                        $query->where('name', 'like', '%' . $this->search . '%');
+                        $query->orWhere('alias', 'like', '%' . $this->search . '%');
+                        $query->orWhere('phone', 'like', '%' . $this->search . '%');
+                        $query->orWhere('address', 'like', '%' . $this->search . '%');
+                    })
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Office::where('status_id',2)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
+
+            break;
+
+        }
 
         return view('livewire.office.offices', ['offices' => $data])
             ->extends('layouts.theme.app')
@@ -61,23 +98,26 @@ class Offices extends Component
 
     public function Store()
     {
-
         $rules = [
 
-            'name' => 'required|unique:offices|min:3|max:100',
-            'address' => 'max:500',
-            'phone' => 'max:12',
+            'name' => 'required|min:3|max:45|unique:offices',
+            'alias' => 'required|min:3|max:15|unique:offices',
+            'phone' => 'digits_between:7,12',
+            'address' => 'max:255',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
-            'address.max' => 'Maximo 500 caracteres',
-            //'phone.numeric' => 'Solo numeros',
-            'phone.max' => 'Maximo 12 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 15 caracteres',
+            'alias.unique' => 'Ya existe',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
+            'address.max' => 'Maximo 255 caracteres',
         ];
 
         $this->validate($rules, $messages);
@@ -85,11 +125,13 @@ class Offices extends Component
         $office = Office::create([
 
             'name' => $this->name,
+            'alias' => $this->alias,
+            'phone' => $this->phone,
             'address' => $this->address,
-            'phone' => $this->phone
+            'status_id' => 1
         ]);
 
-        $stocks = [];
+        /*$stocks = [];
 
         foreach($this->values as $value){
 
@@ -97,40 +139,56 @@ class Offices extends Component
             
         }
 
-        $office->values()->attach($stocks);
+        $office->values()->attach($stocks);*/
 
-        $this->emit('item-added', 'Registrado correctamente');
-        $this->mount();
+        if($office){
+
+            $this->emit('item-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('item-error', 'Error al registrar');
+            return;
+        }
+
     }
 
     public function Edit(Office $office)
     {
         $this->selected_id = $office->id;
         $this->name = $office->name;
-        $this->address = $office->address;
+        $this->alias = $office->alias;
         $this->phone = $office->phone;
+        $this->address = $office->address;
+        $this->status_id = $office->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
     public function Update()
     {
-
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:offices,name,{$this->selected_id}",
-            'address' => 'max:500',
-            'phone' => 'max:12',
+            'name' => "required|min:3|max:45|unique:offices,name,{$this->selected_id}",
+            'alias' => "required|min:3|max:15|unique:offices,alias,{$this->selected_id}",
+            'phone' => 'digits_between:7,12',
+            'address' => 'max:255',
+            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
-            'address.max' => 'Maximo 500 caracteres',
-            //'phone.numeric' => 'Solo numeros',
-            'phone.max' => 'Maximo 12 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
+            'alias.required' => 'Campo requerido',
+            'alias.min' => 'Minimo 3 caracteres',
+            'alias.max' => 'Maximo 15 caracteres',
+            'alias.unique' => 'Ya existe',
+            'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
+            'address.max' => 'Maximo 255 caracteres',
+            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -140,8 +198,10 @@ class Offices extends Component
         $office->update([
 
             'name' => $this->name,
+            'alias' => $this->alias,
+            'phone' => $this->phone,
             'address' => $this->address,
-            'phone' => $this->phone
+            'status_id' => $this->status_id
         ]);
 
         $this->emit('item-updated', 'Actualizado correctamente');
@@ -153,7 +213,7 @@ class Offices extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Office $office,$values_count,$active_values_count)
+    /*public function Destroy(Office $office,$values_count,$active_values_count)
     {   
         
         if ($active_values_count > 0) {
@@ -188,6 +248,18 @@ class Offices extends Component
             }
         }
 
+    }*/
+
+    public function Destroy(Office $office)
+    {   
+        $office->update([
+
+            'status_id' => 2
+
+        ]);
+
+        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->mount();
     }
 
     public function resetUI()

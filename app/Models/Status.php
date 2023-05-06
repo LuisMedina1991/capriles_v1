@@ -43,6 +43,12 @@ class Status extends Model
         return $this->hasMany(Bank::class);
     }
 
+    //relacion uno a muchos con offices
+    public function offices(){
+
+        return $this->hasMany(Office::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);

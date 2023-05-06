@@ -105,5 +105,6 @@
         </div>
 
     @endif
+    
 </div>
 @include('common.modalFooter')
