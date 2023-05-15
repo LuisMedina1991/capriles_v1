@@ -10,9 +10,15 @@ class Presentation extends Model
     use HasFactory;
 
     
-    protected $fillable = ['name'];
+    protected $fillable = ['name','status_id'];
 
     
+    //relacion muchos a uno con statuses
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
     public function subcategories(){
 
         return $this->belongsToMany(Subcategory::class)

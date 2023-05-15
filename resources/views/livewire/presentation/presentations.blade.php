@@ -12,7 +12,30 @@
                 </ul>
             </div>
 
-            @include('common.searchbox')
+            <div class="row">
+                <div class="col-sm-3">
+                    <h6><b>Filtro de busqueda</b></h6>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text input-gp">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <h6><b>Estado del registro</b></h6>
+                    <div class="form-group">
+                        <select wire:model="search_2" class="form-control">
+                            <option value="0">Activo</option>
+                            <option value="1">Bloqueado</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
 
             <div class="widget-content">
                 <div class="table-responsive">
@@ -20,7 +43,7 @@
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
                                 <th class="table-th text-center text-white">presentacion</th>
-                                <th class="table-th text-white text-center">contenedores relacionados</th>
+                                {{--<th class="table-th text-white text-center">contenedores relacionados</th>--}}
                                 <th class="table-th text-center text-white text-center">opciones</th>
                             </tr>
                         </thead>
@@ -32,16 +55,16 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $presentation->name }}</h6>
                                 </td>
-                                <td>
+                                {{--<td>
                                     <h6 class="text-center text-uppercase">{{ $presentation->subcategories_count }}</h6>
-                                </td>
+                                </td>--}}
                                 <td class="text-center">
                                     <a href="javascript:void(0)" wire:click="Edit({{$presentation->id}})" class="btn btn-dark mtmobile" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <a href="javascript:void(0)" onclick="Confirm('{{$presentation->id}}','{{$presentation->subcategories_count}}')" class="btn btn-dark" title="Eliminar">
+                                    {{--<a href="javascript:void(0)" onclick="Confirm('{{$presentation->id}}','{{$presentation->subcategories_count}}')" class="btn btn-dark" title="Eliminar">
                                         <i class="fas fa-trash"></i>
-                                    </a>
+                                    </a>--}}
                                 </td>
                             </tr>
 

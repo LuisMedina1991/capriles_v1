@@ -55,6 +55,12 @@ class Status extends Model
         return $this->hasMany(Category::class);
     }
 
+    //relacion uno a muchos con presentations
+    public function presentations(){
+
+        return $this->hasMany(Presentation::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);

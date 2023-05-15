@@ -10,16 +10,19 @@ class Presentations extends Component
 {
     use WithPagination;
 
-    public $name,$search,$selected_id,$pageTitle,$componentName;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $name,$status_id;
     private $pagination = 20;
 
     public function mount(){
 
         $this->pageTitle = 'listado';
         $this->componentName = 'presentaciones';
-        $this->name = '';
         $this->search = '';
+        $this->search_2 = 0;
         $this->selected_id = 0;
+        $this->name = '';
+        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -31,18 +34,45 @@ class Presentations extends Component
 
     public function render()
     {
-        if(strlen($this->search) > 0)
+        switch ($this->search_2){
 
-            $data = Presentation::withCount('subcategories')
-            ->where('name', 'like', '%' . $this->search . '%')
-            ->paginate($this->pagination);
+            case 0:
 
-        else
+                if(strlen($this->search) > 0){
 
-            $data = Presentation::withCount('subcategories')
-            ->orderBy('name', 'asc')
-            ->paginate($this->pagination);
-            
+                    $data = Presentation::where('status_id',1)
+                    ->where('name', 'like', '%' . $this->search . '%')
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Presentation::where('status_id',1)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
+
+            break;
+
+            case 1:
+
+                if(strlen($this->search) > 0){
+
+                    $data = Presentation::where('status_id',2)
+                    ->where('name', 'like', '%' . $this->search . '%')
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+        
+                }else{
+        
+                    $data = Presentation::where('status_id',2)
+                    ->orderBy('name', 'asc')
+                    ->paginate($this->pagination);
+                }
+
+            break;
+
+        }
 
         return view('livewire.presentation.presentations', ['presentations' => $data])
         ->extends('layouts.theme.app')
@@ -53,31 +83,42 @@ class Presentations extends Component
 
         $rules = [
 
-            'name' => 'required|unique:presentations|min:3|max:100'
+            'name' => 'required|min:3|max:45|unique:presentations',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
         ];
 
         $this->validate($rules, $messages);
 
-        Presentation::create([
+        $presentation = Presentation::create([
             
-            'name' => $this->name   
+            'name' => $this->name,
+            'status_id' => 1
         ]);
 
-        $this->mount();
-        $this->emit('item-added', 'Registrado correctamente');
+        if($presentation){
+
+            $this->emit('item-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('item-error', 'Error al registrar');
+            return;
+        }
+
     }
 
     public function Edit(Presentation $presentation){
 
         $this->name = $presentation->name;
+        $this->status_id = $presentation->status_id;
         $this->selected_id = $presentation->id;
         $this->emit('show-modal', 'Mostrando modal');
     }
@@ -86,15 +127,17 @@ class Presentations extends Component
 
         $rules = [
 
-            'name' => "required|min:3|max:100|unique:presentations,name,{$this->selected_id}"
+            'name' => "required|min:3|max:45|unique:presentations,name,{$this->selected_id}",
+            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
 
             'name.required' => 'Campo requerido',
-            'name.unique' => 'Ya existe',
             'name.min' => 'Minimo 3 caracteres',
-            'name.max' => 'Maximo 100 caracteres',
+            'name.max' => 'Maximo 45 caracteres',
+            'name.unique' => 'Ya existe',
+            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -103,11 +146,12 @@ class Presentations extends Component
 
         $presentation->update([
 
-            'name' => $this->name
+            'name' => $this->name,
+            'status_id' => $this->status_id
         ]);
 
-        $this->mount();
         $this->emit('item-updated', 'Actualizado correctamente');
+        $this->mount();
     }
 
     protected $listeners = [
@@ -115,7 +159,7 @@ class Presentations extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Destroy(Presentation $presentation,$subcategories_count){
+    /*public function Destroy(Presentation $presentation,$subcategories_count){
 
         if ($subcategories_count > 0) {
 
@@ -128,6 +172,18 @@ class Presentations extends Component
             $this->mount();
             $this->emit('item-deleted', 'Eliminado correctamente');
         }
+
+    }*/
+
+    public function Destroy(Presentation $presentation){
+
+        $presentation->update([
+
+            'status_id' => 2
+        ]);
+
+        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->mount();
 
     }
 
