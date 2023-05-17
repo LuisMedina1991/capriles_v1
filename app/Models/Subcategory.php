@@ -9,14 +9,20 @@ class Subcategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name','category_id'];
+    protected $fillable = ['name','status_id','category_id'];
     
 
+    //relacion muchos a uno con statuses
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
+    //relacion muchos a uno con categories
     public function category(){
 
         return $this->belongsTo(Category::class);
     }
-
 
     public function presentations(){
 
