@@ -13,7 +13,21 @@
                 </ul>
             </div>
 
-            @include('common.searchbox')
+            <div class="row">
+                <div class="col-sm-12 col-md-6 col-lg-3">
+                    <h6><b>Filtro de busqueda</b></h6>
+                    <div class="form-group">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text input-gp">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                            </div>
+                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <div class="widget-content">
                 <div class="table-responsive">
@@ -50,14 +64,13 @@
                                 </td>
                                 <td class="text-center">
                                     <a href="javascript:void(0)" wire:click="Edit({{$denomination->id}})"
-                                        class="btn btn-dark mtmobile" title="Editar">
+                                        class="btn btn-dark" title="Editar">
                                         <i class="fas fa-edit"></i>
                                     </a>
                                     <a href="javascript:void(0)" onclick="Confirm('{{$denomination->id}}')" class="btn btn-dark"
                                         title="Eliminar">
                                         <i class="fas fa-trash"></i>
                                     </a>
-
                                 </td>
                             </tr>
 
@@ -81,24 +94,26 @@
 <script>
     document.addEventListener('DOMContentLoaded', function(){
         
-        window.livewire.on('item-added', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('item-updated', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('item-deleted', msg=>{
-            noty(msg)
-        });
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
         window.livewire.on('modal-hide', msg=>{
             $('#theModal').modal('hide')
         });
-        
+        window.livewire.on('record-added', msg=>{
+            $('#theModal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('record-updated', msg=>{
+            $('#theModal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('record-deleted', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-error', msg=>{
+            noty(msg,2)
+        });
     });
 
     function Confirm(id){
