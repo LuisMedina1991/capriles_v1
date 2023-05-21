@@ -11,7 +11,7 @@ class Companies extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $name,$alias,$phone,$email,$nit,$status_id;
+    public $name,$alias,$phone,$email,$nit;
     private $pagination = 20;
 
     public function mount(){
@@ -26,7 +26,6 @@ class Companies extends Component
         $this->phone = '';
         $this->email = '';
         $this->nit = '';
-        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -144,12 +143,12 @@ class Companies extends Component
 
         if($company){
 
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
         }else{
 
-            $this->emit('item-error', 'Error al registrar');
+            $this->emit('record-error', 'Error al registrar');
             return;
         }
 
@@ -163,7 +162,6 @@ class Companies extends Component
         $this->phone = $company->phone;
         $this->email = $company->email;
         $this->nit = $company->nit;
-        $this->status_id = $company->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -176,7 +174,6 @@ class Companies extends Component
             'phone' => 'digits_between:7,12',
             'email' => 'max:100',
             'nit' => "required|digits_between:13,16|unique:companies,nit,{$this->selected_id}",
-            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -194,7 +191,6 @@ class Companies extends Component
             'nit.required' => 'Campo requerido',
             'nit.digits_between' => 'Solo digitos enteros y positivos. De 13 a 16 digitos',
             'nit.unique' => 'Ya existe',
-            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -207,18 +203,30 @@ class Companies extends Component
             'alias' => $this->alias,
             'phone' => $this->phone,
             'email' => $this->email,
-            'nit' => $this->nit,
-            'status_id' => $this->status_id
+            'nit' => $this->nit
         ]);
 
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
-        $this->emit('item-updated', 'Actualizado correctamente');
     }
 
     protected $listeners = [
 
+        'activate' => 'Activate',
         'destroy' => 'Destroy'
     ];
+
+    public function Activate(Company $company){
+
+        $company->update([
+
+            'status_id' => 1
+
+        ]);
+
+        $this->emit('record-activated','Registro desbloqueado');
+        $this->mount();
+    }
 
     /*public function Destroy(Company $company,$accounts_count){
 
@@ -247,8 +255,8 @@ class Companies extends Component
             'status_id' => 2
         ]);
 
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
-        $this->emit('item-deleted', 'Eliminado correctamente');
     }
 
     public function resetUI(){
