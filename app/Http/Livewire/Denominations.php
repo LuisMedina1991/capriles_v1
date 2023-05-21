@@ -63,7 +63,7 @@ class Denominations extends Component
         $rules = [
 
             'type' => 'not_in:elegir',
-            'value' => 'required|unique:denominations|min:1|max:10',
+            'value' => 'required|min:1|max:10|unique:denominations',
             'image' => 'exclude_if:image,null|mimes:jpg,png'
         ];
 
@@ -71,9 +71,9 @@ class Denominations extends Component
 
             'type.not_in' => 'Seleccione una opcion',
             'value.required' => 'Campo requerido',
-            'value.unique' => 'Ya existe',
             'value.min' => 'Minimo 1 digito',
             'value.max' => 'Maximo 10 digitos',
+            'value.unique' => 'Ya existe',
             'image.mimes' => 'Solo formatos jpg o png'
         ];
 
@@ -93,10 +93,15 @@ class Denominations extends Component
                 $this->image->storeAs('public/denominations', $customFileName);
                 $denomination->image()->create(['url' => $customFileName]);
             }
-        }
 
-        $this->mount();
-        $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('record-error', 'Error al registrar');
+            return;
+        }
     }
 
     public function Edit(Denomination $denomination)
@@ -113,7 +118,7 @@ class Denominations extends Component
         $rules = [
 
             'type' => 'not_in:elegir',
-            'value' => "required|unique:denominations,value,{$this->selected_id}|min:1|max:10",
+            'value' => "required|min:1|max:10|unique:denominations,value,{$this->selected_id}",
             'image' => 'exclude_if:image,null|mimes:jpg,png'
         ];
 
@@ -121,9 +126,9 @@ class Denominations extends Component
 
             'type.not_in' => 'Seleccione una opcion',
             'value.required' => 'Campo requerido',
-            'value.unique' => 'Ya existe',
             'value.min' => 'Minimo 1 digito',
             'value.max' => 'Maximo 10 digitos',
+            'value.unique' => 'Ya existe',
             'image.mimes' => 'Solo formatos jpg o png'
         ];
 
@@ -162,8 +167,8 @@ class Denominations extends Component
             }
         }
 
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
-        $this->emit('item-updated', 'Actualizado correctamente');
     }
 
     protected $listeners = [
@@ -187,8 +192,8 @@ class Denominations extends Component
 
         $denomination->delete();
 
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
-        $this->emit('item-deleted', 'Eliminado correctamente');
     }
 
     public function resetUI()
