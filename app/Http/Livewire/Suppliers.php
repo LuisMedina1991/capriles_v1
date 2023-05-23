@@ -11,7 +11,7 @@ class Suppliers extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $name,$alias,$phone,$email,$city,$country,$status_id;
+    public $name,$alias,$phone,$email,$city,$country;
     private $pagination = 20;
 
     public function mount(){
@@ -27,7 +27,6 @@ class Suppliers extends Component
         $this->email = '';
         $this->city = '';
         $this->country = '';
-        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -140,12 +139,12 @@ class Suppliers extends Component
 
         if ($supplier) {
 
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
         } else {
 
-            $this->emit('item-error', 'Error al Registrar');
+            $this->emit('record-error', 'Error al Registrar');
             return;
         }
     }
@@ -159,7 +158,6 @@ class Suppliers extends Component
         $this->email = $supplier->email;
         $this->city = $supplier->city;
         $this->country = $supplier->country;
-        $this->status_id = $supplier->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -169,11 +167,10 @@ class Suppliers extends Component
 
             'name' => 'required|min:3|max:45',
             'alias' => "required|min:3|max:15|unique:suppliers,alias,{$this->selected_id}",
-            'phone' => 'digits_between:7,12',
+            'phone' => 'exclude_if:phone,null|digits_between:7,12',
             'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
-            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -190,7 +187,6 @@ class Suppliers extends Component
             'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
-            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -204,18 +200,30 @@ class Suppliers extends Component
             'phone' => $this->phone,
             'email' => $this->email,
             'city' => $this->city,
-            'country' => $this->country,
-            'status_id' => $this->status_id
+            'country' => $this->country
         ]);
 
-        $this->emit('item-updated', 'Actualizado correctamente');
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
     }
 
     protected $listeners = [
 
+        'activate' => 'Activate',
         'destroy' => 'Destroy'
     ];
+
+    public function Activate(Supplier $supplier){
+
+        $supplier->update([
+
+            'status_id' => 1
+
+        ]);
+
+        $this->emit('record-activated','Registro desbloqueado');
+        $this->mount();
+    }
 
     /*public function Destroy(Supplier $supplier,$incomes_count,$debts_count){
 
@@ -242,8 +250,7 @@ class Suppliers extends Component
 
         ]);
 
-        
-        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
     }
 
