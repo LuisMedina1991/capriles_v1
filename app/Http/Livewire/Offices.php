@@ -13,7 +13,7 @@ class Offices extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $name,$alias,$phone,$address,$status_id;
+    public $name,$alias,$phone,$address;
     private $pagination = 20;
 
     public function mount()
@@ -27,7 +27,6 @@ class Offices extends Component
         $this->alias = '';
         $this->phone = '';
         $this->address = '';
-        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -143,12 +142,12 @@ class Offices extends Component
 
         if($office){
 
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
         }else{
 
-            $this->emit('item-error', 'Error al registrar');
+            $this->emit('record-error', 'Error al registrar');
             return;
         }
 
@@ -161,7 +160,6 @@ class Offices extends Component
         $this->alias = $office->alias;
         $this->phone = $office->phone;
         $this->address = $office->address;
-        $this->status_id = $office->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -173,7 +171,6 @@ class Offices extends Component
             'alias' => "required|min:3|max:15|unique:offices,alias,{$this->selected_id}",
             'phone' => 'digits_between:7,12',
             'address' => 'max:255',
-            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -188,7 +185,6 @@ class Offices extends Component
             'alias.unique' => 'Ya existe',
             'phone.digits_between' => 'Solo digitos enteros y positivos. De 7 a 12 digitos',
             'address.max' => 'Maximo 255 caracteres',
-            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -200,18 +196,30 @@ class Offices extends Component
             'name' => $this->name,
             'alias' => $this->alias,
             'phone' => $this->phone,
-            'address' => $this->address,
-            'status_id' => $this->status_id
+            'address' => $this->address
         ]);
 
-        $this->emit('item-updated', 'Actualizado correctamente');
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
     }
 
     protected $listeners = [
 
+        'activate' => 'Activate',
         'destroy' => 'Destroy'
     ];
+
+    public function Activate(Office $office){
+
+        $office->update([
+
+            'status_id' => 1
+
+        ]);
+
+        $this->emit('record-activated','Registro desbloqueado');
+        $this->mount();
+    }
 
     /*public function Destroy(Office $office,$values_count,$active_values_count)
     {   
@@ -258,7 +266,7 @@ class Offices extends Component
 
         ]);
 
-        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
     }
 
