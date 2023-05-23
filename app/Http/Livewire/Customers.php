@@ -167,7 +167,7 @@ class Customers extends Component
 
             'name' => 'required|min:3|max:45',
             'alias' => "required|min:3|max:15|unique:customers,alias,{$this->selected_id}",
-            'phone' => 'digits_between:7,12',
+            'phone' => 'exclude_if:phone,null|digits_between:7,12',
             'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
