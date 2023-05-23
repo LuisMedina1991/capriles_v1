@@ -11,7 +11,7 @@ class Presentations extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $name,$status_id;
+    public $name;
     private $pagination = 20;
 
     public function mount(){
@@ -22,7 +22,6 @@ class Presentations extends Component
         $this->search_2 = 0;
         $this->selected_id = 0;
         $this->name = '';
-        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -104,12 +103,12 @@ class Presentations extends Component
 
         if($presentation){
 
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
         }else{
 
-            $this->emit('item-error', 'Error al registrar');
+            $this->emit('record-error', 'Error al registrar');
             return;
         }
 
@@ -118,7 +117,6 @@ class Presentations extends Component
     public function Edit(Presentation $presentation){
 
         $this->name = $presentation->name;
-        $this->status_id = $presentation->status_id;
         $this->selected_id = $presentation->id;
         $this->emit('show-modal', 'Mostrando modal');
     }
@@ -128,7 +126,6 @@ class Presentations extends Component
         $rules = [
 
             'name' => "required|min:3|max:45|unique:presentations,name,{$this->selected_id}",
-            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -137,7 +134,6 @@ class Presentations extends Component
             'name.min' => 'Minimo 3 caracteres',
             'name.max' => 'Maximo 45 caracteres',
             'name.unique' => 'Ya existe',
-            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -146,18 +142,30 @@ class Presentations extends Component
 
         $presentation->update([
 
-            'name' => $this->name,
-            'status_id' => $this->status_id
+            'name' => $this->name
         ]);
 
-        $this->emit('item-updated', 'Actualizado correctamente');
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
     }
 
     protected $listeners = [
 
+        'activate' => 'Activate',
         'destroy' => 'Destroy'
     ];
+
+    public function Activate(Presentation $presentation){
+
+        $presentation->update([
+
+            'status_id' => 1
+
+        ]);
+
+        $this->emit('record-activated','Registro desbloqueado');
+        $this->mount();
+    }
 
     /*public function Destroy(Presentation $presentation,$subcategories_count){
 
@@ -182,7 +190,7 @@ class Presentations extends Component
             'status_id' => 2
         ]);
 
-        $this->emit('item-deleted', 'Eliminado correctamente');
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
 
     }
