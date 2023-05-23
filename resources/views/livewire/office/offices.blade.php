@@ -13,30 +13,7 @@
                 </ul>
             </div>
 
-            <div class="row">
-                <div class="col-sm-3">
-                    <h6><b>Filtro de busqueda</b></h6>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text input-gp">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                            </div>
-                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <h6><b>Estado del registro</b></h6>
-                    <div class="form-group">
-                        <select wire:model="search_2" class="form-control">
-                            <option value="0">Activo</option>
-                            <option value="1">Bloqueado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            @include('common.searchbox')
 
             <div class="widget-content">
                 <div class="table-responsive">
@@ -54,27 +31,35 @@
                             @foreach ($offices as $office)
                             <tr>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $office->name }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$office->name}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $office->alias }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$office->alias}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center">{{ $office->phone }}</h6>
+                                    <h6 class="text-center">{{$office->phone}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $office->address }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$office->address}}</h6>
                                 </td>
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" wire:click="Edit({{$office->id}})"
-                                        class="btn btn-dark mtmobile" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    {{--<a href="javascript:void(0)"
-                                        onclick="Confirm('{{$office->id}}','{{$office->values_count}}','{{$office->active_values_count}}')"
-                                        class="btn btn-dark" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>--}}
+                                    @if($search_2 == 0)
+                                        <a href="javascript:void(0)" wire:click="Edit({{$office->id}})"
+                                            class="btn btn-dark" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_1('{{$office->id}}')"
+                                            class="btn btn-dark" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    @else
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_2('{{$office->id}}')"
+                                            class="btn btn-dark" title="Activar">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
                             @endforeach
@@ -99,26 +84,29 @@
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('item-added', msg=>{
+        window.livewire.on('record-added', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{
-            noty(msg)
-        });
-        window.livewire.on('item-updated', msg=>{
+        window.livewire.on('record-updated', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
+        });
+        window.livewire.on('record-activated', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-deleted', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-error', msg=>{
+            noty(msg,2)
         });
         $('#theModal').on('shown.bs.modal', function(e){
             $('.component-name').focus()
         });
-        window.livewire.on('item-error', msg=>{
-            noty(msg,2)
-        });
     });
 
-    function Confirm(id,values_count,active_values_count){
+    function Confirm_1(id,values_count,active_values_count){
 
         if(active_values_count > 0){
 
@@ -143,6 +131,29 @@
             if(result.value){
 
                 window.livewire.emit('destroy', id,values_count,active_values_count)
+                swal.close()
+            }
+        })
+    }
+
+    function Confirm_2(id){
+
+        swal({
+
+            title: 'CONFIRMAR',
+            text: '¿CONFIRMA ACTIVAR EL REGISTRO?',
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonText: 'CERRAR',
+            cancelButtonColor: '#fff',
+            confirmButtonColor: '#3B3F5C',
+            confirmButtonText: 'ACEPTAR'
+
+        }).then(function(result){
+
+            if(result.value){
+                
+                window.livewire.emit('activate',id)
                 swal.close()
             }
         })
