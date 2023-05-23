@@ -12,30 +12,7 @@
                 </ul>
             </div>
 
-            <div class="row">
-                <div class="col-sm-3">
-                    <h6><b>Filtro de busqueda</b></h6>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text input-gp">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                            </div>
-                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <h6><b>Estado del registro</b></h6>
-                    <div class="form-group">
-                        <select wire:model="search_2" class="form-control">
-                            <option value="0">Activo</option>
-                            <option value="1">Bloqueado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            @include('common.searchbox')
 
             <div class="widget-content">
                 <div class="table-responsive">
@@ -57,30 +34,41 @@
 
                             <tr>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->name }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$supplier->name}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->alias }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$supplier->alias}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->phone }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$supplier->phone}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center">{{ $supplier->email }}</h6>
+                                    <h6 class="text-center">{{$supplier->email}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->city }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$supplier->city}}</h6>
                                 </td>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $supplier->country }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$supplier->country}}</h6>
                                 </td>
                                 <td class="text-center">
-                                    <a href="javascript:void(0)" wire:click="Edit({{$supplier->id}})" class="btn btn-dark mtmobile" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    {{--<a href="javascript:void(0)" onclick="Confirm('{{$supplier->id}}','{{$supplier->incomes_count}}','{{$supplier->debts_count}}')" class="btn btn-dark" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>--}}
+                                    @if($search_2 == 0)
+                                        <a href="javascript:void(0)" wire:click="Edit({{$supplier->id}})"
+                                            class="btn btn-dark" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_1('{{$supplier->id}}')"
+                                            class="btn btn-dark" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    @else
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_2('{{$supplier->id}}')"
+                                            class="btn btn-dark" title="Activar">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
 
@@ -107,18 +95,21 @@
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('item-added', msg=>{
+        window.livewire.on('record-added', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{
-            noty(msg)
-        });
-        window.livewire.on('item-updated', msg=>{
+        window.livewire.on('record-updated', msg=>{
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-error', msg=>{
+        window.livewire.on('record-activated', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-deleted', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-error', msg=>{
             noty(msg,2)
         });
         $('#theModal').on('shown.bs.modal', function(e){
@@ -126,7 +117,7 @@
         });
     });
 
-    function Confirm(id,incomes_count,debts_count){
+    function Confirm_1(id,incomes_count,debts_count){
 
         if(incomes_count > 0 || debts_count > 0){
 
@@ -150,6 +141,29 @@
             if(result.value){
 
                 window.livewire.emit('destroy',id,incomes_count,debts_count)
+                swal.close()
+            }
+        })
+    }
+
+    function Confirm_2(id){
+
+        swal({
+
+            title: 'CONFIRMAR',
+            text: '¿CONFIRMA ACTIVAR EL REGISTRO?',
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonText: 'CERRAR',
+            cancelButtonColor: '#fff',
+            confirmButtonColor: '#3B3F5C',
+            confirmButtonText: 'ACEPTAR'
+
+        }).then(function(result){
+
+            if(result.value){
+                
+                window.livewire.emit('activate',id)
                 swal.close()
             }
         })
