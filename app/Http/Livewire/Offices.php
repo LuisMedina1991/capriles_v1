@@ -169,7 +169,7 @@ class Offices extends Component
 
             'name' => "required|min:3|max:45|unique:offices,name,{$this->selected_id}",
             'alias' => "required|min:3|max:15|unique:offices,alias,{$this->selected_id}",
-            'phone' => 'digits_between:7,12',
+            'phone' => 'exclude_if:phone,null|digits_between:7,12',
             'address' => 'max:255',
         ];
 
