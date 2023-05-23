@@ -11,7 +11,7 @@ class Customers extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $name,$alias,$phone,$email,$city,$country,$status_id;
+    public $name,$alias,$phone,$email,$city,$country;
     private $pagination = 20;
 
     public function mount(){
@@ -27,7 +27,6 @@ class Customers extends Component
         $this->email = '';
         $this->city = '';
         $this->country = '';
-        $this->status_id = 'elegir';
         $this->resetValidation();
         $this->resetPage();
     }
@@ -140,12 +139,12 @@ class Customers extends Component
 
         if ($customer) {
 
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
         } else {
 
-            $this->emit('item-error', 'Error al Registrar');
+            $this->emit('record-error', 'Error al Registrar');
             return;
         }
     }
@@ -159,7 +158,6 @@ class Customers extends Component
         $this->email = $customer->email;
         $this->city = $customer->city;
         $this->country = $customer->country;
-        $this->status_id = $customer->status_id;
         $this->emit('show-modal', 'Mostrando modal');
     }
 
@@ -173,7 +171,6 @@ class Customers extends Component
             'email' => 'max:100',
             'city' => 'max:45',
             'country' => 'max:45',
-            'status_id' => 'not_in:elegir',
         ];
 
         $messages = [
@@ -189,7 +186,6 @@ class Customers extends Component
             'email.max' => 'Maximo 100 caracteres',
             'city.max' => 'Maximo 45 caracteres',
             'country.max' => 'Maximo 45 caracteres',
-            'status_id.not_in' => 'Seleccione una opcion',
         ];
 
         $this->validate($rules, $messages);
@@ -203,18 +199,30 @@ class Customers extends Component
             'phone' => $this->phone,
             'email' => $this->email,
             'city' => $this->city,
-            'country' => $this->country,
-            'status_id' => $this->status_id
+            'country' => $this->country
         ]);
 
-        $this->emit('item-updated', 'Actualizado correctamente');
+        $this->emit('record-updated', 'Actualizado correctamente');
         $this->mount();
     }
 
     protected $listeners = [
 
+        'activate' => 'Activate',
         'destroy' => 'Destroy'
     ];
+
+    public function Activate(Customer $customer){
+
+        $customer->update([
+
+            'status_id' => 1
+
+        ]);
+
+        $this->emit('record-activated','Registro desbloqueado');
+        $this->mount();
+    }
 
     /*public function Destroy(Customer $customer,$incomes_count,$sales_count,$debts_count){
 
@@ -241,9 +249,8 @@ class Customers extends Component
 
         ]);
 
-
+        $this->emit('record-deleted', 'Eliminado correctamente');
         $this->mount();
-        $this->emit('item-deleted', 'Eliminado correctamente');
 
     }
 
