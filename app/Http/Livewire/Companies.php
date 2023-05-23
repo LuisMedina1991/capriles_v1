@@ -171,7 +171,7 @@ class Companies extends Component
 
             'name' => "required|min:3|max:45|unique:companies,name,{$this->selected_id}",
             'alias' => "required|min:3|max:15|unique:companies,alias,{$this->selected_id}",
-            'phone' => 'digits_between:7,12',
+            'phone' => 'exclude_if:phone,null|digits_between:7,12',
             'email' => 'max:100',
             'nit' => "required|digits_between:13,16|unique:companies,nit,{$this->selected_id}",
         ];
