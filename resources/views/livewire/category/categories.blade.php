@@ -14,30 +14,7 @@
                 </ul>
             </div>
 
-            <div class="row">
-                <div class="col-sm-3">
-                    <h6><b>Filtro de busqueda</b></h6>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text input-gp">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                            </div>
-                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <h6><b>Estado del registro</b></h6>
-                    <div class="form-group">
-                        <select wire:model="search_2" class="form-control">
-                            <option value="0">Activo</option>
-                            <option value="1">Bloqueado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            @include('common.searchbox')
 
             <div class="widget-content">
                 <!--card-->
@@ -48,7 +25,7 @@
                             <!--encabezado de tabla-->
                             <tr>
                                 <th class="table-th text-center text-white">categoria</th>
-                                {{--<th class="table-th text-center text-white">subcategorias relacionadas</th>--}}
+                                <th class="table-th text-center text-white">subcategorias relacionadas</th>
                                 <th class="table-th text-center text-white">opciones</th>
                             </tr>
                         </thead>
@@ -58,23 +35,30 @@
                             <!--iteracion de los datos almacenados en variable pasada desde controlador-->
                             <tr>
                                 <td>
-                                    <h6 class="text-center text-uppercase">{{ $category->name }}</h6>
+                                    <h6 class="text-center text-uppercase">{{$category->name}}</h6>
                                 </td>
-                                {{--<td>
-                                    <h6 class="text-center text-uppercase">{{ $category->subcategories_count }}</h6>
-                                </td>--}}
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{$category->subcategories_count}}</h6>
+                                </td>
                                 <td class="text-center">
                                     <!--directiva click de livewire que hace llamado al metodo edit del componente pasandole el id-->
-                                    <a href="javascript:void(0)" wire:click="Edit({{$category->id}})"
-                                        class="btn btn-dark mtmobile" title="Editar">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    {{--<!--evento onclick de js hace llamado a la funcion confirm de js pasandole el id-->
-                                    <a href="javascript:void(0)"
-                                        onclick="Confirm('{{$category->id}}','{{$category->subcategories_count}}')"
-                                        class="btn btn-dark" title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </a>--}}
+                                    @if($search_2 == 0)
+                                        <a href="javascript:void(0)" wire:click="Edit({{$category->id}})"
+                                            class="btn btn-dark" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_1('{{$category->id}}','{{$category->subcategories_count}}')"
+                                            class="btn btn-dark" title="Eliminar">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    @else
+                                        <a href="javascript:void(0)"
+                                            onclick="Confirm_2('{{$category->id}}')"
+                                            class="btn btn-dark" title="Activar">
+                                            <i class="fas fa-check"></i>
+                                        </a>
+                                    @endif
                                 </td>
                             </tr>
 
@@ -103,18 +87,21 @@
         window.livewire.on('show-modal', msg=>{     //evento para mostral modal
             $('#theModal').modal('show')
         });
-        window.livewire.on('item-added', msg=>{     //evento para agregar registro
+        window.livewire.on('record-added', msg=>{     //evento para agregar registro
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-deleted', msg=>{   //evento para eliminar registro
-            noty(msg)
-        });
-        window.livewire.on('item-updated', msg=>{   //evento para actualizar registro
+        window.livewire.on('record-updated', msg=>{   //evento para actualizar registro
             $('#theModal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('item-error', msg=>{   //evento para actualizar registro
+        window.livewire.on('record-activated', msg=>{   //evento para desbloquear registro
+            noty(msg)
+        });
+        window.livewire.on('record-deleted', msg=>{   //evento para eliminar registro
+            noty(msg)
+        });
+        window.livewire.on('record-error', msg=>{   //evento para actualizar registro
             noty(msg,2)
         });
         /*
@@ -127,9 +114,9 @@
         });
     });
 
-    function Confirm(id,subcategories_count){   //metodo para alerta de confirmacion que recibe el id
+    function Confirm_1(id,subcategories_count){   //metodo para alerta de confirmacion que recibe el id
 
-        if(subcategories_count > 0){
+        if(subcategories_count > 0){    //validar si existen tablas dependientes
 
             swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
             return;
@@ -151,6 +138,29 @@
             if(result.value){ //validar si se presiono el boton de confirmacion
                 
                 window.livewire.emit('destroy',id,subcategories_count)   //emision de evento para hacer llamado al metodo Destroy del controlador
+                swal.close()    //cerrar alerta
+            }
+        })
+    }
+
+    function Confirm_2(id){   //metodo para alerta de confirmacion que recibe el id
+
+        swal({  //alerta sweetalert
+
+            title: 'CONFIRMAR',
+            text: '¿CONFIRMA ACTIVAR EL REGISTRO?',
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonText: 'CERRAR',
+            cancelButtonColor: '#fff',
+            confirmButtonColor: '#3B3F5C',
+            confirmButtonText: 'ACEPTAR'
+
+        }).then(function(result){
+
+            if(result.value){ //validar si se presiono el boton de confirmacion
+                
+                window.livewire.emit('activate',id)   //emision de evento para hacer llamado al metodo Activate del controlador
                 swal.close()    //cerrar alerta
             }
         })
