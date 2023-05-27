@@ -14,30 +14,6 @@
             </div>
 
             @include('common.searchbox')
-            {{--<div class="row">
-                <div class="col-sm-3">
-                    <h6><b>Filtro de busqueda</b></h6>
-                    <div class="form-group">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text input-gp">
-                                    <i class="fas fa-search"></i>
-                                </span>
-                            </div>
-                            <input type="text" wire:model="search" placeholder="BUSCAR..." class="form-control">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-3">
-                    <h6><b>Estado del registro</b></h6>
-                    <div class="form-group">
-                        <select wire:model="search_2" class="form-control">
-                            <option value="0">Activo</option>
-                            <option value="1">Bloqueado</option>
-                        </select>
-                    </div>
-                </div>
-            </div>--}}
 
             <div class="widget-content">
                 <div class="table-responsive">
@@ -46,7 +22,7 @@
                             <tr>
                                 <th class="table-th text-white text-center">categoria</th>
                                 <th class="table-th text-white text-center">subcategoria</th>
-                                {{--<th class="table-th text-white text-center">contenedores relacionados</th>--}}
+                                <th class="table-th text-white text-center">contenedores relacionados</th>
                                 <th class="table-th text-white text-center">opciones</th>
                             </tr>
                         </thead>
@@ -61,9 +37,9 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $subcategory->name }}</h6>
                                 </td>
-                                {{--<td>
+                                <td>
                                     <h6 class="text-center text-uppercase">{{ $subcategory->presentations_count }}</h6>
-                                </td>--}}
+                                </td>
                                 <td class="text-center">
                                     @if($search_2 == 0)
                                         <a href="javascript:void(0)" wire:click="Edit({{$subcategory->id}})"
@@ -71,7 +47,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_1('{{$subcategory->id}}')"
+                                            onclick="Confirm_1('{{$subcategory->id}}','{{$subcategory->presentations_count}}')"
                                             class="btn btn-dark" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </a>
@@ -98,7 +74,6 @@
     </div>
 
     @include('livewire.subcategory.form')
-    {{--@include('livewire.category.form')--}}
     @include('livewire.subcategory.category_form')
 
 </div>
@@ -110,16 +85,11 @@
         window.livewire.on('show-modal', msg=>{
             $('#theModal').modal('show')
         });
-        window.livewire.on('show-modal-2', msg=>{
-            $('#theModal').modal('hide')
-            $('#category_modal').modal('show')
+        $('#theModal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
         });
         window.livewire.on('record-added', msg=>{
             $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('record-added-2', msg=>{
-            $('#category_modal').modal('hide')
             noty(msg)
         });
         window.livewire.on('record-updated', msg=>{
@@ -132,11 +102,16 @@
         window.livewire.on('record-deleted', msg=>{
             noty(msg)
         });
-        $('#theModal').on('shown.bs.modal', function(e){
-            $('.component-name').focus()
+        window.livewire.on('show-modal-2', msg=>{
+            $('#theModal').modal('hide')
+            $('#category_modal').modal('show')
         });
         $('#category_modal').on('shown.bs.modal', function(e){
             $('.component-name').focus()
+        });
+        window.livewire.on('record-added-2', msg=>{
+            $('#category_modal').modal('hide')
+            noty(msg)
         });
         window.livewire.on('record-error', msg=>{
             noty(msg,2)
