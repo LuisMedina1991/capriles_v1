@@ -24,31 +24,26 @@ class Subcategory extends Model
         return $this->belongsTo(Category::class);
     }
 
+    //relacion muchos a muchos con presentations
     public function presentations(){
 
         return $this->belongsToMany(Presentation::class)
         ->withPivot(['id','prefix','additional_info','status_id'])
-        //->withTimestamps()
+        ->withTimestamps()
         ->using(PresentationSubcategory::class);
     }
 
-    public function activePresentations(){
-
-        return $this->belongsToMany(Presentation::class)
-        ->withPivot(['id','prefix','additional_info','status_id'])
-        ->wherePivot('status_id',1)
-        ->using(PresentationSubcategory::class);
-    }
-
-    public function products(){
+    //relacion uno a muchos con productos a traves de relacion uno a muchos con presentation_subcategory
+    /*public function products(){
 
         return $this->hasManyThrough(Product::class,PresentationSubcategory::class,'subcategory_id','presentation_subcategory_id');
     }
 
+    //relacion uno a muchos con productos activos a traves de relacion uno a muchos con presentation_subcategory
     public function activeProducts(){
 
         return $this->hasManyThrough(Product::class,PresentationSubcategory::class,'subcategory_id','presentation_subcategory_id')
         ->where('products.status_id',1);
-    }
+    }*/
 
 }
