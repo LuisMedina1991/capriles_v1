@@ -45,6 +45,9 @@ class Subcategories extends Component
                 if(strlen($this->search) > 0){
 
                     $data = Subcategory::with('category')
+                    ->withCount(['presentations' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->where('status_id',1)
                     ->where(function ($q1) {
                         $q1->where('name', 'like', '%' . $this->search . '%');
@@ -61,6 +64,9 @@ class Subcategories extends Component
                 }else{
         
                     $data = Subcategory::with('category')
+                    ->withCount(['presentations' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->where('status_id',1)
                     ->orderBy(Category::select('name')->whereColumn('categories.id','subcategories.category_id'))
                     ->orderBy('name')
@@ -74,6 +80,9 @@ class Subcategories extends Component
                 if(strlen($this->search) > 0){
 
                     $data = Subcategory::with('category')
+                    ->withCount(['presentations' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->where('status_id',2)
                     ->where(function ($q1) {
                         $q1->where('name', 'like', '%' . $this->search . '%');
@@ -90,6 +99,9 @@ class Subcategories extends Component
                 }else{
         
                     $data = Subcategory::with('category')
+                    ->withCount(['presentations' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->where('status_id',2)
                     ->orderBy(Category::select('name')->whereColumn('categories.id','subcategories.category_id'))
                     ->orderBy('name')
@@ -244,76 +256,59 @@ class Subcategories extends Component
 
     public function Activate(Subcategory $subcategory,Category $category){
 
-        $subcategory->update([
+        DB::beginTransaction();
 
-            'status_id' => 1
-
-        ]);
-
-        if($category->id != 1){
-
-            $category->update([
+        try {
+            
+            $subcategory->update([
 
                 'status_id' => 1
     
             ]);
+    
+            if($category->status_id != 1){
+    
+                $category->update([
+    
+                    'status_id' => 1
+        
+                ]);
+    
+            }
+    
+            DB::commit();
+            $this->emit('record-activated','Registro desbloqueado');
+            $this->mount();
+
+        } catch (\Throwable $th) {
+            
+            DB::rollBack();
+            $this->emit('record-error', 'Error al activar registro');
+            return;
 
         }
 
-        $this->emit('record-activated','Registro desbloqueado');
-        $this->mount();
     }
 
-    /*public function Destroy(Subcategory $subcategory,$presentations_count)
-    {
-        
-        if ($presentations_count > 0) {
+    public function Destroy(Subcategory $subcategory, $presentations_count){
 
-            $this->emit('item-error', 'No se puede eliminar debido a relacion');
+        if($presentations_count > 0){
+
+            $this->emit('record-error', 'No se puede eliminar debido a relacion');
             return;
 
-        } else {
+        }else{
 
-            $subcategory->delete();
+            $subcategory->update([
+
+                'status_id' => 2
+
+            ]);
+
             $this->emit('record-deleted', 'Eliminado correctamente');
             $this->mount();
 
-            DB::beginTransaction();
-
-            try {
-
-                if($presentations_count > 0){
-
-                    $subcategory->presentations()->detach();
-                    $subcategory->delete();
-
-                }else{
-
-                    $subcategory->delete();
-                }
-
-                DB::commit();
-                $this->emit('item-deleted', 'Eliminado correctamente');
-                $this->mount();
-
-            } catch (\Throwable $th) {
-
-                DB::rollback();
-                throw $th;
-            }
         }
-    }*/
-
-    public function Destroy(Subcategory $subcategory){
-
-        $subcategory->update([
-
-            'status_id' => 2
-
-        ]);
-
-        $this->emit('record-deleted','Registro eliminado');
-        $this->mount();
     }
 
     public function resetUI(){
