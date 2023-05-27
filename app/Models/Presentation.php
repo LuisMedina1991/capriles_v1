@@ -19,19 +19,12 @@ class Presentation extends Model
         return $this->belongsTo(Status::class);
     }
 
+    //relacion muchos a muchos con subcategories
     public function subcategories(){
 
         return $this->belongsToMany(Subcategory::class)
         ->withPivot(['id','prefix','additional_info','status_id'])
-        //->withTimestamps()
-        ->using(PresentationSubcategory::class);
-    }
-
-    public function activeSubcategories(){
-
-        return $this->belongsToMany(Subcategory::class)
-        ->withPivot(['id','prefix','additional_info','status_id'])
-        ->wherePivot('status_id',1)
+        ->withTimestamps()
         ->using(PresentationSubcategory::class);
     }
 
