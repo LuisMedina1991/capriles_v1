@@ -41,12 +41,18 @@ class Presentations extends Component
 
                     $data = Presentation::where('status_id',1)
                     ->where('name', 'like', '%' . $this->search . '%')
+                    ->withCount(['subcategories' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
                     $data = Presentation::where('status_id',1)
+                    ->withCount(['subcategories' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
                 }
@@ -59,12 +65,18 @@ class Presentations extends Component
 
                     $data = Presentation::where('status_id',2)
                     ->where('name', 'like', '%' . $this->search . '%')
+                    ->withCount(['subcategories' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
         
                 }else{
         
                     $data = Presentation::where('status_id',2)
+                    ->withCount(['subcategories' => function ($query) {
+                        $query->where('presentation_subcategory.status_id',1);
+                    }])
                     ->orderBy('name', 'asc')
                     ->paginate($this->pagination);
                 }
@@ -167,31 +179,25 @@ class Presentations extends Component
         $this->mount();
     }
 
-    /*public function Destroy(Presentation $presentation,$subcategories_count){
+    public function Destroy(Presentation $presentation, $subcategories_count){
 
-        if ($subcategories_count > 0) {
+        if($subcategories_count > 0){
 
-            $this->emit('item-error', 'No se puede eliminar debido a relacion');
+            $this->emit('record-error', 'No se puede eliminar debido a relacion');
             return;
 
-        } else {
+        }else{
 
-            $presentation->delete();
+            $presentation->update([
+
+                'status_id' => 2
+
+            ]);
+
+            $this->emit('record-deleted', 'Eliminado correctamente');
             $this->mount();
-            $this->emit('item-deleted', 'Eliminado correctamente');
+
         }
-
-    }*/
-
-    public function Destroy(Presentation $presentation){
-
-        $presentation->update([
-
-            'status_id' => 2
-        ]);
-
-        $this->emit('record-deleted', 'Eliminado correctamente');
-        $this->mount();
 
     }
 
