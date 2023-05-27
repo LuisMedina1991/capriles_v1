@@ -67,6 +67,12 @@ class Status extends Model
         return $this->hasMany(Subcategory::class);
     }
 
+    //relacion uno a muchos con presentation_subcategory
+    public function containers(){
+
+        return $this->hasMany(PresentationSubcategory::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);
@@ -136,12 +142,6 @@ class Status extends Model
     public function products(){
 
         return $this->hasMany(Product::class);
-    }
-
-    //relacion uno a muchos con presentation_subcategory
-    public function containers(){
-
-        return $this->hasMany(PresentationSubcategory::class);
     }
 
     //relacion uno a muchos con values
