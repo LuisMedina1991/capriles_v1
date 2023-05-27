@@ -10,7 +10,25 @@ class PresentationSubcategory extends Pivot
     use HasFactory;
 
 
-    public function products(){
+    //relacion muchos a uno con statuses
+    public function status(){
+
+        return $this->belongsTo(Status::class);
+    }
+
+    //relacion muchos a uno con subcategories
+    public function subcategory()
+    {
+        return $this->belongsTo(Subcategory::class,'subcategory_id');
+    }
+
+    //relacion muchos a uno con presentations
+    public function presentation()
+    {
+        return $this->belongsTo(Presentation::class,'presentation_id');
+    }
+
+    /*public function products(){
 
         return $this->hasMany(Product::class,'presentation_subcategory_id','id');
     }
@@ -18,21 +36,6 @@ class PresentationSubcategory extends Pivot
     public function activeProducts(){
 
         return $this->hasMany(Product::class,'presentation_subcategory_id','id')->where('status_id',1);
-    }
-
-    public function status(){
-
-        return $this->belongsTo(Status::class);
-    }
-
-    public function subcategory()
-    {
-        return $this->belongsTo(Subcategory::class,'subcategory_id');
-    }
-
-    public function presentation()
-    {
-        return $this->belongsTo(Presentation::class,'presentation_id');
-    }
+    }*/
 
 }
