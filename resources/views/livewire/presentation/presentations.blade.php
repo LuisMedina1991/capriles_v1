@@ -20,7 +20,7 @@
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
                                 <th class="table-th text-center text-white">presentacion</th>
-                                {{--<th class="table-th text-white text-center">contenedores relacionados</th>--}}
+                                <th class="table-th text-white text-center">contenedores relacionados</th>
                                 <th class="table-th text-center text-white text-center">opciones</th>
                             </tr>
                         </thead>
@@ -32,9 +32,9 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{$presentation->name}}</h6>
                                 </td>
-                                {{--<td>
+                                <td>
                                     <h6 class="text-center text-uppercase">{{ $presentation->subcategories_count }}</h6>
-                                </td>--}}
+                                </td>
                                 <td class="text-center">
                                     @if($search_2 == 0)
                                         <a href="javascript:void(0)" wire:click="Edit({{$presentation->id}})"
@@ -42,7 +42,7 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_1('{{$presentation->id}}')"
+                                            onclick="Confirm_1('{{$presentation->id}}','{{$presentation->subcategories_count}}')"
                                             class="btn btn-dark" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </a>
