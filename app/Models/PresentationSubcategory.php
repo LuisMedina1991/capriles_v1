@@ -28,14 +28,10 @@ class PresentationSubcategory extends Pivot
         return $this->belongsTo(Presentation::class,'presentation_id');
     }
 
-    /*public function products(){
+    //relacion uno a muchos con products
+    public function products(){
 
         return $this->hasMany(Product::class,'presentation_subcategory_id','id');
     }
-
-    public function activeProducts(){
-
-        return $this->hasMany(Product::class,'presentation_subcategory_id','id')->where('status_id',1);
-    }*/
 
 }
