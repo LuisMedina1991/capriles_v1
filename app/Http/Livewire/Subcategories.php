@@ -6,7 +6,6 @@ use App\Models\Category;
 use Livewire\Component;
 use App\Models\Subcategory;
 use Livewire\WithPagination;
-use Illuminate\Support\Facades\DB;
 
 class Subcategories extends Component
 {
@@ -254,37 +253,23 @@ class Subcategories extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Activate(Subcategory $subcategory,Category $category){
+    public function Activate(Subcategory $subcategory,$category_status){
 
-        DB::beginTransaction();
+        if($category_status != 1){
 
-        try {
-            
+            $this->emit('record-error', 'La categoria de esta subcategoria se encuentra bloqueada. Debe activarla para continuar.');
+            return;
+
+        }else{
+
             $subcategory->update([
 
                 'status_id' => 1
     
             ]);
-    
-            if($category->status_id != 1){
-    
-                $category->update([
-    
-                    'status_id' => 1
-        
-                ]);
-    
-            }
-    
-            DB::commit();
+
             $this->emit('record-activated','Registro desbloqueado');
             $this->mount();
-
-        } catch (\Throwable $th) {
-            
-            DB::rollBack();
-            $this->emit('record-error', 'Error al activar registro');
-            return;
 
         }
 
