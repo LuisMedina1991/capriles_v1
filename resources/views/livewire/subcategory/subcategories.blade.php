@@ -53,7 +53,7 @@
                                         </a>
                                     @else
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_2('{{$subcategory->id}}','{{$subcategory->category_id}}')"
+                                            onclick="Confirm_2('{{$subcategory->id}}','{{$subcategory->category->status_id}}')"
                                             class="btn btn-dark" title="Activar">
                                             <i class="fas fa-check"></i>
                                         </a>
@@ -122,8 +122,15 @@
 
         if(presentations_count > 0){
 
-            swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
+            swal({
+                title: 'AVISO',
+                text: 'NO SE PUEDE ELIMINAR DEBIDO A RELACION',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
             return;
+
         }
 
         swal({
@@ -147,7 +154,20 @@
         })
     }
 
-    function Confirm_2(id,category_id){
+    function Confirm_2(id,category_status){
+
+        if(category_status != 1){
+
+            swal({
+                title: 'AVISO',
+                text: 'LA CATEGORIA DE ESTA SUBCATEGORIA SE ENCUENTRA BLOQUEADA. DEBE ACTIVARLA PARA CONTINUAR.',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
+            return;
+
+        }
 
         swal({
 
@@ -164,7 +184,7 @@
 
             if(result.value){
                 
-                window.livewire.emit('activate',id,category_id)
+                window.livewire.emit('activate',id,category_status)
                 swal.close()
             }
         })
