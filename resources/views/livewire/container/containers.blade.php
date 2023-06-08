@@ -42,10 +42,10 @@
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
                                 <th class="table-th text-white text-center">prefijo</th>
-                                {{--<th class="table-th text-white text-center">productos relacionados</th>--}}
                                 <th class="table-th text-white text-center">categoria</th>
                                 <th class="table-th text-white text-center">subcategoria</th>
                                 <th class="table-th text-white text-center">presentacion</th>
+                                <th class="table-th text-white text-center">productos relacionados</th>
                                 <th class="table-th text-white text-center">comentarios</th>
                                 <th class="table-th text-white text-center">opciones</th>
                             </tr>
@@ -56,9 +56,6 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $container->prefix }}</h6>
                                 </td>
-                                {{--<td>
-                                    <h6 class="text-center text-uppercase">{{ $container->active_products_count }}</h6>
-                                </td>--}}
                                 <td class="text-center text-uppercase">
                                     <h6 class="text-center text-uppercase">{{ $container->subcategory->category->name }}</h6>
                                 </td>
@@ -67,6 +64,9 @@
                                 </td>
                                 <td class="text-center text-uppercase">
                                     <h6 class="text-center text-uppercase">{{ $container->presentation->name }}</h6>
+                                </td>
+                                <td>
+                                    <h6 class="text-center text-uppercase">{{ $container->products_count }}</h6>
                                 </td>
                                 <td class="text-center text-uppercase">
                                     <h6 class="text-center text-uppercase">{{ $container->additional_info }}</h6>
@@ -78,13 +78,13 @@
                                             <i class="fas fa-edit"></i>
                                         </a>
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_1('{{$container->id}}')"
+                                            onclick="Confirm_1('{{$container->id}}','{{$container->products_count}}')"
                                             class="btn btn-dark" title="Eliminar">
                                             <i class="fas fa-trash"></i>
                                         </a>
                                     @else
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_2('{{$container->id}}')"
+                                            onclick="Confirm_2('{{$container->id}}','{{$container->subcategory->status_id}}','{{$container->presentation->status_id}}')"
                                             class="btn btn-dark" title="Activar">
                                             <i class="fas fa-check"></i>
                                         </a>
@@ -174,12 +174,18 @@
         });        
     });
 
-    function Confirm_1(container_id,active_products_count){
+    function Confirm_1(id,products_count){
 
-        if(active_products_count > 0){
+        if(products_count > 0){
 
-        swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
-        return;
+            swal({
+                title: 'AVISO',
+                text: 'NO SE PUEDE ELIMINAR DEBIDO A RELACION',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
+            return;
 
         }
 
@@ -198,13 +204,39 @@
 
             if(result.value){
 
-                window.livewire.emit('destroy', container_id,active_products_count)
+                window.livewire.emit('destroy',id,products_count)
                 swal.close()
             }
         })
     }
 
-    function Confirm_2(id){
+    function Confirm_2(id,subcategory_status,presentation_status){
+
+        if(subcategory_status != 1){
+
+            swal({
+                title: 'AVISO',
+                text: 'LA SUBCATEGORIA DE ESTE CONTENEDOR SE ENCUENTRA BLOQUEADA. DEBE ACTIVARLA PARA CONTINUAR.',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
+            return;
+
+        }
+
+        if(presentation_status != 1){
+
+            swal({
+                title: 'AVISO',
+                text: 'LA PRESENTACION DE ESTE CONTENEDOR SE ENCUENTRA BLOQUEADA. DEBE ACTIVARLA PARA CONTINUAR.',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
+            return;
+
+        }
 
         swal({
 
@@ -221,7 +253,7 @@
 
             if(result.value){
                 
-                window.livewire.emit('activate',id)
+                window.livewire.emit('activate',id,subcategory_status,presentation_status)
                 swal.close()
             }
         })
