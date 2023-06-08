@@ -7,6 +7,8 @@ use App\Models\Category;
 use App\Models\Subcategory;
 use App\Models\Presentation;
 use App\Models\PresentationSubcategory;
+use App\Models\Product;
+use Exception;
 use Livewire\WithPagination;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +18,7 @@ class Containers extends Component
     use WithPagination;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $categories,$subcategories,$presentations;
+    public $categories,$subcategories,$presentations,$products;
     public $categoryId,$subcategoryId,$presentationId,$prefix,$additional_info;
     public $category_name,$presentation_name,$subcategory_name;
     public $aux_1,$aux_2,$aux_3;
@@ -36,6 +38,7 @@ class Containers extends Component
         $this->subcategoryId = 'elegir';
         $this->presentations = Presentation::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
         $this->presentationId = 'elegir';
+        $this->products = Product::all();
         $this->prefix = '';
         $this->additional_info = '';
         $this->modal_id = 0;
@@ -61,7 +64,9 @@ class Containers extends Component
 
                     $data = PresentationSubcategory::where('status_id', 1)
                         ->with('presentation','subcategory.category')
-                        //->withCount('activeProducts')
+                        ->withCount(['products' => function ($query) {
+                            $query->where('products.status_id',1);
+                        }])
                         ->WhereHas('subcategory', function ($query) {
                             $query->where('category_id', $this->search);
                         })
@@ -72,7 +77,9 @@ class Containers extends Component
 
                     $data = PresentationSubcategory::where('status_id', 1)
                         ->with('presentation','subcategory.category')
-                        //->withCount('activeProducts')
+                        ->withCount(['products' => function ($query) {
+                            $query->where('products.status_id',1);
+                        }])
                         ->orderBy('prefix', 'asc')
                         ->paginate($this->pagination);
                 }
@@ -86,7 +93,9 @@ class Containers extends Component
 
                     $data = PresentationSubcategory::where('status_id', 2)
                         ->with('presentation','subcategory.category')
-                        //->withCount('activeProducts')
+                        ->withCount(['products' => function ($query) {
+                            $query->where('products.status_id',1);
+                        }])
                         ->WhereHas('subcategory', function ($query) {
                             $query->where('category_id', $this->search);
                         })
@@ -96,7 +105,9 @@ class Containers extends Component
 
                     $data = PresentationSubcategory::where('status_id', 2)
                         ->with('presentation','subcategory.category')
-                        //->withCount('activeProducts')
+                        ->withCount(['products' => function ($query) {
+                            $query->where('products.status_id',1);
+                        }])
                         ->orderBy('prefix', 'asc')
                         ->paginate($this->pagination);
                 }
@@ -405,24 +416,24 @@ class Containers extends Component
 
         $this->validate($rules, $messages);
 
-        $actual_subcategory = $this->subcategories->find($this->subcategoryId);
-        $actual_presentation = $this->presentations->find($this->presentationId);
-        $previus_subcategory = $this->aux_1;
-        $previus_presentation = $this->aux_2;
-        $previus_prefix = $this->aux_3;
+        DB::beginTransaction();
 
-        if(($this->subcategoryId != $previus_subcategory->id) || ($this->presentationId != $previus_presentation->id)){
-            
-            if($this->prefix == $previus_prefix){
+        try {
 
-                $this->addError('prefix', 'Ya existe');
-                return;
+            $actual_subcategory = $this->subcategories->find($this->subcategoryId);
+            $actual_presentation = $this->presentations->find($this->presentationId);
+            $previus_subcategory = $this->aux_1;
+            $previus_presentation = $this->aux_2;
+            $previus_prefix = $this->aux_3;
 
-            }else{
+            if(($this->subcategoryId != $previus_subcategory->id) || ($this->presentationId != $previus_presentation->id)){
+                
+                if($this->prefix == $previus_prefix){
 
-                DB::beginTransaction();
+                    $this->addError('prefix', 'Ya existe');
+                    return;
 
-                try {
+                }else{
 
                     $actual_subcategory->presentations()->attach($actual_presentation->id, [
 
@@ -437,45 +448,67 @@ class Containers extends Component
         
                     ]);
 
-                    DB::commit();
+                    $products = $this->products->where('presentation_subcategory_id',$this->selected_id);
 
-                } catch (\Throwable $th) {
+                    if(count($products) > 0){
 
-                    DB::rollback();
-                    throw $th;
+                        $actual = $actual_subcategory->presentations->firstWhere('pivot.presentation_id', $actual_presentation->id);
+
+                        foreach($products as $product){
+
+                            $number = $product->number;
+
+                            $product->Update([
+
+                                'code' => $this->prefix . '-' . str_pad($number, 4, 0, STR_PAD_LEFT),
+                                'presentation_subcategory_id' => $actual->pivot->id
+
+                            ]);
+                        }
+                    }
+
+                }
+
+            }else{
+                
+                $actual_subcategory->presentations()->updateExistingPivot($actual_presentation->id, [
+
+                    'prefix' => $this->prefix,
+                    'additional_info' => $this->additional_info
+
+                ]);
+
+                if($this->prefix != $previus_prefix){
+
+                    $products = $this->products->where('presentation_subcategory_id',$this->selected_id);
+
+                    if(count($products) > 0){
+
+                        foreach($products as $product){
+
+                            $number = $product->number;
+
+                            $product->Update([
+
+                                'code' => $this->prefix . '-' . str_pad($number, 4, 0, STR_PAD_LEFT)
+
+                            ]);
+                        }
+                    }
+
                 }
 
             }
 
-        }else{
-            
-            $actual_subcategory->presentations()->updateExistingPivot($actual_presentation->id, [
+            DB::commit();
+            $this->emit('record-updated', 'Actualizado correctamente');
+            $this->mount();
 
-                'prefix' => $this->prefix,
-                'additional_info' => $this->additional_info
-
-            ]);
-
+        } catch (Exception $e) {
+                        
+            DB::rollback();
+            $this->emit('record-error', 'Error al actualizar');
         }
-
-        /*$products = $this->products->where('presentation_subcategory_id',$this->selected_id);
-
-        if(count($products) > 0){
-
-            foreach($products as $product){
-
-                $number = $product->number;
-
-                $product->Update([
-
-                    'code' => $this->prefix . '-' . str_pad($number, 4, 0, STR_PAD_LEFT)
-
-                ]);
-            }
-        }*/
-
-        $this->emit('record-updated', 'Actualizado correctamente');
-        $this->mount();
 
         /*$subcategory_1 = $this->aux_1->find($this->aux_2);
         $subcategory_2 = $this->subcategories->find($this->subcategoryId);
@@ -637,7 +670,21 @@ class Containers extends Component
         'destroy' => 'Destroy'
     ];
 
-    public function Activate(PresentationSubcategory $container){
+    public function Activate(PresentationSubcategory $container,$subcategory_status,$presentation_status){
+
+        if($subcategory_status != 1){
+
+            $this->emit('record-error', 'La subcategoria de este contenedor se encuentra bloqueada. Debe activarla para continuar.');
+            return;
+
+        }
+
+        if($presentation_status != 1){
+
+            $this->emit('record-error', 'La presentacion de este contenedor se encuentra bloqueada. Debe activarla para continuar.');
+            return;
+            
+        }
 
         $container->update([
 
@@ -649,14 +696,15 @@ class Containers extends Component
         $this->mount();
     }
 
-    /*public function Destroy(PresentationSubcategory $container, $active_products_count){
+    public function Destroy(PresentationSubcategory $container,$products_count){
         
         $subcategory = $this->subcategories->find($container->subcategory_id);
 
-        if ($active_products_count > 0) {
+        if ($products_count > 0) {
 
-            $this->emit('item-error', 'No se puede eliminar debido a relacion');
+            $this->emit('record-error', 'No se puede eliminar debido a relacion');
             return;
+
         } else {
 
             $subcategory->presentations()->updateExistingPivot($container->presentation_id, [
@@ -665,23 +713,9 @@ class Containers extends Component
 
             ]);
 
-            $this->emit('item-deleted', 'Eliminado correctamente');
+            $this->emit('record-deleted', 'Eliminado correctamente');
             $this->mount();
         }
-    }*/
-
-    public function Destroy(PresentationSubcategory $container){
-
-        $subcategory = $this->subcategories->find($container->subcategory_id);
-
-        $subcategory->presentations()->updateExistingPivot($container->presentation_id, [
-
-            'status_id' => 2,
-
-        ]);
-
-        $this->emit('item-deleted', 'Eliminado correctamente');
-        $this->mount();
     }
 
     public function resetUI(){
