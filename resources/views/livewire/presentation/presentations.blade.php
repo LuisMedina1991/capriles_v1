@@ -105,8 +105,15 @@
 
         if(subcategories_count > 0){
 
-            swal('NO SE PUEDE ELIMINAR DEBIDO A RELACION')
+            swal({
+                title: 'AVISO',
+                text: 'NO SE PUEDE ELIMINAR DEBIDO A RELACION',
+                type: 'error',
+                confirmButtonColor: '#3B3F5C',
+                confirmButtonText: 'ACEPTAR'
+            })
             return;
+
         }
 
         swal({
