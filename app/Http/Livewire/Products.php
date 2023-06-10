@@ -24,6 +24,7 @@ use App\Models\Company;
 use Carbon\Carbon;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Exception;
 use Illuminate\Support\Facades\DB;
 
 class Products extends Component
@@ -31,39 +32,41 @@ class Products extends Component
     use WithPagination;
     use WithFileUploads;
 
-    public $search, $search_2, $selected_id, $pageTitle, $componentName, $comment, $value, $image;
-    public $brandId, $statusId, $containerId, $brand_name, $office_name;
-    public $allBrands, $allStatuses, $allContainers, $allValues, $allOffices, $allProducts, $allAccounts, $allBanks,$allCompanies;
-    public $allContainers_2, $allSuppliers, $allStatuses_2, $allCustomers;
-    public $my_total, $stock_details, $PaymentType,$tax_option, $tax, $aux_1, $aux_2,$modal_id,$modal_id_2;
-    public $product_id, $office_id_1, $office_id_2, $value_id, $cant_1, $cant_2,$quantity, $accountId, $bankId,$companyId;
-    public $supplierId, $customerId, $name,$alias, $phone, $fax, $email, $nit, $city, $country, $number,$address,$type,$currency,$balance,$entity_code;
+    public $pageTitle,$componentName,$search,$search_2,$selected_id;
+    public $comment,$value,$image,$barcode,$random_variable;
+    public $brandId,$statusId,$containerId,$brand_name,$office_name;
+    public $allBrands,$allStatuses,$allContainers,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
+    public $allContainers_2,$allSuppliers,$allStatuses_2,$allCustomers;
+    public $my_total,$stock_details,$PaymentType,$tax_option,$tax,$aux_1,$aux_2,$modal_id,$modal_id_2;
+    public $product_id,$office_id_1,$office_id_2,$value_id,$cant_1,$cant_2,$quantity,$accountId,$bankId,$companyId;
+    public $supplierId,$customerId,$name,$alias,$phone,$fax,$email,$nit,$city,$country,$number,$address,$type,$currency,$balance,$entity_code;
     public $product_code,$cost,$price,$total_income,$total_sale,$stock,$total_income_tax,$total_sale_tax;
     private $pagination = 30;
     public $productValues = [];
 
     public function paginationView()
     {
-
         return 'vendor.livewire.bootstrap';
     }
 
     public function mount()
     {
-
-        $this->resetValidation();
-        $this->resetPage();
         $this->pageTitle = 'listado';
         $this->componentName = 'productos';
-        $this->selected_id = 0;
         $this->search = '';
         $this->search_2 = 0;
-        $this->comment = '';
+        $this->selected_id = 0;
         $this->image = null;
-        $this->value = 'Elegir';
+        $this->barcode = 'elegir';
+        $this->random_variable = rand();
+        $this->containerId = 'elegir';
+        $this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->orderBy('prefix')->get();
+        $this->brandId = 'elegir';
+        $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
+        $this->comment = '';
+        $this->allProducts = Product::all();
+        /*$this->value = 'Elegir';
         $this->statusId = 'Elegir';
-        $this->brandId = 'Elegir';
-        $this->containerId = 'Elegir';
         $this->supplierId = 'Elegir';
         $this->customerId = 'Elegir';
         $this->accountId = 'Elegir';
@@ -107,10 +110,7 @@ class Products extends Component
         $this->allOffices = Office::select('id', 'name')->get();
         $this->allStatuses = Status::select('id', 'name', 'type')->where('type', 'registro')->get();
         $this->allStatuses_2 = Status::select('id', 'name', 'type')->where('type', 'transaccion')->get();
-        $this->allBrands = Brand::select('id', 'name')->get();
-        $this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->get();
         $this->allContainers_2 = PresentationSubcategory::with('presentation', 'subcategory.category')->get();
-        $this->allProducts = Product::all();
         $this->allAccounts = BankAccount::where('status_id', 1)->with(['company', 'bank'])->get();
         $this->allBanks = Bank::select('id', 'alias')->get();
         $this->allCompanies = Company::select('id', 'alias')->get();
@@ -118,7 +118,9 @@ class Products extends Component
         $this->allCustomers = Customer::select('id', 'name')->get();
         $this->productValues = [
             ['id' => '', 'cost' => '', 'price' => '', 'is_saved' => false]
-        ];
+        ];*/
+        $this->resetValidation();
+        $this->resetPage();
     }
 
     public function render()
@@ -131,14 +133,27 @@ class Products extends Component
                 if (strlen($this->search) > 0) {
 
                     $data = Product::with([
-                        'activeValues.offices',
-                        'activeStocks',
                         'brand',
+                        'image',
                         'container.subcategory.category',
                         'container.presentation'
+                        /*'activeValues.offices',
+                        'activeStocks',*/
                     ])
                         ->where('status_id', 1)
-                        ->whereHas('container', function ($query) {
+                        ->where(function ($q1) {
+                            $q1->where('code', 'like', '%' . $this->search . '%');
+                            $q1->orWhere(function ($q2) {
+                                $q2->where('comment', 'like', '%' . $this->search . '%');
+                                $q2->orWhereHas('brand', function ($q3) {
+                                    $q3->where('name', 'like', '%' . $this->search . '%');
+                                });
+                                $q2->orWhereHas('container', function ($q3) {
+                                    $q3->where('additional_info', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        /*->whereHas('container', function ($query) {
                             $query->whereHas('subcategory', function ($query) {
                                 $query->whereHas('category', function ($query) {
                                     $query->where('name', 'like', '%' . $this->search . '%');
@@ -153,18 +168,19 @@ class Products extends Component
                             $query->orWhereHas('products', function ($query) {
                                 $query->where('code', 'like', '%' . $this->search . '%');
                             });
-                        })
+                        })*/
                         ->orderBy('code', 'asc')
                         ->paginate($this->pagination);
                 } else {
 
                     $data = Product::where('status_id', 1)
                         ->with([
-                            'activeValues.offices',
-                            'activeStocks',
                             'brand',
+                            'image',
                             'container.subcategory.category',
                             'container.presentation'
+                            /*'activeValues.offices',
+                            'activeStocks',*/
                         ])
                         ->orderBy('code', 'asc')
                         ->paginate($this->pagination);
@@ -177,14 +193,27 @@ class Products extends Component
                 if (strlen($this->search) > 2) {
 
                     $data = Product::with([
-                        'activeValues.offices',
-                        'activeStocks',
                         'brand',
+                        'image',
                         'container.subcategory.category',
                         'container.presentation'
+                        /*'activeValues.offices',
+                        'activeStocks',*/
                     ])
                         ->where('status_id', 2)
-                        ->whereHas('container', function ($query) {
+                        ->where(function ($q1) {
+                            $q1->where('code', 'like', '%' . $this->search . '%');
+                            $q1->orWhere(function ($q2) {
+                                $q2->where('comment', 'like', '%' . $this->search . '%');
+                                $q2->orWhereHas('brand', function ($q3) {
+                                    $q3->where('name', 'like', '%' . $this->search . '%');
+                                });
+                                $q2->orWhereHas('container', function ($q3) {
+                                    $q3->where('additional_info', 'like', '%' . $this->search . '%');
+                                });
+                            });
+                        })
+                        /*->whereHas('container', function ($query) {
                             $query->whereHas('subcategory', function ($query) {
                                 $query->whereHas('category', function ($query) {
                                     $query->where('name', 'like', '%' . $this->search . '%');
@@ -199,18 +228,19 @@ class Products extends Component
                             $query->orWhereHas('products', function ($query) {
                                 $query->where('code', 'like', '%' . $this->search . '%');
                             });
-                        })
+                        })*/
                         ->orderBy('code', 'asc')
                         ->paginate($this->pagination);
                 } else {
 
                     $data = Product::where('status_id', 2)
                         ->with([
-                            'activeValues.offices',
-                            'activeStocks',
                             'brand',
+                            'image',
                             'container.subcategory.category',
                             'container.presentation'
+                            /*'activeValues.offices',
+                            'activeStocks',*/
                         ])
                         ->orderBy('code', 'asc')
                         ->paginate($this->pagination);
@@ -240,12 +270,12 @@ class Products extends Component
 
     public function updatedsearch()
     {
-        $this->value = 'Elegir';
+        $this->value = 'elegir';
     }
 
     public function updatedPaymentType()
     {
-        $this->statusId = 'Elegir';
+        $this->statusId = 'elegir';
     }
 
     /*public function updatedquantity()
@@ -1237,25 +1267,28 @@ class Products extends Component
 
     public function Store()
     {
-
         $rules = [
 
-            'containerId' => 'not_in:Elegir',
-            'brandId' => 'not_in:Elegir',
-            'comment' => 'max:100',
-            'productValues.*.cost' => 'required|numeric',
-            'productValues.*.price' => 'required|numeric',
+            'containerId' => 'not_in:elegir',
+            'brandId' => 'not_in:elegir',
+            'comment' => 'max:45',
+            'barcode' => 'not_in:elegir',
+            'image' => 'exclude_if:image,null|mimes:jpg,png',
+            //'productValues.*.cost' => 'required|numeric',
+            //'productValues.*.price' => 'required|numeric',
         ];
 
         $messages = [
 
             'containerId.not_in' => 'Seleccione una opcion',
             'brandId.not_in' => 'Seleccione una opcion',
-            'comment.max' => 'Maximo 100 caracteres',
-            'productValues.*.cost.required' => 'Campo requerido',
-            'productValues.*.cost.numeric' => 'Solo numeros',
-            'productValues.*.price.required' => 'Campo requerido',
-            'productValues.*.price.numeric' => 'Solo numeros',
+            'comment.max' => 'Maximo 45 caracteres',
+            'barcode.not_in' => 'Seleccione una opcion',
+            'image.mimes' => 'Solo formatos jpg o png',
+            //'productValues.*.cost.required' => 'Campo requerido',
+            //'productValues.*.cost.numeric' => 'Solo numeros',
+            //'productValues.*.price.required' => 'Campo requerido',
+            //'productValues.*.price.numeric' => 'Solo numeros',
         ];
 
         $this->validate($rules, $messages);
@@ -1264,27 +1297,117 @@ class Products extends Component
 
         try {
 
-            $product = Product::create([
+            $products = $this->allProducts->where('presentation_subcategory_id', $this->containerId);   //buscamos todos los productos que pertenecen al contenedor seleccionado
+            $container = $this->allContainers->find($this->containerId);    //obtenemos el contenedor seleccionado
+            $new_number = $products->max('number') + 1;     //generamos un nuevo numero
+            $new_code = $container->prefix . '-' . str_pad($new_number, 4, 0, STR_PAD_LEFT);    //generamos un nuevo codigo
+    
+            if(count($products) > 0){   //validamos si existen productos que pertenecen al contenedor seleccionado
+    
+                $products_max_number = $products->max('number');    //obtenemos el numero mas alto entre esos productos
+                $last_product = $products->firstWhere('number', $products_max_number);  //obtenemos el producto con el numero mas alto
+    
+                if($last_product->status_id != 1){  //validamos si el producto con el numero mas alto se encuentra bloqueado
 
-                'status_id' => 1,
-                'presentation_subcategory_id' => $this->containerId,
-                'brand_id' => $this->brandId,
-                'comment' => $this->comment
-            ]);
+                    $disabled_products = $this->allProducts->where('presentation_subcategory_id', $this->containerId)->where('status_id',2); //obtenemos todos los productos bloqueados
+                    $disabled_products_min_number = $disabled_products->min('number');  //obtenemos el numero mas bajo entre los productos bloqueados
+                    $disabled_first_product = $disabled_products->firstWhere('number',$disabled_products_min_number);   //obtenemos el producto bloqueado con el numero mas bajo
+                    $last_product_number = $last_product->number;   //guardamos el numero del producto con el numero mas alto
+                    $last_product_code = $last_product->code;   //guardamos el codigo del producto con el numero mas alto
+
+                    if($last_product->id == $disabled_first_product->id){   //validamos si el producto con el numero mas alto es tambien el producto bloqueado con el numero mas bajo
+        
+                        $last_product->Update([     //actualizamos el producto con el numero mas alto para asignarle su numero y codigo al nuevo producto a crear
+        
+                            'number' => $new_number,    //incrementamos su numero +1 para seguir con la secuencia
+                            'code' => $new_code     //incrementamos su codigo +1 para seguir con la secuencia
+        
+                        ]);
+        
+                        $product = Product::create([    //creamos un nuevo producto
+        
+                            'number' => $last_product_number,   //le asignamos el numero que tenia el producto con el numero mas alto antes de su actualizacion
+                            'code' => $last_product_code,   //le asignamos el codigo que tenia el producto con el numero mas alto antes de su actualizacion
+                            'comment' => $this->comment,
+                            'status_id' => 1,
+                            'brand_id' => $this->brandId,
+                            'presentation_subcategory_id' => $this->containerId
+        
+                        ]);
+
+                    }else{  //si el producto con el numero mas alto no es el tambien el producto bloqueado con el numero mas bajo
+
+                        $disabled_first_product_number = $disabled_first_product->number;   //guardamos el numero del producto bloqueado con el numero mas bajo
+                        $disabled_first_product_code = $disabled_first_product->code;   //guardamos el codigo del producto bloqueado con el numero mas bajo
+
+                        $last_product->Update([   //actualizamos el producto con el numero mas alto para asignarle su numero y codigo al al producto bloqueado con el numero mas bajo
+        
+                            'number' => $new_number,    //incrementamos su numero +1 para seguir con la secuencia
+                            'code' => $new_code     //incrementamos su codigo +1 para seguir con la secuencia
+        
+                        ]);
+
+                        $disabled_first_product->Update([   //actualizamos el producto bloqueado con el numero mas bajo para asignarle su numero y codigo al nuevo producto a crear
+        
+                            'number' => $last_product_number,    //le asignamos el numero que tenia el producto con el numero mas alto antes de su actualizacion
+                            'code' => $last_product_code     //le asignamos el codigo que tenia el producto con el numero mas alto antes de su actualizacion
+        
+                        ]);
+
+                        $product = Product::create([    //creamos un nuevo producto
+        
+                            'number' => $disabled_first_product_number, //le asignamos el numero que tenia el producto bloqueado con el numero mas bajo antes de su actualizacion
+                            'code' => $disabled_first_product_code, //le asignamos el codigo que tenia el producto bloqueado con el numero mas bajo antes de su actualizacion
+                            'comment' => $this->comment,
+                            'status_id' => 1,
+                            'brand_id' => $this->brandId,
+                            'presentation_subcategory_id' => $this->containerId
+        
+                        ]);
+
+                    }
+    
+                }else{  //si el producto con el numero mas alto no se encuentra bloqueado creamos un nuevo producto siguiendo la secuencia normalmente
+    
+                    $product = Product::create([
+    
+                        'number' => $new_number,
+                        'code' => $new_code,
+                        'comment' => $this->comment,
+                        'status_id' => 1,
+                        'brand_id' => $this->brandId,
+                        'presentation_subcategory_id' => $this->containerId
+    
+                    ]);
+    
+                }
+    
+            }else{  //si no existe ningun producto registrado con el contenedor seleccionado se creara el primero para iniciar la secuencia
+    
+                $product = Product::create([
+    
+                    'number' => $new_number,
+                    'code' => $new_code,
+                    'comment' => $this->comment,
+                    'status_id' => 1,
+                    'brand_id' => $this->brandId,
+                    'presentation_subcategory_id' => $this->containerId
+    
+                ]);
+    
+            }
 
 
-            if ($product) {
+            if ($product) {     //validamos si el producto se registro
 
-                /*if($this->image){   //validar si se selecciono una imagen para el registro
-                    //metodo de php uniqid() para asignar id automatico y unico
-                    $customFileName = uniqid() . '_.' . $this->image->extension();  //guardar en variable el id concatenado de _.extension del archivo seleccionado
-                    //metodo storeAs solicita 2 parametros (directorio para almacenar archivo, nombre del archivo)
-                    $this->image->storeAs('public/products', $customFileName);  //almacenar informacion
-                    $product->image = $customFileName;  //actualizar la columna image del registro anteriormente guardado en variable
-                    $product->save();   //volvemos a guardar el registro con la informacion actualizada
-                    }*/
+                if ($this->image) {     //validamos si se selecciono alguna imagen
 
-                foreach ($this->productValues as $value_1) {
+                    $customFileName = uniqid() . '_.' . $this->image->extension();  //generamos un id unico concatenado de la extension de la imagen para nombrar la imagen
+                    $this->image->storeAs('public/products', $customFileName);  //almacenamos fisicamente la imagen en la ruta especificada con el nombre generado
+                    $product->image()->create(['url' => $customFileName]);  //creamos registro de la imagen en la db asignandole el nombre generado como url
+                }
+
+                /*foreach ($this->productValues as $value_1) {
 
                     $value_2 = Value::create([
 
@@ -1302,23 +1425,23 @@ class Products extends Component
                     }
 
                     $value_2->offices()->attach($stocks);
-                }
+                }*/
             }
 
             DB::commit();
-            $this->emit('item-added', 'Registrado correctamente');
+            $this->emit('record-added', 'Registrado correctamente');
             $this->mount();
 
-            /*} catch (Exception) {
+            } catch (Exception $e) {
                     
                 DB::rollback();
-                $this->emit('record-error', 'Error. Cancelando registro');
-            }*/
-        } catch (\Throwable $th) {
+                $this->emit('record-error', 'Error al registrar');
+            }
+        /*} catch (\Throwable $th) {
 
             DB::rollback();
             throw $th;
-        }
+        }*/
     }
 
     public function ShowCustomerModal()
@@ -1537,15 +1660,15 @@ class Products extends Component
 
     public function Edit(Product $product)
     {
-        $this->productValues = [];
         $this->selected_id = $product->id;
-        $this->statusId = $product->status_id;
         $this->containerId = $product->presentation_subcategory_id;
         $this->brandId = $product->brand_id;
         $this->comment = $product->comment;
-        $this->aux_1 = $this->allValues->where('product_id', $product->id);
+        //$this->statusId = $product->status_id;
+        //$this->productValues = [];
+        //$this->aux_1 = $this->allValues->where('product_id', $product->id);
 
-        foreach ($this->aux_1 as $value) {
+        /*foreach ($this->aux_1 as $value) {
 
             $this->productValues[] = [
 
@@ -1554,7 +1677,7 @@ class Products extends Component
                 'price' => number_format($value->price, 2),
                 'is_saved' => true
             ];
-        }
+        }*/
 
         $this->emit('show-modal', 'Abrir Modal');
     }
@@ -1563,29 +1686,31 @@ class Products extends Component
     {
         $rules = [
 
-            'statusId' => 'not_in:Elegir',
-            'containerId' => 'not_in:Elegir',
-            'brandId' => 'not_in:Elegir',
-            'comment' => 'max:100',
-            'productValues.*.cost' => 'required|numeric',
-            'productValues.*.price' => 'required|numeric',
+            //'statusId' => 'not_in:elegir',
+            'containerId' => 'not_in:elegir',
+            'brandId' => 'not_in:elegir',
+            'comment' => 'max:45',
+            'image' => 'exclude_if:image,null|mimes:jpg,png',
+            //'productValues.*.cost' => 'required|numeric',
+            //'productValues.*.price' => 'required|numeric',
         ];
 
         $messages = [
 
-            'statusId.not_in' => 'Seleccione una opcion',
+            //'statusId.not_in' => 'Seleccione una opcion',
             'containerId.not_in' => 'Seleccione una opcion',
             'brandId.not_in' => 'Seleccione una opcion',
-            'comment.max' => 'Maximo 100 caracteres',
-            'productValues.*.cost.required' => 'Campo requerido',
-            'productValues.*.cost.numeric' => 'Solo numeros',
-            'productValues.*.price.required' => 'Campo requerido',
-            'productValues.*.price.numeric' => 'Solo numeros',
+            'comment.max' => 'Maximo 45 caracteres',
+            'image.mimes' => 'Solo formatos jpg o png',
+            //'productValues.*.cost.required' => 'Campo requerido',
+            //'productValues.*.cost.numeric' => 'Solo numeros',
+            //'productValues.*.price.required' => 'Campo requerido',
+            //'productValues.*.price.numeric' => 'Solo numeros',
         ];
 
         $this->validate($rules, $messages);
 
-        $product = $this->allProducts->find($this->selected_id);
+        /*$product = $this->allProducts->find($this->selected_id);
         $this->aux_2 = collect($this->productValues);
 
         DB::beginTransaction();
@@ -1602,6 +1727,7 @@ class Products extends Component
                     'brand_id' => $this->brandId,
                     'comment' => $this->comment
                 ]);
+
             } else {
 
                 $products = $this->allProducts->where('presentation_subcategory_id', $product->presentation_subcategory_id);
@@ -1698,7 +1824,7 @@ class Products extends Component
 
             DB::rollback();
             throw $th;
-        }
+        }*/
 
         /*if ($this->image) {
             
@@ -1724,26 +1850,162 @@ class Products extends Component
     ];
 
     public function Destroy(Product $product)
-    {
-        /*$imageTemp = $product->image;
+    {   
 
-        if ($imageTemp != null) {
+        DB::beginTransaction();
 
-            if (file_exists('storage/products/' . $imageTemp)) {
-                
-                unlink('storage/products/' . $imageTemp);
+        try {
+
+            $products = $this->allProducts->where('presentation_subcategory_id',$product->presentation_subcategory_id);
+
+            if (count($products) > 1) {
+
+                $container = $this->allContainers->find($product->presentation_subcategory_id);
+                $products_max_number = $products->max('number');
+                $last_product = $products->firstWhere('number', $products_max_number);
+
+                if ($product->id != $last_product->id) {
+
+                    $previus_number = $product->number;
+                    $previus_code = $product->code;
+                    $last_product_number = $last_product->number;
+                    $last_product_code = $last_product->code;
+                    $new_number = $products->max('number') + 1;
+                    $new_code = $container->prefix . '-' . str_pad($new_number, 4, 0, STR_PAD_LEFT);
+
+                    if($last_product->status_id != 1){
+
+                        $active_products = $this->allProducts->where('presentation_subcategory_id', $product->presentation_subcategory_id)->where('status_id',1);
+                        $active_products_max_number = $active_products->max('number');
+                        $last_active_product = $active_products->firstWhere('number',$active_products_max_number);
+                        $last_active_product_number = $last_active_product->number;
+                        $last_active_product_code = $last_active_product->code;
+
+                        if($product->id == $last_active_product->id){
+
+                            $product->Update([
+
+                                'number' => $new_number,
+                                'code' => $new_code
+    
+                            ]);
+    
+                            $last_product->Update([
+    
+                                'number' => $previus_number,
+                                'code' => $previus_code
+    
+                            ]);
+    
+                            $product->Update([
+    
+                                'number' => $last_product_number,
+                                'code' => $last_product_code,
+                                'status_id' => 2
+    
+                            ]);
+
+                        }else{
+
+                            $product->Update([
+
+                            'number' => $new_number,
+                            'code' => $new_code
+
+                            ]);
+
+                            $last_active_product->Update([
+
+                                'number' => $previus_number,
+                                'code' => $previus_code
+
+                            ]);
+
+                            $last_product->Update([
+
+                                'number' => $last_active_product_number,
+                                'code' => $last_active_product_code
+
+                            ]);
+
+                            $product->Update([
+
+                                'number' => $last_product_number,
+                                'code' => $last_product_code,
+                                'status_id' => 2
+
+                            ]);
+
+                        }
+
+                    }else{
+
+                        $product->Update([
+
+                            'number' => $new_number,
+                            'code' => $new_code
+
+                        ]);
+
+                        $last_product->Update([
+
+                            'number' => $previus_number,
+                            'code' => $previus_code
+
+                        ]);
+
+                        $product->Update([
+
+                            'number' => $last_product_number,
+                            'code' => $last_product_code,
+                            'status_id' => 2
+
+                        ]);
+
+                    }
+
+                }else{
+
+                    $product->Update([
+
+                        'status_id' => 2
+    
+                    ]);
+
+                }
+
+            }else{
+
+                $product->Update([
+
+                    'status_id' => 2
+
+                ]);
+
             }
-        }*/
 
-        //$status = $this->allStatuses->firstWhere('id', 2);
-        //dd($status);
-        $product->Update([
+            if ($product->image != null) {
 
-            'status_id' => 2
-        ]);
+                $imageTemp = $product->image->url;
+                $product->image()->delete();
 
-        $this->emit('item-deleted', 'Registro eliminado');
-        $this->mount();
+                if (file_exists('storage/products/' . $imageTemp)) {
+
+                    unlink('storage/products/' . $imageTemp);
+                }
+
+            }
+
+            DB::commit();
+            $this->emit('record-deleted', 'Registro eliminado');
+            $this->mount();
+
+        } catch (Exception $e) {
+                    
+            DB::rollback();
+            $this->emit('record-error', 'Error al registrar');
+        }
+
     }
 
     public function resetUI()

@@ -10,16 +10,8 @@ class Product extends Model
     use HasFactory;
 
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
-    protected $fillable = ['number', 'code', 'comment', 'status_id', 'brand_id', 'presentation_subcategory_id'];
-    //protected $guarded = [];
+    protected $fillable = ['number','code','comment','status_id','brand_id','presentation_subcategory_id'];
 
-    /*protected $attributes = [
-        'brand' => 's/m',
-        'ring' => 's/a',
-        'threshing' => 's/t',
-        'tarp' => 's/l',
-        'comment' => 'no'
-    ];*/
 
     //relacion muchos a uno con statuses
     public function status()
@@ -31,6 +23,13 @@ class Product extends Model
     public function brand()
     {
         return $this->belongsTo(Brand::class);
+    }
+
+    //relacion uno a uno polimorfica con images
+    public function image()
+    {
+        //return $this->morphOne('App\Models\Image','imageable');   //otra forma para hacer lo mismo
+        return $this->morphOne(Image::class, 'imageable');
     }
 
     //relacion muchos a uno con presentation_subcategory
@@ -69,25 +68,16 @@ class Product extends Model
         return $this->hasManyThrough(OfficeValue::class,Value::class)->where('status_id',1);
     }
 
-    //relacion uno a uno polimorfica
-    public function image()
-    {
-
-        //return $this->morphOne('App\Models\Image','imageable');
-        return $this->morphOne(Image::class, 'imageable');
-    }
-
-    public static function boot()
-    {
+    /*public static function boot(){
 
         parent::boot();
 
         static::creating(function ($model) {
 
-            $model->number = Product::where('presentation_subcategory_id', $model->presentation_subcategory_id)->max('number') + 1;
+            $model->number = Product::where('presentation_subcategory_id', $model->presentation_subcategory_id)->where('status_id',1)->max('number') + 1;
             $model->code = $model->container->prefix . '-' . str_pad($model->number, 4, 0, STR_PAD_LEFT);
         });
-    }
+    }*/
 
     /*//nombre del accesor es imagen
     public function getImagenAttribute(){   //metodo accesor para mostrar imagen por defecto en caso de no registrarle ninguna
