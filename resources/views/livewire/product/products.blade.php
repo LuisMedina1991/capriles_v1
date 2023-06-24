@@ -268,6 +268,7 @@
         </div>
     </div>
     @include('livewire.product.form')
+    @include('livewire.product.container_form')
     @include('livewire.product.brand_form')
     {{--@include('livewire.product.stock_detail')
     @include('livewire.product.income_form')
@@ -304,6 +305,15 @@
         });
         window.livewire.on('record-error', msg=>{
             noty(msg,2)
+        });
+        window.livewire.on('show-container-modal', msg=>{
+            $('#theModal').modal('hide')
+            $('#container_modal').modal('show')
+        });
+        window.livewire.on('container-added', msg=>{
+            $('#container_modal').modal('hide')
+            $('#theModal').modal('show')
+            noty(msg)
         });
         window.livewire.on('show-brand-modal', msg=>{
             $('#theModal').modal('hide')

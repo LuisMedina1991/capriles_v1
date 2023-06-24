@@ -2,11 +2,13 @@
 
 namespace App\Http\Livewire;
 
-use App\Models\Brand;
-use App\Models\PresentationSubcategory;
-use App\Models\Status;
 use Livewire\Component;
 use App\Models\Product;
+use App\Models\PresentationSubcategory;
+use App\Models\Brand;
+use App\Models\Category;
+use App\Models\Subcategory;
+use App\Models\Presentation;
 use App\Models\Value;
 use App\Models\Office;
 use App\Models\OfficeValue;
@@ -24,6 +26,7 @@ use App\Models\Company;
 use Carbon\Carbon;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
+use Illuminate\Validation\Rule;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Picqer;
@@ -35,9 +38,10 @@ class Products extends Component
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
     public $comment,$value,$image,$CodeOptions,$GenerateBarcode,$code,$random_variable;
-    public $brandId,$statusId,$containerId,$brand_name,$office_name;
-    public $allBrands,$allStatuses,$allContainers,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
-    public $allContainers_2,$allSuppliers,$allStatuses_2,$allCustomers;
+    public $containerId,$brandId,$categoryId,$subcategoryId,$presentationId;
+    public $additional_info,$brand_name,$office_name;
+    public $allContainers,$allBrands,$allCategories,$allSubcategories,$allPresentations,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
+    public $allContainers_2,$allSuppliers,$allCustomers;
     public $my_total,$stock_details,$PaymentType,$tax_option,$tax,$aux_1,$aux_2,$aux_3,$modal_id,$modal_id_2;
     public $product_id,$office_id_1,$office_id_2,$value_id,$cant_1,$cant_2,$quantity,$accountId,$bankId,$companyId;
     public $supplierId,$customerId,$name,$alias,$phone,$fax,$email,$nit,$city,$country,$number,$address,$type,$currency,$balance,$entity_code;
@@ -64,13 +68,19 @@ class Products extends Component
         $this->random_variable = rand();
         $this->containerId = 'elegir';
         $this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->orderBy('prefix')->get();
+        $this->categoryId = 'elegir';
+        $this->allCategories = Category::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->subcategoryId = 'elegir';
+        $this->allSubcategories = Subcategory::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->presentationId = 'elegir';
+        $this->allPresentations = Presentation::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->additional_info = null;
         $this->brandId = 'elegir';
         $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
         $this->brand_name = '';
         $this->comment = null;
         $this->allProducts = Product::all();
         /*$this->value = 'Elegir';
-        $this->statusId = 'Elegir';
         $this->supplierId = 'Elegir';
         $this->customerId = 'Elegir';
         $this->accountId = 'Elegir';
@@ -111,8 +121,6 @@ class Products extends Component
         $this->stock_details = [];
         $this->allValues = Value::where('status_id', 1)->get();
         $this->allOffices = Office::select('id', 'name')->get();
-        $this->allStatuses = Status::select('id', 'name', 'type')->where('type', 'registro')->get();
-        $this->allStatuses_2 = Status::select('id', 'name', 'type')->where('type', 'transaccion')->get();
         $this->allContainers_2 = PresentationSubcategory::with('presentation', 'subcategory.category')->get();
         $this->allAccounts = BankAccount::where('status_id', 1)->with(['company', 'bank'])->get();
         $this->allBanks = Bank::select('id', 'alias')->get();
@@ -128,7 +136,6 @@ class Products extends Component
 
     public function render()
     {
-
         switch ($this->search_2) {
 
             case 0:
@@ -284,7 +291,14 @@ class Products extends Component
 
     }
 
-    public function updatedsearch()
+    //metodo para mostrar solo las subcategorias que pertenecen a la categoria seleccionada
+    public function updatedcategoryId($category_id){
+
+        $this->subcategoryId = 'elegir';
+        $this->allSubcategories = Subcategory::select('id', 'name')->where('status_id',1)->where('category_id', $category_id)->orderBy('name')->get();
+    }
+
+    /*public function updatedsearch()
     {
         $this->value = 'elegir';
     }
@@ -294,7 +308,7 @@ class Products extends Component
         $this->statusId = 'elegir';
     }
 
-    /*public function updatedquantity()
+    public function updatedquantity()
     {
 
         if($this->quantity != '' && $this->quantity > 0){
@@ -748,7 +762,7 @@ class Products extends Component
         $this->office_id_1 = $stock->office_id;
         $this->office_name = $stock->office->name;
         $this->value_id = $stock->value_id;
-        $this->statusId = 'Elegir';
+        //$this->statusId = 'Elegir';
         $this->customerId = 'Elegir';
         $this->PaymentType = 'Elegir';
         $this->tax_option = 'Elegir';
@@ -1001,7 +1015,7 @@ class Products extends Component
         $this->cost = number_format($stock->value->cost,2);
         $this->stock = $stock->stock;
         $this->quantity = 0;
-        $this->statusId = 'Elegir';
+        //$this->statusId = 'Elegir';
         $this->supplierId = 'Elegir';
         $this->PaymentType = 'Elegir';
         $this->tax_option = 'Elegir';
@@ -1443,6 +1457,70 @@ class Products extends Component
         } else {
 
             $this->emit('record-error', 'Error al Registrar');
+            return;
+        }
+    }
+
+    public function ShowContainerModal()
+    {
+        $this->emit('show-container-modal', 'Mostrando Modal');
+    }
+
+    public function CloseContainerModal()
+    {
+        $this->categoryId = 'elegir';
+        $this->subcategoryId = 'elegir';
+        $this->presentationId = 'elegir';
+        $this->additional_info = null;
+        $this->resetValidation($this->additional_info = null);
+        $this->emit('show-modal', 'Mostrando Modal');
+    }
+
+    public function StoreContainer(){
+
+        $rules = [
+
+            'categoryId' => 'not_in:elegir',
+            'subcategoryId' => ['not_in:elegir', Rule::unique('presentation_subcategory', 'subcategory_id')
+                ->where(function ($query) {
+                    return $query->where('presentation_id', $this->presentationId);
+                })],
+            'presentationId' => ['not_in:elegir', Rule::unique('presentation_subcategory', 'presentation_id')
+                ->where(function ($query) {
+                    return $query->where('subcategory_id', $this->subcategoryId);
+                })],
+            'additional_info' => 'max:45',
+        ];
+
+        $messages = [
+
+            'categoryId.not_in' => 'Seleccione una opcion',
+            'subcategoryId.not_in' => 'Seleccione una opcion',
+            'subcategoryId.unique' => 'Esta subcategoria ya tiene esa presentacion',
+            'presentationId.not_in' => 'Seleccione una opcion',
+            'presentationId.unique' => 'Esta presentacion ya tiene esa subcategoria',
+            'additional_info.max' => 'Maximo 45 caracteres',
+        ];
+
+        $this->validate($rules, $messages);
+
+        $subcategory = $this->allSubcategories->find($this->subcategoryId);
+        $presentation = $this->allPresentations->find($this->presentationId);
+
+        if ($subcategory && $presentation) {
+
+            $subcategory->presentations()->attach($presentation->id, [
+
+                'additional_info' => $this->additional_info,
+                'status_id' => 1
+            ]);
+
+            $this->emit('container-added', 'Registrado correctamente');
+            $this->mount();
+
+        }else{
+
+            $this->emit('record-error','Error al registrar');
             return;
         }
     }
