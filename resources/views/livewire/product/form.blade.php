@@ -47,7 +47,7 @@
                     <div class="col-sm-3 col-md-3 col-lg-2">
                         <br>
                         <div class="form-group">
-                            <button type="button" class="btn btn-success" title="Nueva Marca">Añadir Nuevo</button>
+                            <button type="button" wire:click.prevent="ShowBrandModal()" class="btn btn-success" title="Nueva Marca">Añadir Nuevo</button>
                         </div>
                     </div>
                     <div class="col-sm-12">

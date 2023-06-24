@@ -268,8 +268,8 @@
         </div>
     </div>
     @include('livewire.product.form')
-    {{--@include('livewire.product.brand_form')
-    @include('livewire.product.stock_detail')
+    @include('livewire.product.brand_form')
+    {{--@include('livewire.product.stock_detail')
     @include('livewire.product.income_form')
     @include('livewire.product.transfer_form')
     @include('livewire.product.sale_form')
@@ -285,6 +285,38 @@
 <script>
     document.addEventListener('DOMContentLoaded', function(){
 
+        window.livewire.on('show-modal', msg=>{
+            $('#theModal').modal('show')
+        });
+        window.livewire.on('code-focus', msg=>{
+            $('.component-name').focus()
+        });
+        window.livewire.on('record-added', msg=>{
+            $('#theModal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('record-updated', msg=>{
+            $('#theModal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('record-deleted', msg=>{
+            noty(msg)
+        });
+        window.livewire.on('record-error', msg=>{
+            noty(msg,2)
+        });
+        window.livewire.on('show-brand-modal', msg=>{
+            $('#theModal').modal('hide')
+            $('#brand_modal').modal('show')
+        });
+        $('#brand_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('brand-added', msg=>{
+            $('#brand_modal').modal('hide')
+            $('#theModal').modal('show')
+            noty(msg)
+        });
         window.livewire.on('show-account-modal-1', msg=>{
             $('#income_modal').modal('hide')
             $('#account_modal').modal('show')
@@ -372,40 +404,8 @@
             $('#sale_modal').modal('hide')
             noty(msg)
         });
-        window.livewire.on('show-modal', msg=>{
-            $('#theModal').modal('show')
-        });
-        window.livewire.on('record-added', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
         window.livewire.on('show-stock-detail', msg=>{
             $('#stock-details').modal('show')
-        });
-        window.livewire.on('show-modal-2', msg=>{
-            $('#theModal').modal('hide')
-            $('#brand_modal').modal('show')
-        });
-        $('#brand_modal').on('shown.bs.modal', function(e){
-            $('.component-name').focus()
-        });
-        window.livewire.on('item-added-2', msg=>{
-            $('#brand_modal').modal('hide')
-            $('#theModal').modal('show')
-            noty(msg)
-        });
-        window.livewire.on('record-updated', msg=>{
-            $('#theModal').modal('hide')
-            noty(msg)
-        });
-        window.livewire.on('record-deleted', msg=>{
-            noty(msg)
-        });
-        window.livewire.on('record-error', msg=>{
-            noty(msg,2)
-        });
-        window.livewire.on('code-focus', msg=>{
-            $('.component-name').focus()
         });
     });
 

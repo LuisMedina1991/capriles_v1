@@ -66,6 +66,7 @@ class Products extends Component
         $this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->orderBy('prefix')->get();
         $this->brandId = 'elegir';
         $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
+        $this->brand_name = '';
         $this->comment = null;
         $this->allProducts = Product::all();
         /*$this->value = 'Elegir';
@@ -81,7 +82,6 @@ class Products extends Component
         $this->type = 'Elegir';
         $this->currency = 'Elegir';
         $this->office_name = '';
-        $this->brand_name = '';
         $this->name = '';
         $this->alias = '';
         $this->email = '';
@@ -1449,7 +1449,7 @@ class Products extends Component
 
     public function ShowBrandModal()
     {
-        $this->emit('show-modal-2', 'Mostrando Modal');
+        $this->emit('show-brand-modal', 'Mostrando Modal');
     }
 
     public function CloseBrandModal()
@@ -1461,18 +1461,17 @@ class Products extends Component
 
     public function StoreBrand()
     {
-
         $rules = [
 
-            'brand_name' => 'required|unique:brands,name|min:3|max:100'
+            'brand_name' => 'required|min:3|max:45|unique:brands,name',
         ];
 
         $messages = [
 
             'brand_name.required' => 'Campo requerido',
-            'brand_name.unique' => 'Ya existe',
             'brand_name.min' => 'Minimo 3 caracteres',
-            'brand_name.max' => 'Maximo 100 caracteres',
+            'brand_name.max' => 'Maximo 45 caracteres',
+            'brand_name.unique' => 'Ya existe',
         ];
 
         $this->validate($rules, $messages);
@@ -1485,9 +1484,10 @@ class Products extends Component
         if ($brand) {
 
             $this->brand_name = '';
-            $this->allBrands = Brand::select('id', 'name')->get();
+            $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
             $this->brandId = $brand->id;
-            $this->emit('item-added-2', 'Registrado correctamente');
+            $this->emit('brand-added', 'Registrado correctamente');
+
         } else {
 
             $this->emit('record-error', 'Error al Registrar');

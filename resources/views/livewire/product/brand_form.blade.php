@@ -3,7 +3,7 @@
         <div class="modal-content">
             <div class="modal-header bg-dark">
                 <h5 class="modal-title text-white text-uppercase">
-                    <b>crear | marca</b>
+                    <b>crear | marcas</b>
                 </h5>
                 <h6 class="text-center text-warning" wire:loading>POR FAVOR ESPERE</h6>
             </div>
@@ -16,8 +16,7 @@
                                     <span class="fas fa-edit"></span>
                                 </span>
                             </div>
-                            <input type="text" wire:model.lazy="brand_name" class="form-control component-name"
-                                placeholder="Nombre para la marca...">
+                            <input type="text" wire:model.lazy="brand_name" class="form-control component-name" placeholder="Nombre para la marca...">
                         </div>
                         @error('brand_name')
                         <span class="text-danger er">{{ $message }}</span>
@@ -26,8 +25,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" wire:click.prevent="StoreBrand()" class="btn btn-dark close-modal">GUARDAR</button>
-                <button type="button" wire:click.prevent="CloseBrandModal()" class="btn btn-dark close-btn text-info" data-dismiss="modal">CERRAR</button>
+                <button type="button" wire:click.prevent="StoreBrand()" class="btn btn-dark close-modal text-uppercase">guardar</button>
+                <button type="button" wire:click.prevent="CloseBrandModal()" class="btn btn-dark close-btn text-info text-uppercase" data-dismiss="modal">cerrar</button>
             </div>
         </div>
     </div>
