@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
-    protected $fillable = ['number','code','comment','status_id','brand_id','presentation_subcategory_id'];
+    protected $fillable = ['number','code','barcode_image','comment','status_id','brand_id','presentation_subcategory_id'];
 
 
     //relacion muchos a uno con statuses
@@ -79,15 +79,25 @@ class Product extends Model
         });
     }*/
 
-    /*//nombre del accesor es imagen
-    public function getImagenAttribute(){   //metodo accesor para mostrar imagen por defecto en caso de no registrarle ninguna
+    //Accesor para manipular el campo "barcode_image"
+    public function getBarcodeImageAttribute($barcode_image){
         
-        if($this->image == null)    //validar si la columna image no tiene nada registrado en la base de datos
-            return '../noimg.jpg'; //retornar imagen por defecto
+        if ($barcode_image == null) {
 
-        if(file_exists('storage/products/' . $this->image)) //validar si archivo existe fisicarmente en el almacenamiento interno
-            return $this->image;    //retornar imagen registrada en la base de datos
-        else
-            return '../noimg.jpg'; //caso contrario retornar imagen por defecto
-    }*/
+            return null;
+
+        }
+
+        if ( file_exists('storage/products/barcodes/' . $barcode_image) ) {
+
+            return 'storage/products/barcodes/' . $barcode_image;
+
+        } else {
+
+            return null;
+
+        }
+
+    }
+    
 }

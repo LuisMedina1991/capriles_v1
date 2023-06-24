@@ -24,20 +24,6 @@
                             @enderror
                         </div>
                     </div>
-                    {{--<div class="col-sm-9 col-md-9 col-lg-3">
-                        <label><b>Prefijo</b></label>
-                        <div class="form-group">
-                            <select wire:model="containerId" class="form-control text-uppercase" disabled>
-                                <option value="elegir">elegir</option>
-                                @foreach ($allContainers as $container)
-                                <option value="{{$container->id}}">{{ $container->prefix }}</option>
-                                @endforeach
-                            </select>
-                            @error('containerId')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>--}}
                     <div class="col-sm-3 col-md-3 col-lg-2">
                         <br>
                         <div class="form-group">
@@ -64,7 +50,7 @@
                             <button type="button" class="btn btn-success" title="Nueva Marca">Añadir Nuevo</button>
                         </div>
                     </div>
-                    <div class="col-sm-12 col-md-12 col-lg-9">
+                    <div class="col-sm-12">
                         <label><b>Comentarios</b></label>
                         <div class="form-group">
                             <div class="input-group">
@@ -80,29 +66,6 @@
                             @enderror
                         </div>
                     </div>
-                    <div class="col-sm-6 col-md-6 col-lg-3">
-                        <label><b>Codigo de barra*</b></label>
-                        <div class="form-group">
-                            <select wire:model="barcode" class="form-control text-uppercase">
-                                <option value="elegir">elegir</option>
-                                <option value="0">no</option>
-                                <option value="1">si</option>
-                            </select>
-                            @error('barcode')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    {{--<div class="col-sm-12">
-                        <div class="form-group custom-file">
-                            <input type="file" class="custom-file-input form-control" wire:model="image"
-                                accept="image/x-png, image/jpeg">
-                            <label class="custom-file-label">IMAGEN {{ $image }}</label>
-                            @error('image')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>--}}
                     <div class="col-sm-12">
                         <label><b>Imagen</b></label>
                         <div class="form-group">
@@ -112,6 +75,86 @@
                             @enderror
                         </div>
                     </div>
+                    <div class="col-sm-6 col-md-6 col-lg-4">
+                        <label><b>Codigo de Barras*</b></label>
+                        <div class="form-group">
+                            <select wire:model="GenerateBarcode" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                <option value="0">no</option>
+                                <option value="1">si</option>
+                            </select>
+                            @error('GenerateBarcode')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-4">
+                        <label><b>Opciones de Codigo*</b></label>
+                        <div class="form-group">
+                            <select wire:model="CodeOptions" class="form-control text-uppercase">
+                                <option value="elegir">elegir</option>
+                                <option value="0">generar</option>
+                                <option value="1">escanear</option>
+                            </select>
+                            @error('CodeOptions')
+                            <span class="text-danger er">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    </div>
+                    @if($CodeOptions == 1 && $selected_id < 1)
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                            <label><b>Codigo de Producto*</b></label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <span class="fas fa-edit"></span>
+                                        </span>
+                                    </div>
+                                    <input type="text" wire:model.lazy="code" class="form-control component-name">
+                                </div>
+                                @error('code')
+                                <span class="text-danger er">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
+                    {{--@if($CodeOptions == 0 && $selected_id > 0)
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                            <label><b>Codigo de Producto*</b></label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <span class="fas fa-edit"></span>
+                                        </span>
+                                    </div>
+                                    <input type="text" wire:model.lazy="code" class="form-control" disabled>
+                                </div>
+                                @error('code')
+                                <span class="text-danger er">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif--}}
+                    @if($CodeOptions == 1 && $selected_id > 0)
+                        <div class="col-sm-6 col-md-6 col-lg-4">
+                            <label><b>Codigo de Producto*</b></label>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">
+                                            <span class="fas fa-edit"></span>
+                                        </span>
+                                    </div>
+                                    <input type="text" wire:model.lazy="code" class="form-control component-name">
+                                </div>
+                                @error('code')
+                                <span class="text-danger er">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+                    @endif
                 </div>
                 {{--@foreach($productValues as $index => $productValue)
                 <div class="row">

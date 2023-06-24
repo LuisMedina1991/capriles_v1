@@ -97,8 +97,11 @@
                                         <img src="{{ asset('storage/noimg.jpg') }}" alt="imagen" height="70" width="80" class="rounded">
                                     @endif
                                 </td>
-                                <td>
-                                    <h6 class="text-center text-uppercase"><b>{{$product->code}}</b></h6>
+                                <td class="text-center">
+                                    @if($product->barcode_image != null)
+                                        <img src="{{ asset($product->barcode_image) }}" height="50" width="200">
+                                    @endif
+                                    <h6 class="text-uppercase"><b>{{$product->code}}</b></h6>
                                 </td>
                                 <td>
                                     <h6 class="text-center text-uppercase"><b>{{$product->brand->name}}</b></h6>
@@ -400,6 +403,9 @@
         });
         window.livewire.on('record-error', msg=>{
             noty(msg,2)
+        });
+        window.livewire.on('code-focus', msg=>{
+            $('.component-name').focus()
         });
     });
 
