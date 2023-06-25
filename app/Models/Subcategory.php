@@ -28,7 +28,7 @@ class Subcategory extends Model
     public function presentations(){
 
         return $this->belongsToMany(Presentation::class)
-        ->withPivot(['id','prefix','additional_info','status_id'])
+        ->withPivot(['id','status_id'])
         ->withTimestamps()
         ->using(PresentationSubcategory::class);
     }

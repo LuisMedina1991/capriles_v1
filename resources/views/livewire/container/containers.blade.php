@@ -41,35 +41,27 @@
                     <table class="table table-striped table-bordered mt-1">
                         <thead class="text-white" style="background: #3B3F5C">
                             <tr>
-                                <th class="table-th text-white text-center">prefijo</th>
                                 <th class="table-th text-white text-center">categoria</th>
                                 <th class="table-th text-white text-center">subcategoria</th>
                                 <th class="table-th text-white text-center">presentacion</th>
                                 <th class="table-th text-white text-center">productos relacionados</th>
-                                <th class="table-th text-white text-center">comentarios</th>
                                 <th class="table-th text-white text-center">opciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($containers as $container)
                             <tr>
-                                <td>
-                                    <h6 class="text-center text-uppercase">{{ $container->prefix }}</h6>
+                                <td class="text-center text-uppercase">
+                                    <h6 class="text-center text-uppercase">{{ $container->category_name }}</h6>
                                 </td>
                                 <td class="text-center text-uppercase">
-                                    <h6 class="text-center text-uppercase">{{ $container->subcategory->category->name }}</h6>
+                                    <h6 class="text-center text-uppercase">{{ $container->subcategory_name }}</h6>
                                 </td>
                                 <td class="text-center text-uppercase">
-                                    <h6 class="text-center text-uppercase">{{ $container->subcategory->name }}</h6>
-                                </td>
-                                <td class="text-center text-uppercase">
-                                    <h6 class="text-center text-uppercase">{{ $container->presentation->name }}</h6>
+                                    <h6 class="text-center text-uppercase">{{ $container->presentation_name }}</h6>
                                 </td>
                                 <td>
                                     <h6 class="text-center text-uppercase">{{ $container->products_count }}</h6>
-                                </td>
-                                <td class="text-center text-uppercase">
-                                    <h6 class="text-center text-uppercase">{{ $container->additional_info }}</h6>
                                 </td>
                                 <td class="text-center">
                                     @if($search_2 == 0)
@@ -84,7 +76,7 @@
                                         </a>
                                     @else
                                         <a href="javascript:void(0)"
-                                            onclick="Confirm_2('{{$container->id}}','{{$container->subcategory->status_id}}','{{$container->presentation->status_id}}')"
+                                            onclick="Confirm_2('{{$container->id}}','{{$container->subcategory_status}}','{{$container->presentation_status}}')"
                                             class="btn btn-dark" title="Activar">
                                             <i class="fas fa-check"></i>
                                         </a>

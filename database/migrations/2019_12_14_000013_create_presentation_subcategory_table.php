@@ -15,15 +15,9 @@ class CreatePresentationSubcategoryTable extends Migration
     {
         Schema::create('presentation_subcategory', function (Blueprint $table) {
             $table->id();
-            $table->string('prefix',15)->unique();
-            $table->string('additional_info',45)->nullable();
             $table->foreignId('presentation_id')->constrained();
             $table->foreignId('subcategory_id')->constrained();
             $table->foreignId('status_id')->constrained();
-            /*$table->unsignedBigInteger('subcategory_id');
-            $table->unsignedBigInteger('presentation_id');
-            $table->foreign('subcategory_id')->references('id')->on('subcategories');
-            $table->foreign('presentation_id')->references('id')->on('presentations');*/
             $table->timestamps();
         });
     }

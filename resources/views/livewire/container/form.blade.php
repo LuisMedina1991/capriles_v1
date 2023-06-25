@@ -70,27 +70,6 @@
             </div>
         </div>
 
-        <div class="col-sm-9 col-md-9 col-lg-6">
-            <label><b>Prefijo*</b></label>
-            <div class="form-group">
-                <input type="text" wire:model.lazy="prefix" class="form-control"
-                    placeholder="Prefijo para el contenedor...">
-                @error('prefix')
-                <span class="text-danger er">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
-        <div class="col-sm-12">
-            <label><b>Informacion Adicional</b></label>
-            <div class="form-group">
-                <input type="text" wire:model.lazy="additional_info" class="form-control" placeholder="Otros detalles...">
-                @error('additional_info')
-                <span class="text-danger er">{{ $message }}</span>
-                @enderror
-            </div>
-        </div>
-
     </div>
 
 @include('common.modalFooter')
