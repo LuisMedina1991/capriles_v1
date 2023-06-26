@@ -18,7 +18,7 @@ class CreateProductsTable extends Migration
             $table->integer('number')->nullable();
             $table->string('code',45)->unique();
             $table->string('barcode_image',80)->nullable();
-            $table->string('comment',45)->nullable();
+            $table->string('additional_info',45)->nullable();
             $table->foreignId('status_id')->constrained();
             $table->foreignId('brand_id')->constrained();
             $table->unsignedBigInteger('presentation_subcategory_id');

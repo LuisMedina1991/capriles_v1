@@ -15,8 +15,8 @@
                             <select wire:model="containerId" class="form-control text-uppercase">
                                 <option value="elegir">elegir</option>
                                 @foreach ($allContainers as $container)
-                                <option value="{{$container->id}}">{{ $container->subcategory->category->name }}-{{
-                                    $container->subcategory->name }}-{{ $container->presentation->name }}</option>
+                                    <option value="{{$container->id}}">{{ $container->category_name }}-{{
+                                        $container->subcategory_name }}-{{ $container->presentation_name }}</option>
                                 @endforeach
                             </select>
                             @error('containerId')
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <div class="col-sm-12">
-                        <label><b>Comentarios</b></label>
+                        <label><b>Detalles</b></label>
                         <div class="form-group">
                             <div class="input-group">
                                 <div class="input-group-prepend">
@@ -59,9 +59,9 @@
                                         <span class="fas fa-edit"></span>
                                     </span>
                                 </div>
-                                <input type="text" wire:model.lazy="comment" class="form-control" placeholder="Informacion adicional...">
+                                <input type="text" wire:model.lazy="additional_info" class="form-control" placeholder="Informacion adicional...">
                             </div>
-                            @error('comment')
+                            @error('additional_info')
                             <span class="text-danger er">{{ $message }}</span>
                             @enderror
                         </div>
@@ -101,7 +101,7 @@
                             @enderror
                         </div>
                     </div>
-                    @if($CodeOptions == 1 && $selected_id < 1)
+                    @if(($CodeOptions == 1 && $selected_id < 1) || ($CodeOptions == 1 && $selected_id > 0))
                         <div class="col-sm-6 col-md-6 col-lg-4">
                             <label><b>Codigo de Producto*</b></label>
                             <div class="form-group">
@@ -129,32 +129,14 @@
                                             <span class="fas fa-edit"></span>
                                         </span>
                                     </div>
-                                    <input type="text" wire:model.lazy="code" class="form-control" disabled>
+                                    <input type="text" wire:model.lazy="aux_3" class="form-control component-name" disabled>
                                 </div>
-                                @error('code')
+                                @error('aux_3')
                                 <span class="text-danger er">{{ $message }}</span>
                                 @enderror
                             </div>
                         </div>
                     @endif--}}
-                    @if($CodeOptions == 1 && $selected_id > 0)
-                        <div class="col-sm-6 col-md-6 col-lg-4">
-                            <label><b>Codigo de Producto*</b></label>
-                            <div class="form-group">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <span class="fas fa-edit"></span>
-                                        </span>
-                                    </div>
-                                    <input type="text" wire:model.lazy="code" class="form-control component-name">
-                                </div>
-                                @error('code')
-                                <span class="text-danger er">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    @endif
                 </div>
                 {{--@foreach($productValues as $index => $productValue)
                 <div class="row">

@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     //variable para indicar que columnas se van a llenar y que columnas se pueden omitir al llenar de forma masiva
-    protected $fillable = ['number','code','barcode_image','comment','status_id','brand_id','presentation_subcategory_id'];
+    protected $fillable = ['number','code','barcode_image','additional_info','status_id','brand_id','presentation_subcategory_id'];
 
 
     //relacion muchos a uno con statuses

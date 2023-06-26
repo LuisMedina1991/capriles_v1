@@ -37,9 +37,9 @@ class Products extends Component
     use WithFileUploads;
 
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
-    public $comment,$value,$image,$CodeOptions,$GenerateBarcode,$code,$random_variable;
+    public $additional_info,$value,$image,$CodeOptions,$GenerateBarcode,$code,$random_variable;
     public $containerId,$brandId,$categoryId,$subcategoryId,$presentationId;
-    public $additional_info,$brand_name,$office_name;
+    public $brand_name,$office_name;
     public $allContainers,$allBrands,$allCategories,$allSubcategories,$allPresentations,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
     public $allContainers_2,$allSuppliers,$allCustomers;
     public $my_total,$stock_details,$PaymentType,$tax_option,$tax,$aux_1,$aux_2,$aux_3,$modal_id,$modal_id_2;
@@ -67,7 +67,7 @@ class Products extends Component
         $this->code = '';
         $this->random_variable = rand();
         $this->containerId = 'elegir';
-        $this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->orderBy('prefix')->get();
+        //$this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->get();
         $this->categoryId = 'elegir';
         $this->allCategories = Category::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
         $this->subcategoryId = 'elegir';
@@ -78,7 +78,6 @@ class Products extends Component
         $this->brandId = 'elegir';
         $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
         $this->brand_name = '';
-        $this->comment = null;
         $this->allProducts = Product::all();
         /*$this->value = 'Elegir';
         $this->supplierId = 'Elegir';
@@ -154,12 +153,9 @@ class Products extends Component
                         ->where(function ($q1) {
                             $q1->where('code', 'like', '%' . $this->search . '%');
                             $q1->orWhere(function ($q2) {
-                                $q2->where('comment', 'like', '%' . $this->search . '%');
+                                $q2->where('additional_info', 'like', '%' . $this->search . '%');
                                 $q2->orWhereHas('brand', function ($q3) {
                                     $q3->where('name', 'like', '%' . $this->search . '%');
-                                });
-                                $q2->orWhereHas('container', function ($q3) {
-                                    $q3->where('additional_info', 'like', '%' . $this->search . '%');
                                 });
                             });
                         })
@@ -214,12 +210,9 @@ class Products extends Component
                         ->where(function ($q1) {
                             $q1->where('code', 'like', '%' . $this->search . '%');
                             $q1->orWhere(function ($q2) {
-                                $q2->where('comment', 'like', '%' . $this->search . '%');
+                                $q2->where('additional_info', 'like', '%' . $this->search . '%');
                                 $q2->orWhereHas('brand', function ($q3) {
                                     $q3->where('name', 'like', '%' . $this->search . '%');
-                                });
-                                $q2->orWhereHas('container', function ($q3) {
-                                    $q3->where('additional_info', 'like', '%' . $this->search . '%');
                                 });
                             });
                         })
@@ -270,9 +263,26 @@ class Products extends Component
             }
         }*/
 
+        $this->allContainers = PresentationSubcategory::
+        select(
+            'presentation_subcategory.*',
+            'c.name as category_name',
+            's.name as subcategory_name',
+            'p.name as presentation_name',
+            )
+        ->join('subcategories as s','s.id','presentation_subcategory.subcategory_id')
+        ->join('categories as c','c.id','s.category_id')
+        ->join('presentations as p','p.id','presentation_subcategory.presentation_id')
+        ->where('presentation_subcategory.status_id', 1)
+        ->orderBy('c.name')
+        ->orderBy('s.name')
+        ->orderBy('p.name')
+        ->get();
+
 
         return view('livewire.product.products', [
             'products' => $data,
+            'allContainers' => $this->allContainers
         ])
             ->extends('layouts.theme.app')
             ->section('content');
@@ -281,10 +291,9 @@ class Products extends Component
     //metodo para limpiar el campo del codigo o seleccionarlo al cambiar el campo de opciones de codigo
     public function updatedCodeOptions(){
 
-        $this->code = '';
+        if (($this->selected_id < 1) && ($this->CodeOptions == 1)) {
 
-        if($this->CodeOptions == 1){
-
+            $this->code = '';
             $this->emit('code-focus');
 
         }
@@ -380,7 +389,7 @@ class Products extends Component
             }
         }
 
-    }*/
+    }
 
     public function updatedaccountId()
     {
@@ -1459,7 +1468,7 @@ class Products extends Component
             $this->emit('record-error', 'Error al Registrar');
             return;
         }
-    }
+    }*/
 
     public function ShowContainerModal()
     {
@@ -1468,11 +1477,12 @@ class Products extends Component
 
     public function CloseContainerModal()
     {
+        $this->resetValidation($this->categoryId = null);
         $this->categoryId = 'elegir';
+        $this->resetValidation($this->subcategoryId = null);
         $this->subcategoryId = 'elegir';
+        $this->resetValidation($this->presentationId = null);
         $this->presentationId = 'elegir';
-        $this->additional_info = null;
-        $this->resetValidation($this->additional_info = null);
         $this->emit('show-modal', 'Mostrando Modal');
     }
 
@@ -1489,7 +1499,6 @@ class Products extends Component
                 ->where(function ($query) {
                     return $query->where('subcategory_id', $this->subcategoryId);
                 })],
-            'additional_info' => 'max:45',
         ];
 
         $messages = [
@@ -1499,7 +1508,6 @@ class Products extends Component
             'subcategoryId.unique' => 'Esta subcategoria ya tiene esa presentacion',
             'presentationId.not_in' => 'Seleccione una opcion',
             'presentationId.unique' => 'Esta presentacion ya tiene esa subcategoria',
-            'additional_info.max' => 'Maximo 45 caracteres',
         ];
 
         $this->validate($rules, $messages);
@@ -1511,12 +1519,15 @@ class Products extends Component
 
             $subcategory->presentations()->attach($presentation->id, [
 
-                'additional_info' => $this->additional_info,
                 'status_id' => 1
             ]);
 
+            $actual = $subcategory->presentations->firstWhere('pivot.presentation_id', $presentation->id);
+            $this->categoryId = 'elegir';
+            $this->subcategoryId = 'elegir';
+            $this->presentationId = 'elegir';
+            $this->containerId = $actual->pivot->id;
             $this->emit('container-added', 'Registrado correctamente');
-            $this->mount();
 
         }else{
 
@@ -1579,7 +1590,7 @@ class Products extends Component
 
             'containerId' => 'not_in:elegir',
             'brandId' => 'not_in:elegir',
-            'comment' => 'max:45',
+            'additional_info' => 'max:45',
             'image' => 'exclude_if:image,null|mimes:jpg,png',
             'GenerateBarcode' => 'not_in:elegir',
             'CodeOptions' => 'not_in:elegir',
@@ -1592,7 +1603,7 @@ class Products extends Component
 
             'containerId.not_in' => 'Seleccione una opcion',
             'brandId.not_in' => 'Seleccione una opcion',
-            'comment.max' => 'Maximo 45 caracteres',
+            'additional_info.max' => 'Maximo 45 caracteres',
             'image.mimes' => 'Solo formatos jpg o png',
             'GenerateBarcode.not_in' => 'Seleccione una opcion',
             'CodeOptions.not_in' => 'Seleccione una opcion',
@@ -1665,7 +1676,7 @@ class Products extends Component
             
                                 'number' => $disabled_first_product_number,
                                 'code' => $disabled_first_product_code,
-                                'comment' => $this->comment,
+                                'additional_info' => $this->additional_info,
                                 'status_id' => 1,
                                 'brand_id' => $this->brandId,
                                 'presentation_subcategory_id' => $this->containerId
@@ -1690,7 +1701,7 @@ class Products extends Component
                 
                                     'number' => $disabled_first_product_number,
                                     'code' => $disabled_first_product_code,
-                                    'comment' => $this->comment,
+                                    'additional_info' => $this->additional_info,
                                     'status_id' => 1,
                                     'brand_id' => $this->brandId,
                                     'presentation_subcategory_id' => $this->containerId
@@ -1703,7 +1714,7 @@ class Products extends Component
                         
                                     'number' => $i,
                                     'code' => $missing_code,
-                                    'comment' => $this->comment,
+                                    'additional_info' => $this->additional_info,
                                     'status_id' => 1,
                                     'brand_id' => $this->brandId,
                                     'presentation_subcategory_id' => $this->containerId
@@ -1722,7 +1733,7 @@ class Products extends Component
                                 
                                 'number' => $new_number,    //el valor en el campo number nos servira para identificar los productos con codigo generado ademas de su lugar en la secuencia
                                 'code' => $new_code,    //el producto se creara usando el codigo generado
-                                'comment' => $this->comment,
+                                'additional_info' => $this->additional_info,
                                 'status_id' => 1,
                                 'brand_id' => $this->brandId,
                                 'presentation_subcategory_id' => $this->containerId
@@ -1735,7 +1746,7 @@ class Products extends Component
                         
                                 'number' => $i,
                                 'code' => $missing_code,
-                                'comment' => $this->comment,
+                                'additional_info' => $this->additional_info,
                                 'status_id' => 1,
                                 'brand_id' => $this->brandId,
                                 'presentation_subcategory_id' => $this->containerId
@@ -1752,7 +1763,7 @@ class Products extends Component
                         
                         'number' => $new_number,    //el valor en el campo number nos servira para identificar los productos con codigo generado ademas de su lugar en la secuencia
                         'code' => $new_code,    //el producto se creara usando el codigo generado
-                        'comment' => $this->comment,
+                        'additional_info' => $this->additional_info,
                         'status_id' => 1,
                         'brand_id' => $this->brandId,
                         'presentation_subcategory_id' => $this->containerId
@@ -1767,7 +1778,7 @@ class Products extends Component
                 $product = Product::create([
                     
                     'code' => $this->code,  //el producto se creara usando el codigo escaneado
-                    'comment' => $this->comment,
+                    'additional_info' => $this->additional_info,
                     'status_id' => 1,
                     'brand_id' => $this->brandId,
                     'presentation_subcategory_id' => $this->containerId
@@ -1841,7 +1852,7 @@ class Products extends Component
         $this->selected_id = $product->id;
         $this->containerId = $product->presentation_subcategory_id;
         $this->brandId = $product->brand_id;
-        $this->comment = $product->comment;
+        $this->additional_info = $product->additional_info;
 
         if($product->barcode_image != null){
 
@@ -1893,7 +1904,7 @@ class Products extends Component
 
             'containerId' => 'not_in:elegir',
             'brandId' => 'not_in:elegir',
-            'comment' => 'max:45',
+            'additional_info' => 'max:45',
             'image' => 'exclude_if:image,null|mimes:jpg,png',
             'GenerateBarcode' => 'not_in:elegir',
             'CodeOptions' => 'not_in:elegir',
@@ -1904,7 +1915,7 @@ class Products extends Component
 
             'containerId.not_in' => 'Seleccione una opcion',
             'brandId.not_in' => 'Seleccione una opcion',
-            'comment.max' => 'Maximo 45 caracteres',
+            'additional_info.max' => 'Maximo 45 caracteres',
             'image.mimes' => 'Solo formatos jpg o png',
             'GenerateBarcode.not_in' => 'Seleccione una opcion',
             'CodeOptions.not_in' => 'Seleccione una opcion',
@@ -1931,7 +1942,7 @@ class Products extends Component
 
                     'presentation_subcategory_id' => $this->containerId,
                     'brand_id' => $this->brandId,
-                    'comment' => $this->comment
+                    'additional_info' => $this->additional_info
                     
                 ]);
 
@@ -1945,136 +1956,150 @@ class Products extends Component
                 //por lo que el usuario no podra manipular el codigo actual del producto a menos que modifique la opcion "opciones de codigo"
                 if ($product->number != null) { //validamos si el producto tiene un codigo generado
 
-                    if ($product->barcode_image != null) {  //validamos si el producto tiene una imagen de codigo de barras
-                        
-                        //validamos si ambas opciones "codigo de barras" y "opciones de codigo" fueron modificadas
-                        //en este caso se actualizara el producto con las opciones opuestas a lo que tenia originalmente
-                        if ( ($this->GenerateBarcode != $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
+                    if ( ($this->GenerateBarcode == $this->aux_1) && ($this->CodeOptions == $this->aux_2) && ($this->code != $this->aux_3) ) {
+
+                        $product->Update([
+
+                            'presentation_subcategory_id' => $this->containerId,
+                            'brand_id' => $this->brandId,
+                            'additional_info' => $this->additional_info
                             
-                            //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
-                            //el campo "code" sera actualizado con el codigo escaneado
-                            //el campo "barcode_image" sera actualizado a null para identificar que el producto ya no cuenta con imagen de codigo de barras
-                            $product->Update([
-                                    
-                                'number' => null,
-                                'code' => $this->code,
-                                'barcode_image' => null,
-                                'comment' => $this->comment,
-                                'brand_id' => $this->brandId,
-                                'presentation_subcategory_id' => $this->containerId
+                        ]);
+
+                    } else {
+
+                        if ($product->barcode_image != null) {  //validamos si el producto tiene una imagen de codigo de barras
+                        
+                            //validamos si ambas opciones "codigo de barras" y "opciones de codigo" fueron modificadas
+                            //en este caso se actualizara el producto con las opciones opuestas a lo que tenia originalmente
+                            if ( ($this->GenerateBarcode != $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
                                 
-                            ]);
-    
-                        } else {    //caso contrario nos indica que solo una de ambas opciones fue modificada
-    
-                            if ( ($this->GenerateBarcode != $this->aux_1) ) {   //validamos si la opcion "codigo de barras" fue modificada
-                                
+                                //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
+                                //el campo "code" sera actualizado con el codigo escaneado
                                 //el campo "barcode_image" sera actualizado a null para identificar que el producto ya no cuenta con imagen de codigo de barras
                                 $product->Update([
-                                    
+                                        
+                                    'number' => null,
+                                    'code' => $this->code,
                                     'barcode_image' => null,
-                                    'comment' => $this->comment,
+                                    'additional_info' => $this->additional_info,
+                                    'brand_id' => $this->brandId,
+                                    'presentation_subcategory_id' => $this->containerId
+                                    
+                                ]);
+        
+                            } else {    //caso contrario nos indica que solo una de ambas opciones fue modificada
+        
+                                if ( ($this->GenerateBarcode != $this->aux_1) ) {   //validamos si la opcion "codigo de barras" fue modificada
+                                    
+                                    //el campo "barcode_image" sera actualizado a null para identificar que el producto ya no cuenta con imagen de codigo de barras
+                                    $product->Update([
+                                        
+                                        'barcode_image' => null,
+                                        'additional_info' => $this->additional_info,
+                                        'brand_id' => $this->brandId,
+                                        'presentation_subcategory_id' => $this->containerId
+                                        
+                                    ]);
+        
+                                } else {    //caso contrario tenemos la certeza de que la opcion "opciones de codigo" fue modificada
+                                    
+                                    //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
+                                    //el campo "code" sera actualizado con el codigo escaneado
+                                    //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
+                                    //ya que al cambiar el codigo del producto su imagen de codigo de barras tambien debe cambiar
+                                    $product->Update([
+                                        
+                                        'number' => null,
+                                        'code' => $this->code,
+                                        'barcode_image' => $new_barcode_image,
+                                        'additional_info' => $this->additional_info,
+                                        'brand_id' => $this->brandId,
+                                        'presentation_subcategory_id' => $this->containerId
+                                        
+                                    ]);
+                                    
+                                    //almacenamos fisicamente la imagen indicando la ruta y el nombre que tendra
+                                    //seguido del generador de codigo de barras que recibe 2 parametros (caracteres a codificar,tipo de codificacion)
+                                    file_put_contents(('storage/products/barcodes/' . $new_barcode_image), $generator->getBarcode($this->code, $generator::TYPE_CODE_128,3,50));
+        
+                                }
+        
+                            }
+                            
+                            //dado que la imagen de codigo de barras del producto ha sido modificada independientemente de la condicional
+                            //validamos si la imagen de codigo de barras que tenia el producto antes de su modificacion existe fisicamente
+                            if (file_exists($previus_barcode_image)) {
+        
+                                unlink($previus_barcode_image); //eliminamos la imagen definitivamente
+        
+                            }
+        
+                        } else {    //si el producto tiene no una imagen de codigo de barras
+    
+                            //validamos si la opcion "opciones de codigo" es la unica modificada
+                            if ( ($this->GenerateBarcode == $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
+    
+                                //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
+                                //el campo "code" sera actualizado con el codigo escaneado
+                                $product->Update([
+                                            
+                                    'number' => null,
+                                    'code' => $this->code,
+                                    'additional_info' => $this->additional_info,
                                     'brand_id' => $this->brandId,
                                     'presentation_subcategory_id' => $this->containerId
                                     
                                 ]);
     
-                            } else {    //caso contrario tenemos la certeza de que la opcion "opciones de codigo" fue modificada
-                                
-                                //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
-                                //el campo "code" sera actualizado con el codigo escaneado
-                                //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
-                                //ya que al cambiar el codigo del producto su imagen de codigo de barras tambien debe cambiar
-                                $product->Update([
-                                    
-                                    'number' => null,
-                                    'code' => $this->code,
-                                    'barcode_image' => $new_barcode_image,
-                                    'comment' => $this->comment,
-                                    'brand_id' => $this->brandId,
-                                    'presentation_subcategory_id' => $this->containerId
-                                    
-                                ]);
-                                
+                            } else {    //caso contrario continuamos con las validaciones
+    
+                                //en este caso se creara una imagen de codigo de barras al producto independientemente de la condicional
+                                //aunque los caracteres a codificar seran distintos dependiendo de la validacion
+                                //por lo que vamos a guardar los caracteres a codificar en la variable $new_code
+    
+                                //validamos si ambas opciones "codigo de barras" y "opciones de codigo" fueron modificadas
+                                if ( ($this->GenerateBarcode != $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
+    
+                                    $new_code = $this->code;    //en este caso el codigo escaneado sera usado para la imagen de codigo de barras
+    
+                                    //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
+                                    //el campo "code" sera actualizado con el codigo escaneado
+                                    //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
+                                    //ya que al cambiar el codigo del producto su imagen de codigo de barras tambien debe cambiar
+                                    $product->Update([
+                                            
+                                        'number' => null,
+                                        'code' => $this->code,
+                                        'barcode_image' => $new_barcode_image,
+                                        'additional_info' => $this->additional_info,
+                                        'brand_id' => $this->brandId,
+                                        'presentation_subcategory_id' => $this->containerId
+                                        
+                                    ]);
+    
+                                } else {    //caso contrario tenemos la certeza de que la opcion "codigo de barras" fue la unica modifica
+    
+                                    $new_code = $product->code; //en este caso el mismo codigo del producto sera usado para la imagen de codigo de barras
+    
+                                    //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
+                                    $product->Update([
+                                        
+                                        'barcode_image' => $new_barcode_image,
+                                        'additional_info' => $this->additional_info,
+                                        'brand_id' => $this->brandId,
+                                        'presentation_subcategory_id' => $this->containerId
+                                        
+                                    ]);
+    
+                                }
+    
                                 //almacenamos fisicamente la imagen indicando la ruta y el nombre que tendra
                                 //seguido del generador de codigo de barras que recibe 2 parametros (caracteres a codificar,tipo de codificacion)
-                                file_put_contents(('storage/products/barcodes/' . $new_barcode_image), $generator->getBarcode($this->code, $generator::TYPE_CODE_128,3,50));
+                                file_put_contents(('storage/products/barcodes/' . $new_barcode_image), $generator->getBarcode($new_code, $generator::TYPE_CODE_128,3,50));
     
                             }
     
-                        }
-                        
-                        //dado que la imagen de codigo de barras del producto ha sido modificada independientemente de la condicional
-                        //validamos si la imagen de codigo de barras que tenia el producto antes de su modificacion existe fisicamente
-                        if (file_exists($previus_barcode_image)) {
-    
-                            unlink($previus_barcode_image); //eliminamos la imagen definitivamente
-    
-                        }
-    
-                    } else {    //si el producto tiene no una imagen de codigo de barras
-
-                        //validamos si la opcion "opciones de codigo" es la unica modificada
-                        if ( ($this->GenerateBarcode == $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
-
-                            //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
-                            //el campo "code" sera actualizado con el codigo escaneado
-                            $product->Update([
-                                        
-                                'number' => null,
-                                'code' => $this->code,
-                                'comment' => $this->comment,
-                                'brand_id' => $this->brandId,
-                                'presentation_subcategory_id' => $this->containerId
-                                
-                            ]);
-
-                        } else {    //caso contrario continuamos con las validaciones
-
-                            //en este caso se creara una imagen de codigo de barras al producto independientemente de la condicional
-                            //aunque los caracteres a codificar seran distintos dependiendo de la validacion
-                            //por lo que vamos a guardar los caracteres a codificar en la variable $new_code
-
-                            //validamos si ambas opciones "codigo de barras" y "opciones de codigo" fueron modificadas
-                            if ( ($this->GenerateBarcode != $this->aux_1) && ($this->CodeOptions != $this->aux_2) ) {
-
-                                $new_code = $this->code;    //en este caso el codigo escaneado sera usado para la imagen de codigo de barras
-
-                                //el campo "number" sera actualizado a null para identificar que el codigo del producto es ahora escaneado
-                                //el campo "code" sera actualizado con el codigo escaneado
-                                //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
-                                //ya que al cambiar el codigo del producto su imagen de codigo de barras tambien debe cambiar
-                                $product->Update([
-                                        
-                                    'number' => null,
-                                    'code' => $this->code,
-                                    'barcode_image' => $new_barcode_image,
-                                    'comment' => $this->comment,
-                                    'brand_id' => $this->brandId,
-                                    'presentation_subcategory_id' => $this->containerId
-                                    
-                                ]);
-
-                            } else {    //caso contrario tenemos la certeza de que la opcion "codigo de barras" fue la unica modifica
-
-                                $new_code = $product->code; //en este caso el mismo codigo del producto sera usado para la imagen de codigo de barras
-
-                                //el campo "barcode_image" sera actualizado con el nombre de la nueva imagen de codigo de barras
-                                $product->Update([
-                                    
-                                    'barcode_image' => $new_barcode_image,
-                                    'comment' => $this->comment,
-                                    'brand_id' => $this->brandId,
-                                    'presentation_subcategory_id' => $this->containerId
-                                    
-                                ]);
-
-                            }
-
-                            //almacenamos fisicamente la imagen indicando la ruta y el nombre que tendra
-                            //seguido del generador de codigo de barras que recibe 2 parametros (caracteres a codificar,tipo de codificacion)
-                            file_put_contents(('storage/products/barcodes/' . $new_barcode_image), $generator->getBarcode($new_code, $generator::TYPE_CODE_128,3,50));
-
                         }
 
                     }
@@ -2100,7 +2125,7 @@ class Products extends Component
                                 
                                 'code' => $this->code,
                                 'barcode_image' => $new_barcode_image,
-                                'comment' => $this->comment,
+                                'additional_info' => $this->additional_info,
                                 'brand_id' => $this->brandId,
                                 'presentation_subcategory_id' => $this->containerId
                                 
@@ -2124,7 +2149,7 @@ class Products extends Component
                                     'number' => $new_number,
                                     'code' => $new_code,
                                     'barcode_image' => null,
-                                    'comment' => $this->comment,
+                                    'additional_info' => $this->additional_info,
                                     'brand_id' => $this->brandId,
                                     'presentation_subcategory_id' => $this->containerId
                                     
@@ -2142,7 +2167,7 @@ class Products extends Component
                                         'number' => $new_number,
                                         'code' => $new_code,
                                         'barcode_image' => $new_barcode_image,
-                                        'comment' => $this->comment,
+                                        'additional_info' => $this->additional_info,
                                         'brand_id' => $this->brandId,
                                         'presentation_subcategory_id' => $this->containerId
                                         
@@ -2160,7 +2185,7 @@ class Products extends Component
                                         $product->Update([
                                             
                                             'barcode_image' => null,
-                                            'comment' => $this->comment,
+                                            'additional_info' => $this->additional_info,
                                             'brand_id' => $this->brandId,
                                             'presentation_subcategory_id' => $this->containerId
                                             
@@ -2174,7 +2199,7 @@ class Products extends Component
                                             
                                             'code' => $this->code,
                                             'barcode_image' => null,
-                                            'comment' => $this->comment,
+                                            'additional_info' => $this->additional_info,
                                             'brand_id' => $this->brandId,
                                             'presentation_subcategory_id' => $this->containerId
                                             
@@ -2206,7 +2231,7 @@ class Products extends Component
                             $product->Update([
                                 
                                 'code' => $this->code,
-                                'comment' => $this->comment,
+                                'additional_info' => $this->additional_info,
                                 'brand_id' => $this->brandId,
                                 'presentation_subcategory_id' => $this->containerId
                                 
@@ -2223,7 +2248,7 @@ class Products extends Component
                                     
                                     'number' => $new_number,
                                     'code' => $new_code,
-                                    'comment' => $this->comment,
+                                    'additional_info' => $this->additional_info,
                                     'brand_id' => $this->brandId,
                                     'presentation_subcategory_id' => $this->containerId
                                     
@@ -2248,7 +2273,7 @@ class Products extends Component
                                         'number' => $new_number,
                                         'code' => $new_code,
                                         'barcode_image' => $new_barcode_image,
-                                        'comment' => $this->comment,
+                                        'additional_info' => $this->additional_info,
                                         'brand_id' => $this->brandId,
                                         'presentation_subcategory_id' => $this->containerId
                                         
@@ -2264,7 +2289,7 @@ class Products extends Component
                                         $product->Update([
                                             
                                             'barcode_image' => $new_barcode_image,
-                                            'comment' => $this->comment,
+                                            'additional_info' => $this->additional_info,
                                             'brand_id' => $this->brandId,
                                             'presentation_subcategory_id' => $this->containerId
                                             
@@ -2280,7 +2305,7 @@ class Products extends Component
                                             
                                             'code' => $this->code,
                                             'barcode_image' => $new_barcode_image,
-                                            'comment' => $this->comment,
+                                            'additional_info' => $this->additional_info,
                                             'brand_id' => $this->brandId,
                                             'presentation_subcategory_id' => $this->containerId
                                             
@@ -2337,7 +2362,7 @@ class Products extends Component
 
                     'status_id' => $this->statusId,
                     'brand_id' => $this->brandId,
-                    'comment' => $this->comment
+                    'additional_info' => $this->additional_info
                 ]);
 
             } else {
@@ -2356,7 +2381,7 @@ class Products extends Component
                     'status_id' => $this->statusId,
                     'presentation_subcategory_id' => $this->containerId,
                     'brand_id' => $this->brandId,
-                    'comment' => $this->comment
+                    'additional_info' => $this->additional_info
                 ]);
 
 

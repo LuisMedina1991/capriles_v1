@@ -116,7 +116,7 @@
                                 <td>
                                     <h6 class="text-center text-uppercase">
                                         <b>
-                                            {{$product->comment}}
+                                            {{$product->additional_info}}
                                         </b>
                                     </h6>
                                 </td>

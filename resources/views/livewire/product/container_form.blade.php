@@ -77,16 +77,6 @@
                             <button type="button" class="btn btn-success" title="Nueva Presentacion">Añadir Nuevo</button>
                         </div>
                     </div>
-            
-                    <div class="col-sm-12">
-                        <label><b>Informacion Adicional</b></label>
-                        <div class="form-group">
-                            <input type="text" wire:model.lazy="additional_info" class="form-control" placeholder="Otros detalles...">
-                            @error('additional_info')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
                     
                 </div>
             </div>
