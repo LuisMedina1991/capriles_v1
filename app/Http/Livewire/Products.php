@@ -39,10 +39,10 @@ class Products extends Component
     public $pageTitle,$componentName,$search,$search_2,$selected_id;
     public $additional_info,$value,$image,$CodeOptions,$GenerateBarcode,$code,$random_variable;
     public $containerId,$brandId,$categoryId,$subcategoryId,$presentationId;
-    public $brand_name,$office_name;
-    public $allContainers,$allBrands,$allCategories,$allSubcategories,$allPresentations,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
-    public $allContainers_2,$allSuppliers,$allCustomers;
-    public $my_total,$stock_details,$PaymentType,$tax_option,$tax,$aux_1,$aux_2,$aux_3,$modal_id,$modal_id_2;
+    public $brand_name,$modal_id,$category_name,$subcategory_name,$presentation_name,$office_name;
+    public $allContainers,$allBrands,$allCategories,$allSubcategories,$allPresentations;
+    public $allContainers_2,$allSuppliers,$allCustomers,$allValues,$allOffices,$allProducts,$allAccounts,$allBanks,$allCompanies;
+    public $my_total,$stock_details,$PaymentType,$tax_option,$tax,$aux_1,$aux_2,$aux_3;
     public $product_id,$office_id_1,$office_id_2,$value_id,$cant_1,$cant_2,$quantity,$accountId,$bankId,$companyId;
     public $supplierId,$customerId,$name,$alias,$phone,$fax,$email,$nit,$city,$country,$number,$address,$type,$currency,$balance,$entity_code;
     public $product_code,$cost,$price,$total_income,$total_sale,$stock,$total_income_tax,$total_sale_tax;
@@ -67,13 +67,16 @@ class Products extends Component
         $this->code = '';
         $this->random_variable = rand();
         $this->containerId = 'elegir';
-        //$this->allContainers = PresentationSubcategory::where('status_id', 1)->with('presentation', 'subcategory.category')->get();
         $this->categoryId = 'elegir';
         $this->allCategories = Category::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->modal_id = 0;
+        $this->category_name = '';
         $this->subcategoryId = 'elegir';
         $this->allSubcategories = Subcategory::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->category_name = '';
         $this->presentationId = 'elegir';
         $this->allPresentations = Presentation::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+        $this->presentation_name = '';
         $this->additional_info = null;
         $this->brandId = 'elegir';
         $this->allBrands = Brand::select('id', 'name')->orderBy('name')->get();
@@ -1534,6 +1537,191 @@ class Products extends Component
             $this->emit('record-error','Error al registrar');
             return;
         }
+    }
+
+    public function ShowCategoryModal($modal){
+
+        if ($modal < 1) {
+
+            $this->emit('show-category-modal-1', 'Mostrar Modal');
+
+        } else {
+
+            $this->emit('show-category-modal-2', 'Mostrar Modal');
+        }
+    }
+
+    public function CloseCategoryModal($modal){
+
+        $this->category_name = '';
+        $this->resetValidation($this->category_name = null);
+
+        if ($modal < 1) {
+
+            $this->emit('show-container-modal', 'Mostrando modal');
+
+        } else {
+
+            $this->emit('show-subcategory-modal', 'Mostrando modal');
+        }
+    }
+
+    public function StoreCategory($modal){
+
+        $rules = [
+
+            'category_name' => 'required|min:3|max:45|unique:categories,name'
+        ];
+
+        $messages = [
+
+            'category_name.required' => 'Campo requerido',
+            'category_name.min' => 'Minimo 3 caracteres',
+            'category_name.max' => 'Maximo 45 caracteres',
+            'category_name.unique' => 'Ya existe',
+        ];
+
+        $this->validate($rules, $messages);
+
+        $category = Category::create([
+
+            'name' => $this->category_name,
+            'status_id' => 1
+        ]);
+
+        if($category){
+
+            $this->category_name = '';
+            $this->resetValidation($this->category_name = null);
+            $this->categoryId = $category->id;
+            $this->allCategories = Category::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+            $this->subcategoryId = 'elegir';
+            $this->allSubcategories = Subcategory::select('id', 'name')->where('status_id',1)->where('category_id', $category->id)->orderBy('name')->get();
+            $this->emit('category-added', 'Registrado correctamente');
+
+            if ($modal < 1) {
+
+                $this->emit('show-container-modal', 'Mostrando modal');
+
+            } else {
+
+                $this->emit('show-subcategory-modal', 'Mostrando modal');
+            }
+
+        }else{
+
+            $this->emit('record-error','Error al registrar');
+            return;
+        }
+
+    }
+
+    public function ShowSubcategoryModal(){
+
+        $this->modal_id = 1;
+        $this->emit('show-subcategory-modal', 'Mostrando modal');
+    }
+
+    public function CloseSubcategoryModal(){
+
+        $this->subcategory_name = '';
+        $this->resetValidation($this->subcategory_name = null);
+        $this->modal_id = 0;
+        $this->emit('show-container-modal', 'Mostrando modal');
+    }
+
+    public function StoreSubcategory(){
+
+        $rules = [
+
+            'subcategory_name' => 'required|min:3|max:45|unique:subcategories,name',
+            'categoryId' => 'not_in:elegir'
+        ];
+
+        $messages = [
+
+            'subcategory_name.required' => 'Campo requerido',
+            'subcategory_name.min' => 'Minimo 3 caracteres',
+            'subcategory_name.max' => 'Maximo 45 caracteres',
+            'subcategory_name.unique' => 'Ya existe',
+            'categoryId.not_in' => 'Seleccione una opcion'
+        ];
+
+        $this->validate($rules, $messages);
+
+        $subcategory = Subcategory::create([
+
+            'name' => $this->subcategory_name,
+            'category_id' => $this->categoryId,
+            'status_id' => 1
+        ]);
+
+        if($subcategory){
+
+            $this->subcategory_name = '';
+            $this->resetValidation($this->subcategory_name = null);
+            $this->modal_id = 0;
+            $this->subcategoryId = $subcategory->id;
+            $this->allSubcategories = Subcategory::select('id', 'name')->where('status_id',1)->where('category_id', $subcategory->category_id)->orderBy('name')->get();
+            $this->emit('subcategory-added', 'Registrado correctamente');
+
+        }else{
+
+            $this->emit('record-error','Error al registrar');
+            return;
+        }
+
+    }
+
+    public function ShowPresentationModal(){
+
+        $this->emit('show-presentation-modal', 'Mostrando modal');
+    }
+
+    public function ClosePresentationModal(){
+
+        $this->presentation_name = '';
+        $this->resetValidation($this->presentation_name = null);
+        $this->emit('show-container-modal', 'Mostrando modal');
+    }
+
+    public function StorePresentation(){
+
+        $rules = [
+
+            'presentation_name' => 'required|min:3|max:45|unique:presentations,name'
+        ];
+
+        $messages = [
+
+            'presentation_name.required' => 'Campo requerido',
+            'presentation_name.min' => 'Minimo 3 caracteres',
+            'presentation_name.max' => 'Maximo 45 caracteres',
+            'presentation_name.unique' => 'Ya existe',
+        ];
+
+        $this->validate($rules, $messages);
+
+        $presentation = Presentation::create([
+
+            'name' => $this->presentation_name,
+            'status_id' => 1
+        ]);
+
+        if($presentation){
+
+            $this->presentation_name = '';
+            $this->resetValidation($this->presentation_name = null);
+            $this->presentationId = $presentation->id;
+            $this->allPresentations = Presentation::select('id', 'name')->where('status_id',1)->orderBy('name')->get();
+            $this->emit('presentation-added', 'Registrado correctamente');
+
+        }else{
+
+            $this->emit('record-error','Error al registrar');
+            return;
+        }
+        
     }
 
     public function ShowBrandModal()

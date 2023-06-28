@@ -28,7 +28,7 @@
                     <div class="col-sm-3 col-md-3 col-lg-2">
                         <br>
                         <div class="form-group">
-                            <button type="button" class="btn btn-success" title="Nueva Categoria">Añadir Nuevo</button>
+                            <button type="button" wire:click.prevent="ShowCategoryModal({{$modal_id}})" class="btn btn-success" title="Nueva Categoria">Añadir Nuevo</button>
                         </div>
                     </div>
             
@@ -52,7 +52,7 @@
                     <div class="col-sm-3 col-md-3 col-lg-2">
                         <br>
                         <div class="form-group">
-                            <button type="button" class="btn btn-success" title="Nueva Subcategoria">Añadir Nuevo</button>
+                            <button type="button" wire:click.prevent="ShowSubcategoryModal()" class="btn btn-success" title="Nueva Subcategoria">Añadir Nuevo</button>
                         </div>
                     </div>
             
@@ -74,7 +74,7 @@
                     <div class="col-sm-3 col-md-3 col-lg-2">
                         <br>
                         <div class="form-group">
-                            <button type="button" class="btn btn-success" title="Nueva Presentacion">Añadir Nuevo</button>
+                            <button type="button" wire:click.prevent="ShowPresentationModal()" class="btn btn-success" title="Nueva Presentacion">Añadir Nuevo</button>
                         </div>
                     </div>
                     

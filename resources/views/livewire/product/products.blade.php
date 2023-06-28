@@ -269,6 +269,9 @@
     </div>
     @include('livewire.product.form')
     @include('livewire.product.container_form')
+    @include('livewire.product.category_form')
+    @include('livewire.product.subcategory_form')
+    @include('livewire.product.presentation_form')
     @include('livewire.product.brand_form')
     {{--@include('livewire.product.stock_detail')
     @include('livewire.product.income_form')
@@ -313,6 +316,45 @@
         window.livewire.on('container-added', msg=>{
             $('#container_modal').modal('hide')
             $('#theModal').modal('show')
+            noty(msg)
+        });
+        window.livewire.on('show-category-modal-1', msg=>{
+            $('#container_modal').modal('hide')
+            $('#category_modal').modal('show')
+        });
+        window.livewire.on('show-category-modal-2', msg=>{
+            $('#subcategory_modal').modal('hide')
+            $('#category_modal').modal('show')
+        });
+        $('#category_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('category-added', msg=>{
+            $('#category_modal').modal('hide')
+            noty(msg)
+        });
+        window.livewire.on('show-subcategory-modal', msg=>{
+            $('#container_modal').modal('hide')
+            $('#subcategory_modal').modal('show')
+        });
+        $('#subcategory_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('subcategory-added', msg=>{
+            $('#subcategory_modal').modal('hide')
+            $('#container_modal').modal('show')
+            noty(msg)
+        });
+        window.livewire.on('show-presentation-modal', msg=>{
+            $('#container_modal').modal('hide')
+            $('#presentation_modal').modal('show')
+        });
+        $('#presentation_modal').on('shown.bs.modal', function(e){
+            $('.component-name').focus()
+        });
+        window.livewire.on('presentation-added', msg=>{
+            $('#presentation_modal').modal('hide')
+            $('#container_modal').modal('show')
             noty(msg)
         });
         window.livewire.on('show-brand-modal', msg=>{
