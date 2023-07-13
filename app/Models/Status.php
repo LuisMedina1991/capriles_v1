@@ -79,6 +79,12 @@ class Status extends Model
         return $this->hasMany(Product::class);
     }
 
+    //relacion uno a muchos con values
+    public function values(){
+
+        return $this->hasMany(Value::class);
+    }
+
     public function miscellaneous_receivables(){
 
         return $this->hasMany(MiscellaneousReceivable::class);
@@ -144,9 +150,4 @@ class Status extends Model
         return $this->hasMany(Sale::class);
     }
 
-    //relacion uno a muchos con values
-    public function values(){
-
-        return $this->hasMany(Value::class);
-    }
 }
