@@ -38,25 +38,13 @@ class Product extends Model
         return $this->belongsTo(PresentationSubcategory::class,'presentation_subcategory_id');
     }
 
-    //relacion muchos a uno con presentation_subcategory con filtro
-    public function activeContainer()
-    {
-        return $this->belongsTo(PresentationSubcategory::class,'presentation_subcategory_id')->where('status_id',1);
-    }
-
     //relacion uno a muchos con values
     public function values()
     {
         return $this->hasMany(Value::class);
     }
 
-    //relacion uno a muchos con values con filtro
-    public function activeValues()
-    {
-        return $this->hasMany(Value::class)->where('status_id',1);
-    }
-
-    //relacion uno a muchos con office_value a traves de values
+    /*//relacion uno a muchos con office_value a traves de values
     public function stocks(){
 
         return $this->hasManyThrough(OfficeValue::class,Value::class);
@@ -68,7 +56,7 @@ class Product extends Model
         return $this->hasManyThrough(OfficeValue::class,Value::class)->where('status_id',1);
     }
 
-    /*public static function boot(){
+    public static function boot(){
 
         parent::boot();
 
@@ -82,19 +70,21 @@ class Product extends Model
     //Accesor para manipular el campo "barcode_image"
     public function getBarcodeImageAttribute($barcode_image){
         
-        if ($barcode_image == null) {
+        if ($barcode_image == null) {   //se verifica si el campo tiene valor null en la db
 
-            return null;
+            return null;    //en este caso el accesor devolvera null
 
-        }
+        } else {    //caso contrario entendemos que en el campo se registro el nombre del archivo
 
-        if ( file_exists('storage/products/barcodes/' . $barcode_image) ) {
+            if ( file_exists('storage/products/barcodes/' . $barcode_image) ) { //se verifica si el archivo existe fisicamente en el directorio asignado
 
-            return 'storage/products/barcodes/' . $barcode_image;
-
-        } else {
-
-            return null;
+                return 'storage/products/barcodes/' . $barcode_image;   //en este caso el accesor devolvera la url completa del archivo
+    
+            } else {    //caso contrario entendemos que el archivo no existe fisicamente o que no se lo pudo encontrar
+    
+                return null;    //en este caso el accesor devolvera null
+    
+            }
 
         }
 
