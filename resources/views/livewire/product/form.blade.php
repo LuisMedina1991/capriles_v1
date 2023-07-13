@@ -119,75 +119,7 @@
                             </div>
                         </div>
                     @endif
-                    {{--@if($CodeOptions == 0 && $selected_id > 0)
-                        <div class="col-sm-6 col-md-6 col-lg-4">
-                            <label><b>Codigo de Producto*</b></label>
-                            <div class="form-group">
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">
-                                            <span class="fas fa-edit"></span>
-                                        </span>
-                                    </div>
-                                    <input type="text" wire:model.lazy="aux_3" class="form-control component-name" disabled>
-                                </div>
-                                @error('aux_3')
-                                <span class="text-danger er">{{ $message }}</span>
-                                @enderror
-                            </div>
-                        </div>
-                    @endif--}}
                 </div>
-                {{--@foreach($productValues as $index => $productValue)
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label><b>Costo</b></label>
-                            <input type="text" wire:model.lazy="productValues.{{$index}}.cost" class="form-control"
-                                placeholder="0.00">
-                            @error('productValues.' . $index . '.cost')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <label><b>Precio</b></label>
-                            <input type="text" wire:model.lazy="productValues.{{$index}}.price" class="form-control"
-                                placeholder="0.00">
-                            @error('productValues.' . $index . '.price')
-                            <span class="text-danger er">{{ $message }}</span>
-                            @enderror
-                        </div>
-                    </div>
-                    @if($productValue['is_saved'])
-                    <div class="col-sm-2 mt-4">
-                        <div class="form-group">
-                            <button type="button" wire:click.prevent="editValue({{$index}})" class="btn btn-info" title="Editar Fila">Editar</button>
-                        </div>
-                    </div>
-                    @else
-                    <div class="col-sm-2 mt-4">
-                        <div class="form-group">
-                            <button type="button" wire:click.prevent="saveValue({{$index}})" class="btn btn-success" title="Guardar Fila">Listo</button>
-                        </div>
-                    </div>
-                    @endif
-                    <div class="col-sm-2 mt-4">
-                        <div class="form-group">
-                            <button type="button" wire:click.prevent="removeValue({{$index}})" class="btn btn-danger" title="Eliminar Fila">Quitar</button>
-                        </div>
-                    </div>
-                </div>
-                @endforeach
-                <div class="row">
-                    <div class="col-sm-4">
-                        <div class="form-group">
-                            <button type="button" wire:click.prevent="addValue" class="btn btn-success">+ Añadir
-                                valor</button>
-                        </div>
-                    </div>
-                </div>--}}
             </div>
             <div class="modal-footer">
                 @if ($selected_id < 1) 
